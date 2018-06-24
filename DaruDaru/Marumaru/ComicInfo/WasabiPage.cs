@@ -150,7 +150,15 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (this.m_images != null)
                 {
                     foreach (var file in this.m_images)
-                        File.Delete(file.TempPath);
+                    {
+                        try
+                        {
+                            File.Delete(file.TempPath);
+                        }
+                        catch
+                        {
+                        }
+                    }
 
                     this.m_images = null;
                 }
@@ -159,12 +167,12 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         private bool Download()
         {            
-            var startTime = DateTime.Now;
-            long downloaded = 0;
-
-            var taskDownload = Task.Factory.StartNew(() =>
+            using (var downloadErrorTokenSource = new CancellationTokenSource())
             {
-                using (var downloadErrorTokenSource = new CancellationTokenSource())
+                var startTime = DateTime.Now;
+                long downloaded = 0;
+
+                var taskDownload = Task.Factory.StartNew(() =>
                 {
                     var po = new ParallelOptions
                     {
@@ -217,18 +225,21 @@ namespace DaruDaru.Marumaru.ComicInfo
                         });
 
                     return downloadErrorTokenSource.IsCancellationRequested;
+                });
+
+                double befSpeed = 0;
+                while (!taskDownload.Wait(0))
+                {
+                    Thread.Sleep(100);
+
+                    befSpeed = (befSpeed + Interlocked.Read(ref downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
+
+                    this.SpeedOrFileSize = ToEICFormat(befSpeed, "/s");
                 }
-            });
 
-            while (!taskDownload.Wait(0))
-            {
-                Thread.Sleep(500);
-
-                this.SpeedOrFileSize = ToEICFormat(downloaded / (DateTime.Now - startTime).TotalSeconds, "/s");
+                if (downloadErrorTokenSource.IsCancellationRequested)
+                    return false;
             }
-
-            if (taskDownload.IsCanceled)
-                return false;
 
             this.SpeedOrFileSize = null;
 
