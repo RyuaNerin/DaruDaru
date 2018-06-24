@@ -124,114 +124,18 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 if (!File.Exists(this.FilePath))
                 {
-                    var startTime = DateTime.Now;
-                    long downloaded = 0;
-
-                    var taskDownload = Task.Factory.StartNew(() =>
-                    {
-                        using (var downloadErrorTokenSource = new CancellationTokenSource())
-                        {
-                            var po = new ParallelOptions
-                            {
-                                CancellationToken = downloadErrorTokenSource.Token
-                            };
-
-                            Parallel.ForEach(
-                                this.m_images,
-                                e =>
-                                {
-                                    var succ = Retry(() =>
-                                    {
-                                        var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUrl));
-                                        if (req is HttpWebRequest hreq)
-                                        {
-                                            hreq.Referer = this.Url;
-                                            hreq.AllowWriteStreamBuffering = false;
-                                            hreq.AllowReadStreamBuffering = false;
-                                        }
-
-                                        using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                                        {
-                                            using (var res = req.GetResponse() as HttpWebResponse)
-                                            using (var resBody = res.GetResponseStream())
-                                            {
-                                                var buff = new byte[4096];
-                                                int read;
-
-                                                while ((read = resBody.Read(buff, 0, 4096)) > 0)
-                                                {
-                                                    Interlocked.Add(ref downloaded, read);
-                                                    fileStream.Write(buff, 0, read);
-                                                }
-
-                                                fileStream.Flush();
-                                            }
-
-                                            fileStream.Position = 0;
-                                            e.Extension = Signatures.GetExtension(fileStream);
-                                        }
-
-                                        if (e.Extension != null)
-                                            this.IncrementProgress();
-
-                                        return e.Extension != null;
-                                    });
-
-                                    if (!succ)
-                                        downloadErrorTokenSource.Cancel();
-                                });
-
-                            return downloadErrorTokenSource.IsCancellationRequested;
-                        }
-                    });
-
-                    while (!taskDownload.Wait(0))
-                    {
-                        Thread.Sleep(500);
-
-                        this.SpeedOrFileSize = ToEICFormat(downloaded / (DateTime.Now - startTime).TotalSeconds, "/s");
-                    }
-
-                    if (taskDownload.IsCanceled)
+                    if (!Download())
                     {
                         this.State = MaruComicState.Error_1_Error;
                         return;
                     }
 
-                    this.SpeedOrFileSize = null;
-
-                    // Compress
                     this.State = MaruComicState.Working_4_Compressing;
-                    var padLength = Math.Min(3, this.m_images.Length.ToString().Length);
-
-                    Directory.CreateDirectory(this.FileDir);
-                    
-                    using (var zipFile = new FileStream(this.FilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                    using (var zipStream = new ZipOutputStream(zipFile))
-                    {
-                        zipStream.SetComment(this.Url);
-                        zipStream.SetLevel(0);
-
-                        var buff = new byte[4096];
-                        int read;
-                        foreach (var file in this.m_images)
-                        {
-                            var entry = new ZipEntry(file.Index.ToString().PadLeft(padLength, '0') + file.Extension);
-
-                            zipStream.PutNextEntry(entry);
-
-                            using (var fileStream = File.OpenRead(file.TempPath))
-                                while ((read = fileStream.Read(buff, 0, 4096)) > 0)
-                                    zipStream.Write(buff, 0, read);
-                        }
-
-                        zipFile.Flush();
-
-                        this.SpeedOrFileSize = ToEICFormat(zipFile.Length);
-                    }
-
-                    ArchiveLog.AddDownloaded(this.ArchiveCode);
+                    Compress();
+                    this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.FilePath).Length);
                 }
+
+                ArchiveLog.AddDownloaded(this.ArchiveCode);
 
                 this.State = MaruComicState.Complete_1_Downloaded;
             }
@@ -250,6 +154,113 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     this.m_images = null;
                 }
+            }
+        }
+
+        private bool Download()
+        {            
+            var startTime = DateTime.Now;
+            long downloaded = 0;
+
+            var taskDownload = Task.Factory.StartNew(() =>
+            {
+                using (var downloadErrorTokenSource = new CancellationTokenSource())
+                {
+                    var po = new ParallelOptions
+                    {
+                        CancellationToken = downloadErrorTokenSource.Token
+                    };
+
+                    Parallel.ForEach(
+                        this.m_images,
+                        e =>
+                        {
+                            var succ = Retry(() =>
+                            {
+                                var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUrl));
+                                if (req is HttpWebRequest hreq)
+                                {
+                                    hreq.Referer = this.Url;
+                                    hreq.AllowWriteStreamBuffering = false;
+                                    hreq.AllowReadStreamBuffering = false;
+                                }
+
+                                using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                                {
+                                    using (var res = req.GetResponse() as HttpWebResponse)
+                                    using (var resBody = res.GetResponseStream())
+                                    {
+                                        var buff = new byte[4096];
+                                        int read;
+
+                                        while ((read = resBody.Read(buff, 0, 4096)) > 0)
+                                        {
+                                            Interlocked.Add(ref downloaded, read);
+                                            fileStream.Write(buff, 0, read);
+                                        }
+
+                                        fileStream.Flush();
+                                    }
+
+                                    fileStream.Position = 0;
+                                    e.Extension = Signatures.GetExtension(fileStream);
+                                }
+
+                                if (e.Extension != null)
+                                    this.IncrementProgress();
+
+                                return e.Extension != null;
+                            });
+
+                            if (!succ)
+                                downloadErrorTokenSource.Cancel();
+                        });
+
+                    return downloadErrorTokenSource.IsCancellationRequested;
+                }
+            });
+
+            while (!taskDownload.Wait(0))
+            {
+                Thread.Sleep(500);
+
+                this.SpeedOrFileSize = ToEICFormat(downloaded / (DateTime.Now - startTime).TotalSeconds, "/s");
+            }
+
+            if (taskDownload.IsCanceled)
+                return false;
+
+            this.SpeedOrFileSize = null;
+
+            return true;
+        }
+
+        private void Compress()
+        {
+            var padLength = Math.Min(3, this.m_images.Length.ToString().Length);
+
+            Directory.CreateDirectory(this.FileDir);
+
+            using (var zipFile = new FileStream(this.FilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var zipStream = new ZipOutputStream(zipFile))
+            {
+                zipStream.SetComment(this.Url);
+                zipStream.SetLevel(0);
+
+                var buff = new byte[4096];
+                int read;
+                foreach (var file in this.m_images)
+                {
+                    var entry = new ZipEntry(file.Index.ToString().PadLeft(padLength, '0') + file.Extension);
+
+                    zipStream.PutNextEntry(entry);
+
+                    using (var fileStream = File.OpenRead(file.TempPath))
+                        while ((read = fileStream.Read(buff, 0, 4096)) > 0)
+                            zipStream.Write(buff, 0, read);
+                }
+
+                zipFile.Flush();
             }
         }
 

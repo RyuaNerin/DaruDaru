@@ -22,7 +22,11 @@ namespace DaruDaru.Marumaru
         public static void Remove(string archiveCode)
         {
             lock (Codes)
+            {
                 Codes.Remove(archiveCode);
+
+                Save();
+            }
         }
 
         public static void AddDownloaded(string archiveCode)
@@ -31,6 +35,14 @@ namespace DaruDaru.Marumaru
             {
                 Codes.Add(archiveCode);
 
+                Save();
+            }
+        }
+
+        public static void Save()
+        {
+            lock (Codes)
+            {
                 Directory.CreateDirectory(Path.GetDirectoryName(LogPath));
                 using (var file = File.OpenWrite(LogPath))
                 using (var writer = new StreamWriter(file, Encoding.UTF8))
@@ -43,9 +55,9 @@ namespace DaruDaru.Marumaru
                     writer.Flush();
                     file.Flush();
                 }
-
-                File.SetAttributes(LogPath, File.GetAttributes(LogPath) | FileAttributes.Hidden | FileAttributes.System);
             }
+
+            File.SetAttributes(LogPath, File.GetAttributes(LogPath) | FileAttributes.Hidden | FileAttributes.System);
         }
 
         public static bool CheckDownloaded(string archiveCode)
@@ -68,7 +80,10 @@ namespace DaruDaru.Marumaru
         public static void Clear()
         {
             lock (Codes)
+            {
                 Codes.Clear();
+                Save();
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Windows.Input;
 using DaruDaru.Marumaru;
 using DaruDaru.Marumaru.ComicInfo;
 using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 
 namespace DaruDaru.Core.Windows
@@ -28,7 +29,7 @@ namespace DaruDaru.Core.Windows
             CrashReport.Init();
 
             this.ctlSearch.ItemsSource = this.m_queue;
-            this.ctlRecent.ItemsSource = SearchLog.Instance;
+            this.ctlRecent.ItemsSource = SearchLog.Collection;
             
             var p = Environment.ProcessorCount;
 
@@ -418,15 +419,15 @@ namespace DaruDaru.Core.Windows
             var items = this.ctlRecent.SelectedItems.Cast<SearchLogEntry>()
                                                     .ToArray();
 
-            lock (SearchLog.Instance)
+            lock (SearchLog.Collection)
                 foreach (var item in items)
-                    SearchLog.Instance.Remove(item);
+                    SearchLog.Collection.Remove(item);
         }
 
         private void ctlRecentRemoveAll_Click(object sender, RoutedEventArgs e)
         {
-            lock (SearchLog.Instance)
-                SearchLog.Instance.Clear();
+            lock (SearchLog.Collection)
+                SearchLog.Collection.Clear();
         }
 
         private void ctlRecentItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -536,16 +537,66 @@ namespace DaruDaru.Core.Windows
 
         #endregion
 
-        private void ctlConfigClearDownload_Click(object sender, RoutedEventArgs e)
-        {
-            ArchiveLog.Clear();
+        #region Config
 
+        private async void ctlConfigClearSearchLog_Click(object sender, RoutedEventArgs e)
+        {
+            var setting = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "삭제",
+                NegativeButtonText = "취소",
+                DefaultButtonFocus = MessageDialogResult.Negative
+            };
+
+            if (await this.ShowMessageAsync(null, "모든 검색 기록을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
+                == MessageDialogResult.Affirmative)
+            {
+                SearchLog.Clear();
+
+                ShowMessage(null, "검색 기록을 삭제했어요.", 5000);
+            }
+        }
+
+        private async void ctlConfigClearDownload_Click(object sender, RoutedEventArgs e)
+        {
+            var setting = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "삭제",
+                NegativeButtonText = "취소",
+                DefaultButtonFocus = MessageDialogResult.Negative
+            };
+
+            if (await this.ShowMessageAsync(null, "모든 다운로드 기록을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
+                == MessageDialogResult.Affirmative)
+            {
+                ArchiveLog.Clear();
+
+                ShowMessage(null, "다운로드 기록을 삭제했어요.", 5000);
+            }
+        }
+
+        private async void ShowMessage(string title, string text, int timeOut)
+        {
+            using (var ct = new CancellationTokenSource())
+            {
+                var setting = new MetroDialogSettings
+                {
+                    CancellationToken = ct.Token
+                };
+
+                var dialog = this.ShowMessageAsync(title, text, MessageDialogStyle.Affirmative, setting);
+
+                await Task.Factory.StartNew(() =>
+                {
+                    dialog.Wait(timeOut);
+
+                    if (!dialog.IsCompleted && !dialog.IsCanceled)
+                        this.Dispatcher.Invoke(new Action(ct.Cancel));
+                });
+            }
 
         }
 
-        private void ctlConfigClearSearchLog_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+        #endregion
     }
 }

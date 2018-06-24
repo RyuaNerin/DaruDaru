@@ -23,6 +23,7 @@ namespace DaruDaru.Core
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             SearchLog.Save();
+            ArchiveLog.Save();
         }
     }
 }

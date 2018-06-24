@@ -335,13 +335,18 @@
 
             <ScrollViewer>
                 <StackPanel>
-                    <Button Content="다운로드 기록 삭제"
-                            HorizontalAlignment="Center"
-                            Click="ctlConfigClearDownload_Click" />
-                    
+                    <StackPanel.Resources>
+                        <Style TargetType="Button"
+                               BasedOn="{StaticResource MetroButton}">
+                            <Setter Property="Focusable" Value="False" />
+                        </Style>
+                    </StackPanel.Resources>
                     <Button Content="검색 기록 삭제"
-                            Margin="0 5 0 5"
                             Click="ctlConfigClearSearchLog_Click" />
+                    
+                    <Button Content="다운로드 기록 삭제"
+                            Margin="0 5 0 5"
+                            Click="ctlConfigClearDownload_Click" />
                 </StackPanel>
             </ScrollViewer>
         </TabItem>

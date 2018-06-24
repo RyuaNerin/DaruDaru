@@ -85,12 +85,12 @@ namespace DaruDaru.Marumaru
         }
     }
 
-    internal class SearchLog : ObservableCollection<SearchLogEntry>
+    internal static class SearchLog
     {
         private static readonly string FilePath = Path.Combine(App.BaseDirectory, "searchlog.cfg");
         private static readonly JsonSerializer Serializer = JsonSerializer.Create();
         
-        public static SearchLog Instance { get; } = new SearchLog();
+        public static ObservableCollection<SearchLogEntry> Collection { get; } = new ObservableCollection<SearchLogEntry>();
 
         static SearchLog()
         {
@@ -101,7 +101,7 @@ namespace DaruDaru.Marumaru
                     using (var fs = File.OpenRead(FilePath))
                     using (var sr = new StreamReader(fs, Encoding.UTF8))
                     using (var br = new JsonTextReader(sr))
-                        Serializer.Populate(br, Instance);
+                        Serializer.Populate(br, Collection);
                 }
                 catch
                 {
@@ -111,7 +111,7 @@ namespace DaruDaru.Marumaru
 
         public static void Save()
         {
-            lock (Instance)
+            lock (Collection)
             {
                 try
                 {
@@ -121,7 +121,7 @@ namespace DaruDaru.Marumaru
 
                         using (var sr = new StreamWriter(fs, Encoding.UTF8))
                         using (var br = new JsonTextWriter(sr))
-                            Serializer.Serialize(br, Instance);
+                            Serializer.Serialize(br, Collection);
                     }
                 }
                 catch
@@ -132,9 +132,10 @@ namespace DaruDaru.Marumaru
             }
         }
 
-        private SearchLog()
+        public static void Clear()
         {
-
+            lock (Collection)
+                Collection.Clear();
         }
 
         public static void UpdateUnsafe<T>(bool updateDatetime, IEnumerable<T> src, Func<T, string> toUrl, Func<T, string> toComicName, Func<T, int> toNoCount)
@@ -143,7 +144,7 @@ namespace DaruDaru.Marumaru
         }
         public static void UpdateSafe<T>(bool updateDatetime, IEnumerable<T> src, Func<T, string> toUrl, Func<T, string> toComicName, Func<T, int> toNoCount)
         {
-            lock (Instance)
+            lock (Collection)
             {
                 SearchLogEntry item = null;
                 string url;
@@ -164,9 +165,9 @@ namespace DaruDaru.Marumaru
                     urlHash = SearchLogEntry.GetUrlHash(url);
                     
                     found = false;
-                    for (i = 0; i < Instance.Count; ++i)
+                    for (i = 0; i < Collection.Count; ++i)
                     {
-                        item = Instance[i];
+                        item = Collection[i];
 
                         if (item.UrlHash == urlHash)
                         {
@@ -181,7 +182,7 @@ namespace DaruDaru.Marumaru
                         {
                             Url = url
                         };
-                        Instance.Add(item);
+                        Collection.Add(item);
                     }
 
                     if (!string.IsNullOrWhiteSpace(title))
@@ -208,13 +209,13 @@ namespace DaruDaru.Marumaru
 
             SearchLogEntry item = null;
 
-            lock (Instance)
+            lock (Collection)
             {
                 var found = false;
 
-                for (int i = 0; i < Instance.Count; ++i)
+                for (int i = 0; i < Collection.Count; ++i)
                 {
-                    item = Instance[i];
+                    item = Collection[i];
 
                     if (item.UrlHash == urlHash)
                     {
@@ -229,7 +230,7 @@ namespace DaruDaru.Marumaru
                     {
                         Url = url
                     };
-                    Instance.Add(item);
+                    Collection.Add(item);
                 }
                 
                 if (!string.IsNullOrWhiteSpace(comicName))
