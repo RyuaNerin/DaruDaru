@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Core
 {
-    internal class LastestRealease
+    internal class LatestRealease
     {
         [JsonProperty("tag_name")]
         public string TagName { get; set; }
@@ -27,15 +27,15 @@ namespace DaruDaru.Core
 
     internal static class LastRelease
     {
-        public static LastestRealease CheckNewVersion()
+        public static LatestRealease CheckNewVersion()
         {
             try
             {
-                LastestRealease last;
+                LatestRealease last;
 
                 var req = WebRequest.CreateHttp("https://api.github.com/repos/RyuaNerin/DaruDaru/releases/latest");
                 req.Timeout = 5000;
-                req.UserAgent = "QIT";
+                req.UserAgent = "Darudaru";
                 using (var res = req.GetResponse())
                 {
                     var json = new JsonSerializer();
@@ -44,7 +44,7 @@ namespace DaruDaru.Core
                     using (var sReader = new StreamReader(rStream))
                     using (var jReader = new JsonTextReader(sReader))
                     {
-                        last = json.Deserialize<LastestRealease>(jReader);
+                        last = json.Deserialize<LatestRealease>(jReader);
                     }
                 }
 
