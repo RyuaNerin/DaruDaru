@@ -42,7 +42,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             return new MaruPage(mainWindow, true, addNewOnly, url, comicName);
         }
 
-        private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]");
+        private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
         protected static string ReplaceInvalid(string s) => InvalidRegex.Replace(s, "");
 
         protected static string ReplcaeHtmlTag(string s) => s.Replace("&nbsp;", " " )

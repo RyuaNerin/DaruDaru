@@ -35,7 +35,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     doc.LoadHtml(wc.DownloadString(this.Url));
 
-                    this.ComicName = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", ""));
+                    this.ComicName = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
 
                     string titleNo;
                     foreach (var a in doc.DocumentNode.SelectSingleNode("//div[@class='content']").SelectNodes(".//a[@href]"))

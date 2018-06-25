@@ -131,7 +131,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlSearchDownload_Click(object sender, RoutedEventArgs e)
         {
-            var url = this.ctlSearchUrl.Text;
+            var url = this.ctlSearchUrl.Text.Trim();
 
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
@@ -143,6 +143,7 @@ namespace DaruDaru.Core.Windows
             this.SearchUrl(false, url, null);
 
             this.ctlSearchUrl.Text = null;
+            this.ctlSearchUrl.Focus();
         }
 
         private static string GetHoneyView()
@@ -246,13 +247,19 @@ namespace DaruDaru.Core.Windows
             }
             else
             {
-                var items = this.ctlSearch.SelectedItems.Cast<Comic>();
+                if (this.ctlSearch.SelectedItems.Count > 10)
+                {
+                    this.ctlSearchOpenFile.IsEnabled = this.ctlSearchOpenDir.IsEnabled = true;
+                }
+                else
+                {
+                    var items = this.ctlSearch.SelectedItems.Cast<Comic>();
 
-                this.ctlSearchOpenFile.IsEnabled = this.ctlSearchOpenDir.IsEnabled = items.Any(le => le.State == MaruComicState.Complete_1_Downloaded);
+                    this.ctlSearchOpenFile.IsEnabled = this.ctlSearchOpenDir.IsEnabled = items.Any(le => le.State == MaruComicState.Complete_1_Downloaded);
+                }
+
+                this.ctlSearchRetry.IsEnabled = true;
                 this.ctlSearchOpenWeb.IsEnabled = true;
-
-                this.ctlSearchRetry.IsEnabled = items.Any(le => le.IsError);
-
                 this.ctlSearchRemoveItem.IsEnabled = true;
             }
         }
@@ -339,11 +346,14 @@ namespace DaruDaru.Core.Windows
         {
             lock (this.m_queue)
             {
-                var items = this.m_queue.Where(le => le.IsComplete)
-                                        .ToArray();
-
-                foreach (var item in items)
-                    this.m_queue.Remove(item);
+                int i = 0;
+                while (i < this.m_queue.Count)
+                {
+                    if (this.m_queue[i].IsComplete)
+                        this.m_queue.RemoveAt(i);
+                    else
+                        i++;
+                }
             }
         }
 
@@ -356,10 +366,8 @@ namespace DaruDaru.Core.Windows
                                                     .ToArray();
 
             lock (this.m_queue)
-            {
                 foreach (var item in items)
                     this.m_queue.Remove(item);
-            }
         }
 
         private async void ctlSearchRemoveAll_Click(object sender, RoutedEventArgs e)
@@ -401,7 +409,6 @@ namespace DaruDaru.Core.Windows
         {
             this.ctlRecentSearch.IsEnabled =
             this.ctlRecentOpenWeb.IsEnabled =
-
             this.ctlRecentRemoveItem.IsEnabled = this.ctlRecent.SelectedItems.Count >= 0;
         }
 

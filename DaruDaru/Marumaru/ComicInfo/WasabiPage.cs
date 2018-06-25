@@ -67,8 +67,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                     // 그 외의 경우에는 마루마루 페이지에서 설정되어있던 이름으로 사용.
                     if (this.m_fromSearch)
                     {
-                        this.ComicName   = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText);
-                        this.ComicNoName = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='article-title']").Attributes["title"].Value);
+                        this.ComicName   = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
+                        this.ComicNoName = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='article-title']").Attributes["title"].Value).Trim();
                     }
 
                     // 암호걸린 파일
@@ -133,13 +133,13 @@ namespace DaruDaru.Marumaru.ComicInfo
                     this.State = MaruComicState.Working_4_Compressing;
                     Compress();
                     this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.FilePath).Length);
+
+                    this.State = MaruComicState.Complete_1_Downloaded;
                 }
                 else
                     this.State = MaruComicState.Complete_2_Archived;
 
                 ArchiveLog.AddDownloaded(this.ArchiveCode);
-
-                this.State = MaruComicState.Complete_1_Downloaded;
             }
             catch (Exception ex)
             {
@@ -195,10 +195,17 @@ namespace DaruDaru.Marumaru.ComicInfo
                                     hreq.AllowReadStreamBuffering = false;
                                 }
 
-                                using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                                using (var res = req.GetResponse() as HttpWebResponse)
+                                using (var resBody = res.GetResponseStream())
                                 {
-                                    using (var res = req.GetResponse() as HttpWebResponse)
-                                    using (var resBody = res.GetResponseStream())
+                                    if (res.ContentType.Contains("text/"))
+                                    {
+                                        // 파일이 없는 경우
+                                        e.Extension = null;
+                                        return true;
+                                    }
+
+                                    using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                                     {
                                         var buff = new byte[4096];
                                         int read;
@@ -210,10 +217,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                                         }
 
                                         fileStream.Flush();
-                                    }
 
-                                    fileStream.Position = 0;
-                                    e.Extension = Signatures.GetExtension(fileStream);
+                                        fileStream.Position = 0;
+                                        e.Extension = Signatures.GetExtension(fileStream);
+                                    }
                                 }
 
                                 if (e.Extension != null)
@@ -264,6 +271,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                 int read;
                 foreach (var file in this.m_images)
                 {
+                    if (file.Extension == null)
+                        continue;
+
                     var entry = new ZipEntry(file.Index.ToString().PadLeft(padLength, '0') + file.Extension);
 
                     zipStream.PutNextEntry(entry);
