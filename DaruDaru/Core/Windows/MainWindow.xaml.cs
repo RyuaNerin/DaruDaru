@@ -584,15 +584,13 @@ namespace DaruDaru.Core.Windows
                     CancellationToken = ct.Token
                 };
 
+                var date = DateTime.Now.AddMilliseconds(timeOut);
                 var dialog = this.ShowMessageAsync(title, text, MessageDialogStyle.Affirmative, setting);
 
-                await Task.Factory.StartNew(() =>
-                {
-                    dialog.Wait(timeOut);
+                await Task.Factory.StartNew(() => dialog.Wait(date - DateTime.Now));
 
-                    if (!dialog.IsCompleted && !dialog.IsCanceled)
-                        this.Dispatcher.Invoke(new Action(ct.Cancel));
-                });
+                if (!dialog.IsCompleted && !dialog.IsCanceled)
+                    ct.Cancel();
             }
 
         }
