@@ -362,10 +362,21 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        private void ctlSearchRemoveAll_Click(object sender, RoutedEventArgs e)
+        private async void ctlSearchRemoveAll_Click(object sender, RoutedEventArgs e)
         {
-            lock (this.m_queue)
-                this.m_queue.Clear();
+            var setting = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "삭제",
+                NegativeButtonText = "취소",
+                DefaultButtonFocus = MessageDialogResult.Negative
+            };
+
+            if (await this.ShowMessageAsync(null, "모든 대기열을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
+                == MessageDialogResult.Affirmative)
+            {
+                lock (this.m_queue)
+                    this.m_queue.Clear();
+            }
         }
 
         private void ctlSearchItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -446,8 +457,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlRecentRemoveAll_Click(object sender, RoutedEventArgs e)
         {
-            lock (SearchLog.Collection)
-                SearchLog.Collection.Clear();
+            this.ctlConfigClearSearchLog_Click(sender, e);
         }
 
         private void ctlRecentItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
