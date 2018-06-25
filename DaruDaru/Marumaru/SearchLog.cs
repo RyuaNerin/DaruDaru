@@ -111,6 +111,8 @@ namespace DaruDaru.Marumaru
 
         public static void Save()
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
+
             lock (Collection)
             {
                 try
