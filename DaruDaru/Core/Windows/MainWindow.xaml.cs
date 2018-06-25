@@ -161,6 +161,17 @@ namespace DaruDaru.Core.Windows
             return !string.IsNullOrWhiteSpace(honeyView) && File.Exists(honeyView) ? honeyView : null;
         }
 
+        private static void StartProcess(string filename, string arg = null)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = filename, Arguments = arg, UseShellExecute = true }).Dispose();
+            }
+            catch
+            {
+            }
+        }
+
         #region Worker
 
         private readonly EventWaitHandle m_eventQueue    = new AutoResetEvent(false);
@@ -263,7 +274,7 @@ namespace DaruDaru.Core.Windows
                                                    .ToArray();
 
             foreach (var dir in dirs)
-                Process.Start(new ProcessStartInfo { FileName = dir, UseShellExecute = true }).Dispose();
+                StartProcess(dir);
         }
 
         private void ctlSearchOpenFile_Click(object sender, RoutedEventArgs e)
@@ -288,7 +299,7 @@ namespace DaruDaru.Core.Windows
                 if (files.Length > 0)
                 {
                     foreach (var file in files)
-                        Process.Start(new ProcessStartInfo { FileName = hv, Arguments = $"\"{file}\"" }).Dispose();
+                        StartProcess(hv, $"\"{file}\"");
                 }
             }
         }
@@ -307,7 +318,7 @@ namespace DaruDaru.Core.Windows
                                                     .ToArray();
 
             foreach (var url in urls)
-                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true }).Dispose();
+                StartProcess(url);
         }
 
         private void ctlSearchRetry_Click(object sender, RoutedEventArgs e)
@@ -366,7 +377,7 @@ namespace DaruDaru.Core.Windows
                 {
                     var hv = GetHoneyView();
                     if (hv != null)
-                        Process.Start(new ProcessStartInfo { FileName = hv, Arguments = $"\"{comic.FilePath}\"" }).Dispose();
+                        StartProcess(hv, $"\"{comic.FilePath}\"");
                 }
             }
         }
@@ -417,7 +428,7 @@ namespace DaruDaru.Core.Windows
                                                     .ToArray();
 
             foreach (var item in items)
-                Process.Start(new ProcessStartInfo { FileName = item, UseShellExecute = true }).Dispose();
+                Process.Start(new ProcessStartInfo { FileName = item, UseShellExecute = true })?.Dispose();
         }
 
         private void ctlRecentRemoveItem_Click(object sender, RoutedEventArgs e)
