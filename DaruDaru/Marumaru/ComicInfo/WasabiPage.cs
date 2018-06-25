@@ -232,7 +232,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 double befSpeed = 0;
                 while (!taskDownload.Wait(0))
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
 
                     befSpeed = (befSpeed + Interlocked.Read(ref downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
 
