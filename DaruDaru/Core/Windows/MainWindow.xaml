@@ -208,7 +208,7 @@
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding SpeedOrFileSize, Mode=OneWay}"
-                                                   TextAlignment="Center"
+                                                   TextAlignment="Right"
                                                    HorizontalAlignment="Stretch" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
