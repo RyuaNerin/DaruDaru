@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -17,11 +16,11 @@ namespace DaruDaru.Core
 
     internal static class GridViewSort
     {
-        public static SortDirection GetSortDirection(DependencyObject obj)
+        private static SortDirection GetSortDirection(DependencyObject obj)
             => (SortDirection)obj.GetValue(SortDirectionProperty);
-        public static void SetSortDirection(DependencyObject obj, SortDirection value)
+        private static void SetSortDirection(DependencyObject obj, SortDirection value)
             => obj.SetValue(SortDirectionProperty, value);
-        public static readonly DependencyProperty SortDirectionProperty =
+        private static readonly DependencyProperty SortDirectionProperty =
             DependencyProperty.RegisterAttached("SortDirection", typeof(SortDirection), typeof(GridViewSort), new UIPropertyMetadata(SortDirection.None));
 
         public static bool GetAutoSort(DependencyObject obj)

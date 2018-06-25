@@ -238,8 +238,7 @@
                       BorderThickness="1"
                       ScrollViewer.VerticalScrollBarVisibility="Visible"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      c:GridViewSort.AutoSort="True"
-                      c:GridViewSort.SortDirection="Ascending">
+                      c:GridViewSort.AutoSort="True">
                 <ListView.Resources>
                     <ResourceDictionary>
                         <Style TargetType="{x:Type ListViewItem}"
