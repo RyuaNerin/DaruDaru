@@ -19,80 +19,76 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <ControlTemplate x:Key="NewMetroDialogTemplate"
+                             TargetType="{x:Type Dialogs:BaseMetroDialog}">
+                <Grid Background="{TemplateBinding Background}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ContentPresenter Grid.Row="0"
+                                        AutomationProperties.Name="Dialog top"
+                                        Content="{TemplateBinding DialogTop}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10*" />
+                            <ColumnDefinition Width="80*" />
+                            <ColumnDefinition Width="10*" />
+                        </Grid.ColumnDefinitions>
+                        <!--  Content area  -->
+                        <Grid Grid.Column="1" Margin="{TemplateBinding Padding}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock x:Name="PART_Title"
+                                        Grid.Row="0"
+                                        AutomationProperties.Name="Dialog title"
+                                        FontSize="{TemplateBinding DialogTitleFontSize}"
+                                        Foreground="{TemplateBinding Foreground}"
+                                        Text="{TemplateBinding Title}"
+                                        TextWrapping="Wrap" />
+                            <ContentPresenter Grid.Row="1"
+                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                AutomationProperties.Name="Dialog content"
+                                                Content="{TemplateBinding Content}"
+                                                ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Grid>
+                    </Grid>
+                    <ContentPresenter Grid.Row="2"
+                                        AutomationProperties.Name="Dialog bottom"
+                                        Content="{TemplateBinding DialogBottom}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="Title" Value="{x:Null}">
+                        <Setter TargetName="PART_Title" Property="Visibility" Value="Collapsed" />
+                    </Trigger>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <EventTrigger.Actions>
+                            <BeginStoryboard Storyboard="{StaticResource DialogShownStoryboard}" />
+                        </EventTrigger.Actions>
+                    </EventTrigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
 
-            <Style TargetType="{x:Type Dialogs:BaseMetroDialog}"
+            <Style x:Key="NewCustomMessageDialogStyle"
+                   TargetType="{x:Type Dialogs:BaseMetroDialog}"                   
                    BasedOn="{StaticResource {x:Type Dialogs:BaseMetroDialog}}">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type Dialogs:BaseMetroDialog}">
-                            <ControlTemplate.Resources>
-                                <Storyboard x:Key="DialogShownStoryboard">
-                                    <DoubleAnimation AccelerationRatio=".9"
-                                                     BeginTime="0:0:0"
-                                                     Duration="0:0:0.2"
-                                                     Storyboard.TargetProperty="Opacity"
-                                                     To="1" />
-                                </Storyboard>
-                            </ControlTemplate.Resources>
-                            <Grid Background="{TemplateBinding Background}">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <ContentPresenter Grid.Row="0"
-                                                  AutomationProperties.Name="Dialog top"
-                                                  Content="{TemplateBinding DialogTop}"
-                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                                <Grid Grid.Row="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="10*" />
-                                        <ColumnDefinition Width="80*" />
-                                        <ColumnDefinition Width="10*" />
-                                    </Grid.ColumnDefinitions>
-                                    <!--  Content area  -->
-                                    <Grid Grid.Column="1" Margin="{TemplateBinding Padding}">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock x:Name="PART_Title"
-                                                   Grid.Row="0"
-                                                   AutomationProperties.Name="Dialog title"
-                                                   FontSize="{TemplateBinding DialogTitleFontSize}"
-                                                   Foreground="{TemplateBinding Foreground}"
-                                                   Text="{TemplateBinding Title}"
-                                                   TextWrapping="Wrap" />
-                                        <ContentPresenter Grid.Row="1"
-                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                          AutomationProperties.Name="Dialog content"
-                                                          Content="{TemplateBinding Content}"
-                                                          ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                                    </Grid>
-                                </Grid>
-                                <ContentPresenter Grid.Row="2"
-                                                  AutomationProperties.Name="Dialog bottom"
-                                                  Content="{TemplateBinding DialogBottom}"
-                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                            </Grid>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="Title" Value="{x:Null}">
-                                    <Setter TargetName="PART_Title" Property="Visibility" Value="Collapsed" />
-                                </Trigger>
-                                <EventTrigger RoutedEvent="Loaded">
-                                    <EventTrigger.Actions>
-                                        <BeginStoryboard Storyboard="{StaticResource DialogShownStoryboard}" />
-                                    </EventTrigger.Actions>
-                                </EventTrigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>            
+                <Setter Property="Template" Value="{StaticResource NewMetroDialogTemplate}" />
+            </Style>
+
+            <Style TargetType="{x:Type Dialogs:MessageDialog}"
+                   BasedOn="{StaticResource NewCustomMessageDialogStyle}" />
+
+            <Style TargetType="{x:Type Dialogs:CustomDialog}"
+                   BasedOn="{StaticResource NewCustomMessageDialogStyle}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
