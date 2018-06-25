@@ -192,8 +192,10 @@ namespace DaruDaru.Core.Windows
             while (true)
             {
                 if (this.GetItem(ref comic, MaruComicState.Wait, MaruComicState.Working_1_GetInfomation))
+                {
+                    Thread.Sleep(500);
                     comic.GetInfomation();
-
+                }
                 else
                     this.m_eventQueue.WaitOne();
             }
@@ -206,8 +208,10 @@ namespace DaruDaru.Core.Windows
             while (true)
             {
                 if (this.GetItem(ref comic, MaruComicState.Working_2_WaitDownload, MaruComicState.Working_3_Downloading))
+                {
+                    Thread.Sleep(500);
                     comic.StartDownload();
-
+                }
                 else
                     this.m_eventDownload.WaitOne();
             }
