@@ -134,6 +134,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                     Compress();
                     this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.FilePath).Length);
                 }
+                else
+                    this.State = MaruComicState.Complete_2_Archived;
 
                 ArchiveLog.AddDownloaded(this.ArchiveCode);
 
