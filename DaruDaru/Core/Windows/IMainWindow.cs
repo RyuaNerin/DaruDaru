@@ -8,5 +8,7 @@ namespace DaruDaru.Core.Windows
         void InsertNewComic(Comic sender, IEnumerable<Comic> newItems, bool removeSender);
 
         void WakeDownloader();
+
+        void UpdateTaskbarProgress();
     }
 }

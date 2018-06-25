@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shell;
 using DaruDaru.Marumaru;
 using DaruDaru.Marumaru.ComicInfo;
 using MahApps.Metro.Controls;
@@ -28,7 +30,9 @@ namespace DaruDaru.Core.Windows
         public MainWindow()
         {
             InitializeComponent();
-            
+
+            this.TaskbarItemInfo = new TaskbarItemInfo();
+
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
 
             CrashReport.Init();
@@ -42,6 +46,13 @@ namespace DaruDaru.Core.Windows
 
             for (int i = 0; i < p; ++i) Task.Factory.StartNew(this.Worker_Infomation, i, TaskCreationOptions.LongRunning);
             for (int i = 0; i < p; ++i) Task.Factory.StartNew(this.Worker_Download  , i, TaskCreationOptions.LongRunning);
+
+            this.m_queue.CollectionChanged += (ls, le) =>
+            {
+                if (le.Action == NotifyCollectionChangedAction.Add ||
+                    le.Action == NotifyCollectionChangedAction.Remove)
+                    this.UpdateTaskbarProgress();
+            };
         }
 
         private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
@@ -247,17 +258,8 @@ namespace DaruDaru.Core.Windows
             }
             else
             {
-                if (this.ctlSearch.SelectedItems.Count > 10)
-                {
-                    this.ctlSearchOpenFile.IsEnabled = this.ctlSearchOpenDir.IsEnabled = true;
-                }
-                else
-                {
-                    var items = this.ctlSearch.SelectedItems.Cast<Comic>();
-
-                    this.ctlSearchOpenFile.IsEnabled = this.ctlSearchOpenDir.IsEnabled = items.Any(le => le.State == MaruComicState.Complete_1_Downloaded);
-                }
-
+                this.ctlSearchOpenFile.IsEnabled = true;
+                this.ctlSearchOpenDir.IsEnabled = true;
                 this.ctlSearchRetry.IsEnabled = true;
                 this.ctlSearchOpenWeb.IsEnabled = true;
                 this.ctlSearchRemoveItem.IsEnabled = true;
@@ -640,5 +642,27 @@ namespace DaruDaru.Core.Windows
         }
 
         #endregion
+
+        public void UpdateTaskbarProgress()
+        {
+            double max = 0;
+            double val = 0;
+
+            lock (this.m_queue)
+            {
+                max = this.m_queue.Count;
+                val = this.m_queue.Count(le => le.IsComplete || le.IsError);
+            }
+
+            if (val == max)
+            {
+                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
+            }
+            else
+            {
+                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
+                this.TaskbarItemInfo.ProgressValue = val / max;
+            }
+        }
     }
 }

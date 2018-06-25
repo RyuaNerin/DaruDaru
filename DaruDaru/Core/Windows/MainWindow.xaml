@@ -148,12 +148,12 @@
 
                     <ListView.ContextMenu>
                         <ContextMenu Opened="ctlSearchMenu_Opened">
-                            <MenuItem Header="폴더 열기"
-                                      x:Name="ctlSearchOpenDir"
-                                      Click="ctlSearchOpenDir_Click" />
                             <MenuItem Header="꿀뷰로 열기"
                                       x:Name="ctlSearchOpenFile"
                                       Click="ctlSearchOpenFile_Click" />
+                            <MenuItem Header="폴더 열기"
+                                      x:Name="ctlSearchOpenDir"
+                                      Click="ctlSearchOpenDir_Click" />
                             <MenuItem Header="홈페이지 열기"
                                       x:Name="ctlSearchOpenWeb"
                                       Click="ctlSearchOpenWeb_Click" />

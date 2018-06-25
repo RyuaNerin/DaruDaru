@@ -115,7 +115,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             count = 1;
         }
 
-        public override void StartDownload()
+        protected override void StartDownloadPriv()
         {
             try
             {
