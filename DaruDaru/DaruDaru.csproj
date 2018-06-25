@@ -89,6 +89,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Core\DragDropAdorner.cs" />
     <Compile Include="Core\GridViewSort.cs" />
     <Page Include="Core\Windows\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

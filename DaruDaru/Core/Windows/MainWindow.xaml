@@ -16,6 +16,11 @@
                    Height="300"
                    BorderBrush="{DynamicResource AccentColorBrush}"
                    BorderThickness="1"
+                   AllowDrop="True"
+                   DragOver="ctlSearchGrid_DragOver"
+                   DragLeave="ctlSearchGrid_DragLeave"
+                   DragEnter="ctlSearchGrid_DragEnter"
+                   Drop="ctlSearchGrid_Drop"
                    WindowStartupLocation="CenterScreen"
                    Loaded="MetroWindow_Loaded">
     <i:Interaction.Behaviors>
@@ -37,10 +42,17 @@
                 <Setter Property="Height"
                         Value="24" />
             </Style>
+            
+            <AdornerDecorator x:Key="DragDropIcon">
+                <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
+                    <Path Width="36" Height="42" Canvas.Left="20" Canvas.Top="17" Stretch="Fill" Fill="{DynamicResource AccentColorBrush3}" Data="F1 M 20,17L 43.25,17L 56,29.75L 56,59L 20,59L 20,17 Z M 24,21L 24,55L 52,55L 52,34L 39,34L 39,21L 24,21 Z M 43,22.25L 43,30L 50.75,30L 43,22.25 Z M 30,33L 34,33L 34,41.5L 37,38.5L 37,43.25L 32,48.25L 27,42.75L 27,38.5L 30,41.5L 30,33 Z M 38,49L 38,53L 26,53L 26,49L 38,49 Z "/>
+                </Canvas>
+            </AdornerDecorator>
         </ResourceDictionary>
     </metro:MetroWindow.Resources>
 
-    <TabControl TabStripPlacement="Left">
+    <TabControl x:Name="ctlTab"
+                TabStripPlacement="Left">
         <TabControl.Resources>
             <Style TargetType="TabItem"
                    BasedOn="{StaticResource MetroTabItem}">
@@ -53,7 +65,8 @@
                 <DataTemplate>
                     <Viewbox Width="38"
                              Height="38"
-                             ToolTip="다운로드">
+                             ToolTip="다운로드"
+                             IsHitTestVisible="False">
                         <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
                             <Path Width="26" Height="41" Canvas.Left="25" Canvas.Top="16" Stretch="Fill" Fill="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Path=(TextElement.Foreground)}" Data="F1 M 25,52L 51,52L 51,57L 25,57L 25,52 Z M 35,16L 41,16L 41,36.5L 49,27L 49,36.5L 38,49L 27,36.5L 27,27L 35,36.5L 35,16 Z "/>
                         </Canvas>
@@ -79,6 +92,7 @@
                          metro:TextBoxHelper.Watermark="만화 주소 입력 혹은 링크 드래그"
                          metro:TextBoxHelper.ClearTextButton="True"
                          metro:TextBoxHelper.SelectAllOnFocus="True"
+                         AllowDrop="False"
                          KeyDown="ctlSearchUrl_KeyDown" />
 
                 <Button x:Name="ctlSearchDownload"
@@ -95,12 +109,7 @@
                           BorderBrush="{DynamicResource AccentColorBrush}"
                           BorderThickness="1"
                           ScrollViewer.VerticalScrollBarVisibility="Visible"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                          AllowDrop="True"
-                          DragOver="ctlSearchGrid_DragOver"
-                          DragLeave="ctlSearchGrid_DragLeave"
-                          DragEnter="ctlSearchGrid_DragEnter"
-                          Drop="ctlSearchGrid_Drop">
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <ListView.Resources>
                         <ResourceDictionary>
                             <Style TargetType="{x:Type ListViewItem}"
@@ -207,30 +216,6 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
-
-                <Rectangle x:Name="ctlSearchDragDrop"
-                           Grid.Row="1"
-                           Grid.ColumnSpan="2"
-                           Width="76"
-                           Height="76"
-                           Visibility="Collapsed"
-                           AllowDrop="True"
-                           DragOver="ctlSearchGrid_DragOver"
-                           DragLeave="ctlSearchGrid_DragLeave"
-                           DragEnter="ctlSearchGrid_DragEnter"
-                           Drop="ctlSearchGrid_Drop">
-                    <Rectangle.Fill>
-                        <VisualBrush Stretch="Uniform">
-                            <VisualBrush.Visual>
-                                <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
-                                    <Path Width="36" Height="42" Canvas.Left="20" Canvas.Top="17" Stretch="Fill" Fill="{DynamicResource AccentColorBrush3}" Data="F1 M 20,17L 43.25,17L 56,29.75L 56,59L 20,59L 20,17 Z M 24,21L 24,55L 52,55L 52,34L 39,34L 39,21L 24,21 Z M 43,22.25L 43,30L 50.75,30L 43,22.25 Z M 30,33L 34,33L 34,41.5L 37,38.5L 37,43.25L 32,48.25L 27,42.75L 27,38.5L 30,41.5L 30,33 Z M 38,49L 38,53L 26,53L 26,49L 38,49 Z "/>
-                                </Canvas>
-                            </VisualBrush.Visual>
-                        </VisualBrush>
-                    </Rectangle.Fill>
-                    
-                </Rectangle>
-                
             </Grid>
         </TabItem>
 
@@ -239,7 +224,8 @@
                 <DataTemplate>
                     <Viewbox Width="38"
                              Height="38"
-                             ToolTip="검색 기록">
+                             ToolTip="검색 기록"
+                             IsHitTestVisible="False">
                         <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
                             <Path Width="38" Height="30" Canvas.Left="19" Canvas.Top="23" Stretch="Fill" Fill="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Path=(TextElement.Foreground)}" Data="F1 M 19,23L 27,23L 27,31L 19,31L 19,23 Z M 19,34L 27,34L 27,42L 19,42L 19,34 Z M 31,23L 57,23L 57,31L 31,31L 31,23 Z M 19,45L 27,45L 27,53L 19,53L 19,45 Z M 31,34L 57,34L 57,42L 31,42L 31,34 Z M 31,45L 57,45L 57,53L 31,53L 31,45 Z "/>
                         </Canvas>
@@ -325,7 +311,8 @@
                 <DataTemplate>
                     <Viewbox Width="38"
                              Height="38"
-                             ToolTip="검색 기록">
+                             ToolTip="검색 기록"
+                             IsHitTestVisible="False">
                         <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
                             <Path Width="38.9239" Height="38.9239" Canvas.Left="18.538" Canvas.Top="18.5381" Stretch="Fill" Fill="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Path=(TextElement.Foreground)}" Data="F1 M 38,23.5C 38.8643,23.5 39.7109,23.5756 40.5337,23.7206L 42.6275,18.5381L 48.1901,20.787L 46.0964,25.9692C 47.6473,27.0149 48.9851,28.3527 50.0308,29.9036L 55.213,27.8099L 57.4619,33.3725L 52.2794,35.4664C 52.4244,36.2891 52.5,37.1357 52.5,38C 52.5,38.8643 52.4244,39.7109 52.2794,40.5337L 57.4619,42.6275L 55.213,48.1901L 50.0308,46.0964C 49.0795,47.5073 47.8865,48.7418 46.5112,49.7405L 48.7844,54.8462L 43.3041,57.2891L 41.0307,52.1828C 40.0533,52.3906 39.0394,52.5 38,52.5C 37.1357,52.5 36.2891,52.4244 35.4664,52.2794L 33.3725,57.462L 27.8099,55.213L 29.9036,50.0309C 28.3527,48.9851 27.0149,47.6473 25.9691,46.0964L 20.787,48.1901L 18.538,42.6275L 23.7206,40.5336C 23.5756,39.7109 23.5,38.8643 23.5,38C 23.5,37.1357 23.5756,36.2891 23.7206,35.4664L 18.538,33.3725L 20.787,27.8099L 25.9691,29.9036C 26.9205,28.4927 28.1135,27.2582 29.4889,26.2594L 27.2157,21.1537L 32.6959,18.7109L 34.9694,23.8172C 35.9468,23.6094 36.9606,23.5 38,23.5 Z M 38,28C 32.4771,28 28,32.4772 28,38C 28,43.5229 32.4771,48 38,48C 43.5228,48 48,43.5229 48,38C 48,32.4772 43.5228,28 38,28 Z "/>
                         </Canvas>

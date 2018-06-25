@@ -9,7 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using DaruDaru.Marumaru;
 using DaruDaru.Marumaru.ComicInfo;
 using MahApps.Metro.Controls;
@@ -21,10 +23,13 @@ namespace DaruDaru.Core.Windows
     internal partial class MainWindow : MetroWindow, IMainWindow
     {
         private readonly ObservableCollection<Comic> m_queue = new ObservableCollection<Comic>();
+        private readonly Adorner m_dragDropAdorner;
 
         public MainWindow()
         {
             InitializeComponent();
+            
+            this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
 
             CrashReport.Init();
 
@@ -441,12 +446,19 @@ namespace DaruDaru.Core.Windows
 
         #region Drag Drop
 
+        private bool m_dragDropAdornerEnabled = false;
+        private void SetDragDropAdnorner(bool value)
+        {
+            if (this.m_dragDropAdornerEnabled == value)
+                return;
+
+            if (value) AdornerLayer.GetAdornerLayer(this.ctlTab).Add   (this.m_dragDropAdorner);
+            else       AdornerLayer.GetAdornerLayer(this.ctlTab).Remove(this.m_dragDropAdorner);
+
+            this.m_dragDropAdornerEnabled = value;
+        }
         private void ctlSearchGrid_DragEnter(object sender, DragEventArgs e)
         {
-#if DEBUG
-            Debug.WriteLine(string.Join(", ", e.Data.GetFormats()));
-#endif
-
             var succ = false;
 
             if (e.Data.GetDataPresent(DataFormats.FileDrop) && e.Data.GetData(DataFormats.FileDrop) is string[] files)
@@ -462,7 +474,7 @@ namespace DaruDaru.Core.Windows
             {
                 e.Effects = DragDropEffects.All & e.AllowedEffects;
                 if (e.Effects != DragDropEffects.None)
-                    this.ctlSearchDragDrop.Visibility = Visibility.Visible;
+                    SetDragDropAdnorner(true);
             }
         }
 
@@ -473,7 +485,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlSearchGrid_DragLeave(object sender, DragEventArgs e)
         {
-            this.ctlSearchDragDrop.Visibility = Visibility.Collapsed;
+            SetDragDropAdnorner(false);
         }
 
         private void ctlSearchGrid_Drop(object sender, DragEventArgs e)
@@ -506,7 +518,7 @@ namespace DaruDaru.Core.Windows
                     this.SearchUrl(false, url, null);
             }
 
-            this.ctlSearchDragDrop.Visibility = Visibility.Collapsed;
+            SetDragDropAdnorner(false);
         }
 
         private static string GetStringFromMemoryStream(IDataObject e, string dataFormat)
