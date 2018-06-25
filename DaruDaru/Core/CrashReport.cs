@@ -24,9 +24,6 @@ namespace DaruDaru.Core
 
         public static void Error(Exception ex)
         {
-#if DEBUG
-            throw ex;
-#else
             var ev = new SharpRaven.Data.SentryEvent(ex)
             {
                 Level = SharpRaven.Data.ErrorLevel.Error
@@ -37,8 +34,6 @@ namespace DaruDaru.Core
             ev.Tags.Add("NET",  Environment.Version.ToString());
 
             ravenClient.CaptureAsync(ev);
-#endif
-
         }
     }
 }
