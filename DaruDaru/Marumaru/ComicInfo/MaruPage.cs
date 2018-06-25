@@ -10,8 +10,6 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class MaruPage : Comic
     {
-        private static readonly string ShortcutDir = Path.Combine(App.BaseDirectory, "마루마루");
-
         public MaruPage(IMainWindow mainWindow, bool fromSearch, bool addNewOnly, string url, string comicName)
             : base(mainWindow, fromSearch, addNewOnly, url, comicName)
         {
@@ -71,8 +69,8 @@ namespace DaruDaru.Marumaru.ComicInfo
             try
             {
                 // Create Shortcut
-                Directory.CreateDirectory(ShortcutDir);
-                File.WriteAllText(Path.Combine(ShortcutDir, $"{ReplaceInvalid(this.ComicName)}.url"), $"[InternetShortcut]\r\nURL=" + this.Url);
+                Directory.CreateDirectory(App.BaseDirectory);
+                File.WriteAllText(Path.Combine(App.BaseDirectory, $"{ReplaceInvalid(this.ComicName)}.url"), $"[InternetShortcut]\r\nURL=" + this.Url);
 
                 IEnumerable<WasabisyrupLinks> items = lstArchives;
 
