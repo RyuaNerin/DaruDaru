@@ -444,7 +444,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlRecentRemoveItem_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlSearch.SelectedItems.Count == 0)
+            if (this.ctlRecent.SelectedItems.Count == 0)
                 return;
 
             var items = this.ctlRecent.SelectedItems.Cast<SearchLogEntry>()
