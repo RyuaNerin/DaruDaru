@@ -320,6 +320,9 @@
                     <Button Content="다운로드 기록 삭제"
                             Margin="0 5 0 5"
                             Click="ctlConfigClearDownload_Click" />
+
+                    <Button Content="test"
+                            Click="Button_Click" />
                 </StackPanel>
             </ScrollViewer>
         </TabItem>

@@ -31,12 +31,12 @@ namespace DaruDaru.Core.Windows
         {
             InitializeComponent();
 
+            CrashReport.Init();
+
             this.TaskbarItemInfo = new TaskbarItemInfo();
 
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
-
-            CrashReport.Init();
-
+            
             this.ctlSearch.ItemsSource = this.m_queue;
             this.ctlRecent.ItemsSource = SearchLog.Collection;
             
@@ -662,6 +662,24 @@ namespace DaruDaru.Core.Windows
             {
                 this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
                 this.TaskbarItemInfo.ProgressValue = val / max;
+            }
+        }
+
+        public string GetProtectedCookie(string url)
+        {
+            return null;
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Recaptcha(this, "@@@@@");
+
+            await this.ShowMetroDialogAsync(dlg);
+            await dlg.WaitUntilUnloadedAsync();
+
+            if (dlg.Result == Recaptcha.Results.CookieExisted)
+            {
+                await this.ShowMessageAsync(null, "IE / Edge 의 쿠키를 비워주시고 재 실행해주세요!");
             }
         }
     }

@@ -10,5 +10,7 @@ namespace DaruDaru.Core.Windows
         void WakeDownloader();
 
         void UpdateTaskbarProgress();
+
+        string GetProtectedCookie(string url);
     }
 }
