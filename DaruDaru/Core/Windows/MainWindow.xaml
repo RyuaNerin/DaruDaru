@@ -5,9 +5,7 @@
                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    xmlns:s="clr-namespace:System;assembly=mscorlib"
-                   xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                    xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-                   xmlns:behaviours="http://metro.mahapps.com/winfx/xaml/shared"
                    xmlns:cv="clr-namespace:DaruDaru.Core.Converters"
                    xmlns:c="clr-namespace:DaruDaru.Core"
                    mc:Ignorable="d"
@@ -23,11 +21,6 @@
                    Drop="ctlSearchGrid_Drop"
                    WindowStartupLocation="CenterScreen"
                    Loaded="MetroWindow_Loaded">
-    <i:Interaction.Behaviors>
-        <behaviours:BorderlessWindowBehavior />
-        <behaviours:GlowWindowBehavior />
-    </i:Interaction.Behaviors>
-
     <metro:MetroWindow.Resources>
         <ResourceDictionary>
             <FontFamily x:Key="DefaultFont">Malgun Gothic</FontFamily>
