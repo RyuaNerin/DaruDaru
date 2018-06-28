@@ -169,10 +169,10 @@ namespace DaruDaru.Core.Windows
             public static string GetCookies(Uri uri)
             {
                 int size = 0;
-                InternetGetCookieEx(uri.ToString(), null, null, ref size, InternetCookieHttponly, IntPtr.Zero);
+                InternetGetCookieEx(uri.AbsoluteUri, null, null, ref size, InternetCookieHttponly, IntPtr.Zero);
 
                 var sb = new StringBuilder(size);
-                if (InternetGetCookieEx(uri.ToString(), null, sb, ref size, InternetCookieHttponly, IntPtr.Zero))
+                if (InternetGetCookieEx(uri.AbsoluteUri, null, sb, ref size, InternetCookieHttponly, IntPtr.Zero))
                 {
                     var cookies = new CookieContainer();
                     cookies.SetCookies(uri, sb.ToString().Replace(';', ','));

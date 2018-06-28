@@ -40,7 +40,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     string titleNo;
                     foreach (var a in doc.DocumentNode.SelectSingleNode("//div[@class='content']").SelectNodes(".//a[@href]"))
                     {
-                        var a_url = new Uri(baseUri, a.Attributes["href"].Value).ToString();
+                        var a_url = new Uri(baseUri, a.Attributes["href"].Value).AbsoluteUri;
 
                         var match = Regexes.RegexArchive.Match(a_url);
                         if (match.Success)

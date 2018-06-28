@@ -23,7 +23,7 @@ namespace DaruDaru.Marumaru
                 hreq.ContinueTimeout  = 5000;
 
                 if (string.IsNullOrWhiteSpace(hreq.Referer))
-                    hreq.Referer            = req.RequestUri.ToString();
+                    hreq.Referer            = req.RequestUri.AbsoluteUri;
 
                 hreq.UserAgent              = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.9600";
                 hreq.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;

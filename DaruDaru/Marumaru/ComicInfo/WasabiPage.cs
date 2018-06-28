@@ -20,7 +20,10 @@ namespace DaruDaru.Marumaru.ComicInfo
             this.ComicNoName = comicNoName;
 
             if (ArchiveLog.CheckDownloaded(this.ArchiveCode))
+            {
                 this.State = MaruComicState.Complete_2_Archived;
+                this.m_mainWindow.WakeDownloader();
+            }
         }
 
         private ImageInfomation[] m_images;
@@ -79,20 +82,21 @@ namespace DaruDaru.Marumaru.ComicInfo
                         return true;
                     }
 
-                    var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
-
-                    if (galleryTemplate == null)
+                    var imgs = doc.DocumentNode.SelectNodes("//img[@data-src]");
+                    if (imgs != null && imgs.Count > 0)
                     {
-                        foreach (var img in doc.DocumentNode.SelectNodes("//img[@data-src]"))
+                        foreach (var img in imgs)
                             lst.Add(new ImageInfomation
                             {
                                 Index = lst.Count + 1,
-                                ImageUrl = new Uri(baseUri, img.Attributes["data-src"].Value).ToString(),
+                                ImageUrl = new Uri(baseUri, img.Attributes["data-src"].Value).AbsoluteUri,
                                 TempPath = Path.GetTempFileName()
                             });
                     }
                     else
                     {
+                        var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
+
                         var sig = Uri.EscapeDataString(galleryTemplate.Attributes["data-signature"].Value);
                         var key = Uri.EscapeDataString(galleryTemplate.Attributes["data-key"].Value);
 
@@ -104,11 +108,11 @@ namespace DaruDaru.Marumaru.ComicInfo
                         if (json.Message != "ok" || json.Status != "ok")
                             return false;
 
-                        foreach (var img in json.sources)
+                        foreach (var img in json.Sources)
                             lst.Add(new ImageInfomation
                             {
                                 Index = lst.Count + 1,
-                                ImageUrl = new Uri(baseUri, img).ToString(),
+                                ImageUrl = new Uri(baseUri, img).AbsoluteUri,
                                 TempPath = Path.GetTempFileName()
                             });
                     }
@@ -130,7 +134,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 }
             }
 
-            this.Url = baseUri.ToString();
+            this.Url = baseUri.AbsoluteUri;
 
             this.ProgressValue = 0;
             this.ProgressMaximum = lst.Count;
@@ -329,7 +333,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string Message { get; set; }
 
             [JsonProperty("sources")]
-            public string[] sources { get; set; }
+            public string[] Sources { get; set; }
 
             [JsonProperty("status")]
             public string Status { get; set; }
