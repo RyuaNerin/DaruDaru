@@ -40,12 +40,12 @@ namespace DaruDaru.Core.Windows
             this.ctlSearch.ItemsSource = this.m_queue;
             this.ctlRecent.ItemsSource = SearchLog.Collection;
 
-            var p = 1;// Environment.ProcessorCount;
+            var p = Environment.ProcessorCount;
 
             ThreadPool.SetMinThreads(p * 2, p);
 
-            for (int i = 0; i < p; ++i) Task.Factory.StartNew(this.Worker_Infomation, i, TaskCreationOptions.LongRunning);
-            for (int i = 0; i < p; ++i) Task.Factory.StartNew(this.Worker_Download  , i, TaskCreationOptions.LongRunning);
+            for (int i = 0; i < p; ++i) Task.Factory.StartNew(this.Worker_Infomation, TaskCreationOptions.LongRunning);
+            for (int i = 0; i < p; ++i) Task.Factory.StartNew(this.Worker_Download  , TaskCreationOptions.LongRunning);
 
             this.m_queue.CollectionChanged += (ls, le) =>
             {
@@ -229,9 +229,8 @@ namespace DaruDaru.Core.Windows
 
             return false;
         }
-        private void Worker_Infomation(object othreadId)
+        private void Worker_Infomation()
         {
-            int threadId = (int)othreadId;
             Comic comic = null;
             
             while (true)
@@ -245,9 +244,8 @@ namespace DaruDaru.Core.Windows
                     this.m_eventQueue.WaitOne();
             }
         }
-        private void Worker_Download(object othreadId)
+        private void Worker_Download()
         {
-            int threadId = (int)othreadId;
             Comic comic = null;
 
             while (true)
