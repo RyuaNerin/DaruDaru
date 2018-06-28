@@ -87,7 +87,7 @@
             <Style TargetType="{x:Type Dialogs:MessageDialog}"
                    BasedOn="{StaticResource NewCustomMessageDialogStyle}" />
 
-            <Style TargetType="{x:Type Dialogs:CustomDialog}"
+            <Style TargetType="{x:Type Dialogs:InputDialog}"
                    BasedOn="{StaticResource NewCustomMessageDialogStyle}" />
         </ResourceDictionary>
     </Application.Resources>

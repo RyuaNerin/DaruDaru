@@ -8,6 +8,7 @@ using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
+using Newtonsoft.Json;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
@@ -53,7 +54,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             using (var wc = new WebClientEx())
             {
                 var doc = new HtmlDocument();
-
+                
                 var success = Retry(() =>
                 {
                     wc.Headers.Set(HttpRequestHeader.Referer, this.Url);
@@ -74,17 +75,44 @@ namespace DaruDaru.Marumaru.ComicInfo
                     // 암호걸린 파일
                     if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
                     {
-                        lst.Add(new ImageInfomation { ImageUrl = null });
+                        lst.Add(null);
                         return true;
                     }
 
-                    foreach (var img in doc.DocumentNode.SelectNodes("//img[@data-src]"))
-                        lst.Add(new ImageInfomation
-                        {
-                            Index = lst.Count + 1,
-                            ImageUrl = new Uri(baseUri, img.Attributes["data-src"].Value).ToString(),
-                            TempPath = Path.GetTempFileName()
-                        });
+                    var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
+
+                    if (galleryTemplate == null)
+                    {
+                        foreach (var img in doc.DocumentNode.SelectNodes("//img[@data-src]"))
+                            lst.Add(new ImageInfomation
+                            {
+                                Index = lst.Count + 1,
+                                ImageUrl = new Uri(baseUri, img.Attributes["data-src"].Value).ToString(),
+                                TempPath = Path.GetTempFileName()
+                            });
+                    }
+                    else
+                    {
+                        var sig = Uri.EscapeDataString(galleryTemplate.Attributes["data-signature"].Value);
+                        var key = Uri.EscapeDataString(galleryTemplate.Attributes["data-key"].Value);
+
+                        wc.Headers.Set(HttpRequestHeader.Referer, this.Url);
+                        var jsonDoc = wc.DownloadString($"http://wasabisyrup.com/assets/{this.ArchiveCode}/1.json?signature={sig}&key={key}");
+
+                        var json = JsonConvert.DeserializeObject<Assets>(jsonDoc);
+
+                        if (json.Message != "ok" || json.Status != "ok")
+                            return false;
+
+                        foreach (var img in json.sources)
+                            lst.Add(new ImageInfomation
+                            {
+                                Index = lst.Count + 1,
+                                ImageUrl = new Uri(baseUri, img).ToString(),
+                                TempPath = Path.GetTempFileName()
+                            });
+                    }
+
 
                     return true;
                 });
@@ -95,7 +123,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     return;
                 }
 
-                if (lst.Count == 1 && lst[0].ImageUrl == null)
+                if (lst.Count == 1 && lst[0] == null)
                 {
                     this.State = MaruComicState.Error_2_Protected;
                     return;
@@ -293,6 +321,18 @@ namespace DaruDaru.Marumaru.ComicInfo
             if (spd > 1000 * 1024) return (spd / 1024 / 1024).ToString("##0.0 \" MiB\"") + footer;
             if (spd > 1000       ) return (spd / 1024       ).ToString("##0.0 \" KiB\"") + footer;
                                    return (spd              ).ToString("##0.0 \" B\""  ) + footer;
+        }
+
+        private class Assets
+        {
+            [JsonProperty("message")]
+            public string Message { get; set; }
+
+            [JsonProperty("sources")]
+            public string[] sources { get; set; }
+
+            [JsonProperty("status")]
+            public string Status { get; set; }
         }
     }
 }

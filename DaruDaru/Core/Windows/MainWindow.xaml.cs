@@ -39,8 +39,8 @@ namespace DaruDaru.Core.Windows
             
             this.ctlSearch.ItemsSource = this.m_queue;
             this.ctlRecent.ItemsSource = SearchLog.Collection;
-            
-            var p = Environment.ProcessorCount;
+
+            var p = 1;// Environment.ProcessorCount;
 
             ThreadPool.SetMinThreads(p * 2, p);
 
@@ -132,6 +132,28 @@ namespace DaruDaru.Core.Windows
         public void WakeDownloader()
         {
             this.m_eventDownload.Set();
+        }
+
+        public void UpdateTaskbarProgress()
+        {
+            double max = 0;
+            double val = 0;
+
+            lock (this.m_queue)
+            {
+                max = this.m_queue.Count;
+                val = this.m_queue.Count(le => le.IsComplete || le.IsError);
+            }
+
+            if (val == max)
+            {
+                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
+            }
+            else
+            {
+                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
+                this.TaskbarItemInfo.ProgressValue = val / max;
+            }
         }
 
         private void ctlSearchUrl_KeyDown(object sender, KeyEventArgs e)
@@ -585,6 +607,25 @@ namespace DaruDaru.Core.Windows
 
         #region Config
 
+        private async void ShowMessage(string title, string text, int timeOut)
+        {
+            using (var ct = new CancellationTokenSource())
+            {
+                var setting = new MetroDialogSettings
+                {
+                    CancellationToken = ct.Token
+                };
+
+                var date = DateTime.Now.AddMilliseconds(timeOut);
+                var dialog = this.ShowMessageAsync(title, text, MessageDialogStyle.Affirmative, setting);
+
+                await Task.Factory.StartNew(() => dialog.Wait(date - DateTime.Now));
+
+                if (!dialog.IsCompleted && !dialog.IsCanceled)
+                    ct.Cancel();
+            }
+        }
+
         private async void ctlConfigClearSearchLog_Click(object sender, RoutedEventArgs e)
         {
             var setting = new MetroDialogSettings
@@ -620,67 +661,48 @@ namespace DaruDaru.Core.Windows
                 ShowMessage(null, "다운로드 기록을 삭제했어요.", 5000);
             }
         }
-
-        private async void ShowMessage(string title, string text, int timeOut)
+        
+        private async void ctlConfigDownloadProtected_Click(object sender, RoutedEventArgs e)
         {
-            using (var ct = new CancellationTokenSource())
+            var url = await this.ShowInputAsync(null, "보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)");
+
+            if (string.IsNullOrWhiteSpace(url) || !Regexes.RegexArchive.IsMatch(url))
             {
-                var setting = new MetroDialogSettings
-                {
-                    CancellationToken = ct.Token
-                };
-
-                var date = DateTime.Now.AddMilliseconds(timeOut);
-                var dialog = this.ShowMessageAsync(title, text, MessageDialogStyle.Affirmative, setting);
-
-                await Task.Factory.StartNew(() => dialog.Wait(date - DateTime.Now));
-
-                if (!dialog.IsCompleted && !dialog.IsCanceled)
-                    ct.Cancel();
+                this.ShowMessage(null, "주소를 확인해주세요", 5000);
+                this.ctlConfigDownloadProtected.IsChecked = false;
+                return;
             }
 
+            var wnd = new Recaptcha(url)
+            {
+                Owner = this
+            };
+
+            wnd.ShowDialog();
+
+            if (wnd.RecaptchaResult == Recaptcha.Result.Canceled)
+            {
+                this.ctlConfigDownloadProtected.IsChecked = false;
+                return;
+            }
+
+            if (wnd.RecaptchaResult == Recaptcha.Result.NonProtected)
+            {
+                this.ShowMessage(null, "보호된 만화 링크를 입력해주세요", 5000);
+                this.ctlConfigDownloadProtected.IsChecked = false;
+                return;
+            }
+
+            if (wnd.RecaptchaResult == Recaptcha.Result.UnknownError)
+            {
+                this.ShowMessage(null, "알 수 없는 오류가 발생하였습니다.", 5000);
+                this.ctlConfigDownloadProtected.IsChecked = false;
+                return;
+            }
+
+            this.ctlConfigDownloadProtected.IsEnabled = false;
         }
 
         #endregion
-
-        public void UpdateTaskbarProgress()
-        {
-            double max = 0;
-            double val = 0;
-
-            lock (this.m_queue)
-            {
-                max = this.m_queue.Count;
-                val = this.m_queue.Count(le => le.IsComplete || le.IsError);
-            }
-
-            if (val == max)
-            {
-                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
-            }
-            else
-            {
-                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
-                this.TaskbarItemInfo.ProgressValue = val / max;
-            }
-        }
-
-        public string GetProtectedCookie(string url)
-        {
-            return null;
-        }
-
-        private async void Button_Click(object sender, RoutedEventArgs e)
-        {
-            var dlg = new Recaptcha(this, "@@@@@");
-
-            await this.ShowMetroDialogAsync(dlg);
-            await dlg.WaitUntilUnloadedAsync();
-
-            if (dlg.Result == Recaptcha.Results.CookieExisted)
-            {
-                await this.ShowMessageAsync(null, "IE / Edge 의 쿠키를 비워주시고 재 실행해주세요!");
-            }
-        }
     }
 }

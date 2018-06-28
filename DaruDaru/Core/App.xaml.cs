@@ -19,7 +19,7 @@ namespace DaruDaru.Core
 
             EnsureBrowserEmulationEnabled(Path.GetFileName(AppPath));
 
-            WebRequest.DefaultWebProxy = null;
+            //WebRequest.DefaultWebProxy = null;
 
             HttpWebRequest.DefaultCachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 

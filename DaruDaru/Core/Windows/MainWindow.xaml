@@ -308,22 +308,27 @@
 
             <ScrollViewer>
                 <StackPanel>
-                    <StackPanel.Resources>
-                        <Style TargetType="Button"
-                               BasedOn="{StaticResource MetroButton}">
-                            <Setter Property="Focusable" Value="False" />
-                        </Style>
-                    </StackPanel.Resources>
-                    <Button Content="검색 기록 삭제"
-                            Click="ctlConfigClearSearchLog_Click" />
-                    
-                    <Button Content="다운로드 기록 삭제"
-                            Margin="0 5 0 5"
-                            Click="ctlConfigClearDownload_Click" />
+                    <GroupBox Header="보호된 파일 다운로드"
+                              Margin="0 5 0 5">
+                        <metro:ToggleSwitch x:Name="ctlConfigDownloadProtected"
+                                            ContentDirection="RightToLeft"
+                                            OffLabel=""
+                                            OnLabel="활성화 됨"
+                                            Click="ctlConfigDownloadProtected_Click"/>
+                    </GroupBox>
 
-                    <Button Content="test"
-                            Click="Button_Click" />
+                    <GroupBox Header="기록 삭제">
+                        <StackPanel>
+                            <Button Content="검색 기록 삭제"
+                                    Click="ctlConfigClearSearchLog_Click" />
+
+                            <Button Content="다운로드 기록 삭제"
+                                    Margin="0 5 0 0"
+                                    Click="ctlConfigClearDownload_Click" />
+                        </StackPanel>
+                    </GroupBox>
                 </StackPanel>
+                
             </ScrollViewer>
         </TabItem>
     </TabControl>
