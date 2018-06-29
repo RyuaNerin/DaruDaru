@@ -113,12 +113,12 @@
                             </Style>
 
                             <cv:ProgressColorConverter x:Key="ProgressColorConverter"
-                                                       BrushNormal    ="#33119EDA"
-                                                       BrushCompete   ="#33008A00"
-                                                       BrushDownloaded="#3300ABA9"
-                                                       BrushNoNew     ="#33A4C400"
-                                                       BrushError     ="#33E51400"
-                                                       BrushProtected ="#33F472D0" />
+                                                       BrushNormal    ="#FFB6D2DE"
+                                                       BrushCompete   ="#FFB3CEB3"
+                                                       BrushDownloaded="#FFB3D5D5"
+                                                       BrushNoNew     ="#FFD4DAB3"
+                                                       BrushError     ="#FFE1B7B3"
+                                                       BrushProtected ="#FFE4CADC" />
                         </ResourceDictionary>
                     </ListView.Resources>
 
