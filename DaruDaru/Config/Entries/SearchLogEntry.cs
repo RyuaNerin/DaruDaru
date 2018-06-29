@@ -27,6 +27,7 @@ namespace DaruDaru.Marumaru.Entries
             {
                 this.m_url = value;
                 this.UrlHash = GetUrlHash(value);
+                this.InvokePropertyChanged("DisplayName");
             }
         }
 

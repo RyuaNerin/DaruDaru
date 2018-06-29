@@ -20,7 +20,9 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             this.ComicNoName = comicNoName;
 
-            if (ArchiveManager.CheckDownloaded(this.ArchiveCode))
+            if (!string.IsNullOrWhiteSpace(comicName) &&
+                !string.IsNullOrWhiteSpace(comicNoName) &&
+                ArchiveManager.CheckDownloaded(this.ArchiveCode))
             {
                 this.State = MaruComicState.Complete_2_Archived;
                 this.m_mainWindow.WakeDownloader();

@@ -75,7 +75,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     items = ArchiveManager.CheckNewUrl(items, e => WasabiPage.GetArchiveCode(e.Url));
 
                 var comics = items.Select(e => new WasabiPage(this.m_mainWindow, false, false, e.Url, this.ComicName, e.TitleNo)).ToArray();
-                var noNew = this.m_addNewOnly && comics.Length == 0;
+                var noNew = !(this.m_addNewOnly && comics.Length == 0);
 
                 this.m_mainWindow.InsertNewComic(this, comics, noNew);
 

@@ -114,9 +114,9 @@ namespace DaruDaru.Core.Windows
                 var index = this.m_queue.IndexOf(sender);
 
                 if (removeSender)
-                    index += 1;
-                else
                     this.m_queue.RemoveAt(index);
+                else
+                    index += 1;
 
                 foreach (var newItem in newItems)
                     if (this.CheckExisted(newItem.Url))
