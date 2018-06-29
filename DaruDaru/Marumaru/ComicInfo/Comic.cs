@@ -264,6 +264,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             this.StartDownloadPriv();
 
+            this.m_mainWindow.WakeDownloader();
             this.m_mainWindow.UpdateTaskbarProgress();
         }
         protected virtual void StartDownloadPriv()

@@ -151,15 +151,18 @@ namespace DaruDaru.Core.Windows
                 val = this.m_queue.Count(le => le.IsComplete || le.IsError);
             }
 
-            if (val == max)
+            this.Dispatcher.Invoke(() =>
             {
-                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
-            }
-            else
-            {
-                this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
-                this.TaskbarItemInfo.ProgressValue = val / max;
-            }
+                if (val == max)
+                {
+                    this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
+                }
+                else
+                {
+                    this.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
+                    this.TaskbarItemInfo.ProgressValue = val / max;
+                }
+            });
         }
 
         private void ctlSearchUrl_KeyDown(object sender, KeyEventArgs e)
