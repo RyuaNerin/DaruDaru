@@ -119,5 +119,44 @@ namespace DaruDaru.Config
                     item.Count = noCount;
             }
         }
+
+
+        public static void ChangeUrlUnsafe(string oldUrl, string newUrl)
+        {
+            Application.Current.Dispatcher.Invoke(new Action<string, string>(ChangeUrlSafe), oldUrl, newUrl);
+        }
+        public static void ChangeUrlSafe(string oldUri, string newUri)
+        {
+            var oldUrlHash = SearchLogEntry.GetUrlHash(oldUri);
+            var newUrlHash = SearchLogEntry.GetUrlHash(newUri);
+
+            SearchLogEntry item;
+
+            lock (Instance)
+            {
+                for (int i = 0; i < Instance.Count; ++i)
+                {
+                    item = Instance[i];
+
+                    if (item.UrlHash == newUrlHash)
+                    {
+                        // 새 주소가 이미 있으면 기존 주소 삭제
+                        Instance.RemoveAt(i);
+                        return;
+                    }
+                }
+
+                for (int i = 0; i < Instance.Count; ++i)
+                {
+                    item = Instance[i];
+
+                    if (item.UrlHash == oldUrlHash)
+                    {
+                        item.Url = newUri;
+                        return;
+                    }
+                }
+            }
+        }
     }
 }

@@ -28,9 +28,9 @@ namespace DaruDaru.Marumaru.ComicInfo
         Complete_2_Archived     = Complete + 2,
         Complete_3_NoNew        = Complete + 3,
 
-        Error_1_Error           = Error    + 2,
-        Error_2_Protected       = Error    + 1,
-
+        Error_1_Error           = Error    + 1,
+        Error_2_Protected       = Error    + 2,
+        Error_3_NotSupport      = Error    + 3,
     }
 
     internal abstract class Comic : INotifyPropertyChanged
@@ -40,7 +40,10 @@ namespace DaruDaru.Marumaru.ComicInfo
             if (Regexes.RegexArchive.IsMatch(url))
                 return new WasabiPage(mainWindow, true, addNewOnly, url, comicName, null);
 
-            return new MaruPage(mainWindow, true, addNewOnly, url, comicName);
+            if (Regexes.MarumaruRegex.IsMatch(url))
+                return new MaruPage(mainWindow, true, addNewOnly, url, comicName);
+
+            return new UnknownPage(mainWindow, true, addNewOnly, url, comicName);
         }
 
         private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
@@ -202,8 +205,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Complete_2_Archived:     return "저장됨";
                     case MaruComicState.Complete_3_NoNew:        return "새 작품 없음";
 
-                    case MaruComicState.Error_2_Protected:       return "보호됨";
                     case MaruComicState.Error_1_Error:           return "오류";
+                    case MaruComicState.Error_2_Protected:       return "보호됨";
+                    case MaruComicState.Error_3_NotSupport:      return "지원하지 않음";
                 }
 
                 return null;

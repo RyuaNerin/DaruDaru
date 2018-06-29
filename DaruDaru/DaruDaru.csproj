@@ -91,6 +91,7 @@
     <Compile Include="Config\ConfigManager.cs" />
     <Compile Include="Config\ConfigCur.cs" />
     <Compile Include="Config\Entries\SearchLogEntry.cs" />
+    <Compile Include="Marumaru\ComicInfo\UnknownPage.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
     <Compile Include="Utilities\GridViewSort.cs" />
     <Page Include="Core\Windows\MainWindow.xaml">

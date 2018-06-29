@@ -19,11 +19,19 @@ namespace DaruDaru.Marumaru.Entries
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
             => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        public string Url { get; set; }
+        private string m_url;
+        public string Url
+        {
+            get => this.m_url;
+            set
+            {
+                this.m_url = value;
+                this.UrlHash = GetUrlHash(value);
+            }
+        }
 
-        private string m_urlHash;
         [JsonIgnore]
-        public string UrlHash => this.m_urlHash ?? (this.m_urlHash = GetUrlHash(this.Url));
+        public string UrlHash { get; private set; }
 
         public static string GetUrlHash(string url)
         {
