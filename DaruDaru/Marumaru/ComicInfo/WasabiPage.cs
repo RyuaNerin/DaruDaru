@@ -167,6 +167,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                     this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.FilePath).Length);
 
                     this.State = MaruComicState.Complete_1_Downloaded;
+                    
+                    // 디렉토리 수정시간 업데이트
+                    Directory.SetLastWriteTime(this.FileDir, DateTime.Now);
                 }
                 else
                     this.State = MaruComicState.Complete_2_Archived;
