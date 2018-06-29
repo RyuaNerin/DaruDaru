@@ -131,5 +131,7 @@ namespace DaruDaru.Config
                         SearchLogManager.Instance.Add(item);
             }
         }
+
+        public string ProtectedUrl { get; set; }
     }
 }

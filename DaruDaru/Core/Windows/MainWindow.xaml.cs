@@ -717,7 +717,12 @@ namespace DaruDaru.Core.Windows
         
         private async void ctlConfigDownloadProtected_Click(object sender, RoutedEventArgs e)
         {
-            var url = await this.ShowInputAsync(null, "보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)");
+            var set = new MetroDialogSettings
+            {
+                DefaultText = ConfigManager.Instance.ProtectedUrl
+            };
+
+            var url = await this.ShowInputAsync(null, "보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)", set);
 
             if (string.IsNullOrWhiteSpace(url) || !Regexes.RegexArchive.IsMatch(url))
             {
@@ -752,6 +757,8 @@ namespace DaruDaru.Core.Windows
                 this.ctlConfigDownloadProtected.IsChecked = false;
                 return;
             }
+
+            ConfigManager.Instance.ProtectedUrl = url;
 
             this.ctlConfigDownloadProtected.IsEnabled = false;
         }
