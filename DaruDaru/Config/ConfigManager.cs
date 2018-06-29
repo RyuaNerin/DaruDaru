@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using DaruDaru.Core;
-using DaruDaru.Marumaru.Entry;
+using DaruDaru.Marumaru.Entries;
 using Newtonsoft.Json;
 
 namespace DaruDaru.Config

@@ -17,7 +17,7 @@ using System.Windows.Shell;
 using DaruDaru.Config;
 using DaruDaru.Marumaru;
 using DaruDaru.Marumaru.ComicInfo;
-using DaruDaru.Marumaru.Entry; 
+using DaruDaru.Marumaru.Entries; 
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;

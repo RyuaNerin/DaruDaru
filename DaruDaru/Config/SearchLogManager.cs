@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
-using DaruDaru.Marumaru.Entry;
+using DaruDaru.Marumaru.Entries;
 
 namespace DaruDaru.Config
 {

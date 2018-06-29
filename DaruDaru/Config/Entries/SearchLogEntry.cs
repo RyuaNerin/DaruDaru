@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
-namespace DaruDaru.Marumaru.Entry
+namespace DaruDaru.Marumaru.Entries
 {
     internal class SearchLogEntry : INotifyPropertyChanged
     {
