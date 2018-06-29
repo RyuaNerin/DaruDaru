@@ -7,7 +7,8 @@
                    xmlns:s="clr-namespace:System;assembly=mscorlib"
                    xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                    xmlns:cv="clr-namespace:DaruDaru.Core.Converters"
-                   xmlns:c="clr-namespace:DaruDaru.Core"
+                   xmlns:c="clr-namespace:DaruDaru.Utilities"
+                   xmlns:ns="http://schemas.nsuggest.com/wpf/xaml/nsuggest"
                    mc:Ignorable="d"
                    Title="DaruDaru"
                    Width="450"
@@ -34,6 +35,12 @@
 
                 <Setter Property="Height"
                         Value="24" />
+            </Style>
+
+            <Style TargetType="TextBox"
+                   BasedOn="{StaticResource MetroTextBox}">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
             </Style>
         </ResourceDictionary>
     </metro:MetroWindow.Resources>
@@ -105,31 +112,13 @@
                                              Handler="ctlSearchItem_MouseDoubleClick" />
                             </Style>
 
-                            <cv:ProgressColorConverter x:Key="ProgressColorConverter">
-                                <cv:ProgressColorConverter.BrushNormal>
-                                    <SolidColorBrush Color="#33119EDA" />
-                                </cv:ProgressColorConverter.BrushNormal>
-
-                                <cv:ProgressColorConverter.BrushCompete>
-                                    <SolidColorBrush Color="#33008A00" />
-                                </cv:ProgressColorConverter.BrushCompete>
-
-                                <cv:ProgressColorConverter.BrushDownloaded>
-                                    <SolidColorBrush Color="#3300ABA9" />
-                                </cv:ProgressColorConverter.BrushDownloaded>
-
-                                <cv:ProgressColorConverter.BrushNoNew>
-                                    <SolidColorBrush Color="#33A4C400" />
-                                </cv:ProgressColorConverter.BrushNoNew>
-
-                                <cv:ProgressColorConverter.BrushError>
-                                    <SolidColorBrush Color="#33E51400" />
-                                </cv:ProgressColorConverter.BrushError>
-
-                                <cv:ProgressColorConverter.BrushProtected>
-                                    <SolidColorBrush Color="#33F472D0" />
-                                </cv:ProgressColorConverter.BrushProtected>
-                            </cv:ProgressColorConverter>
+                            <cv:ProgressColorConverter x:Key="ProgressColorConverter"
+                                                       BrushNormal    ="#33119EDA"
+                                                       BrushCompete   ="#33008A00"
+                                                       BrushDownloaded="#3300ABA9"
+                                                       BrushNoNew     ="#33A4C400"
+                                                       BrushError     ="#33E51400"
+                                                       BrushProtected ="#33F472D0" />
                         </ResourceDictionary>
                     </ListView.Resources>
 
@@ -306,14 +295,111 @@
                 </DataTemplate>
             </TabItem.HeaderTemplate>
 
-            <ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Visible"
+                          Padding="0 5 0 5">
                 <StackPanel>
-                    <GroupBox Header="보호된 파일 다운로드"
-                              Margin="0 5 0 5">
+                    <StackPanel.Resources>
+                        <ResourceDictionary>
+                            <Style TargetType="Button"
+                                   BasedOn="{StaticResource MetroButton}">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="MinWidth" Value="50" />
+                            </Style>
+                            <Style TargetType="GroupBox"
+                                   BasedOn="{StaticResource MetroGroupBox}">
+                                <Setter Property="Margin" Value="0 0 5 5" />
+                            </Style>
+                            <Style TargetType="{x:Type metro:ToggleSwitch}">
+                                <Setter Property="OffLabel" Value="" />
+                                <Setter Property="OnLabel" Value="" />
+                            </Style>
+                        </ResourceDictionary>
+                    </StackPanel.Resources>
+                    
+                    <GroupBox Header="다운로드 폴더">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox x:Name="ctlConfigDownloadPath"
+                                     Text="{Binding Path=SavePath}"
+                                     VerticalContentAlignment="Center"
+                                     Margin="0 0 5 0"
+                                     IsReadOnly="True" />
+
+                            <Button Grid.Column="1"
+                                    Content="선택"
+                                    Margin="0 0 5 0"
+                                    Click="ctlConfigDownloadPathSelect_Click" />
+
+                            <Button Grid.Column="2"
+                                    Content="열기"
+                                    Margin="0 0 5 0"
+                                    Click="ctlConfigDownloadPathOpen_Click" />
+
+                            <Button Grid.Column="3"
+                                    Content="기본값"
+                                    Click="ctlConfigDownloadPathDefault_Click" />
+                        </Grid>
+                    </GroupBox>
+                    
+                    <GroupBox Header="검색한 주소 링크 생성">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <metro:ToggleSwitch Grid.ColumnSpan="2"
+                                                x:Name="ctlConfigLinkCreate"
+                                                ContentDirection="RightToLeft"
+                                                IsChecked="{Binding Path=CreateUrlLink, Mode=TwoWay}"
+                                                Padding="0"
+                                                Margin="0 0 0 5" />
+
+                            <TextBox Grid.Row="1"
+                                     x:Name="ctlConfigLinkPath"                                     
+                                     Text="{Binding Path=UrlLinkPath}"
+                                     IsEnabled="{Binding Path=CreateUrlLink, Mode=OneWay}"
+                                     VerticalContentAlignment="Center"
+                                     Margin="0 0 5 0"
+                                     IsReadOnly="True" />
+
+                            <Button Grid.Row="1"
+                                    Grid.Column="1"
+                                    Content="선택"
+                                    Margin="0 0 5 0"
+                                    IsEnabled="{Binding Path=CreateUrlLink, Mode=OneWay}"
+                                    Click="ctlConfigLinkPathSelect_Click" />
+
+                            <Button Grid.Row="1"
+                                    Grid.Column="2"
+                                    Content="선택"
+                                    Margin="0 0 5 0"
+                                    IsEnabled="{Binding Path=CreateUrlLink, Mode=OneWay}"
+                                    Click="ctlConfigLinkPathSelect_Click" />
+
+                            <Button Grid.Row="1"
+                                    Grid.Column="3"
+                                    Content="기본값"
+                                    IsEnabled="{Binding Path=CreateUrlLink, Mode=OneWay}"
+                                    Click="ctlConfigLinkPathDefault_Click" />
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="보호된 파일 다운로드">
                         <metro:ToggleSwitch x:Name="ctlConfigDownloadProtected"
                                             ContentDirection="RightToLeft"
-                                            OffLabel=""
-                                            OnLabel="활성화 됨"
                                             Click="ctlConfigDownloadProtected_Click"/>
                     </GroupBox>
 
@@ -327,6 +413,10 @@
                                     Click="ctlConfigClearDownload_Click" />
                         </StackPanel>
                     </GroupBox>
+
+                    <TextBlock Text="CopyRight (C) By RyuaNerin"
+                               HorizontalAlignment="Stretch"
+                               TextAlignment="Center" />
                 </StackPanel>
                 
             </ScrollViewer>

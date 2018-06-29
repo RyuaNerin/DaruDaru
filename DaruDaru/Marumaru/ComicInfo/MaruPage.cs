@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using HtmlAgilityPack;
@@ -21,7 +22,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string TitleNo;
         }
 
-        protected override void GetInfomationPriv(ref int count)
+        protected override bool GetInfomationPriv(ref int count)
         {
             var lstArchives = new List<WasabisyrupLinks>();
 
@@ -62,20 +63,16 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (!success || lstArchives.Count == 0)
                 {
                     this.State = MaruComicState.Error_1_Error;
-                    return;
+                    return false;
                 }
             }
 
             try
             {
-                // Create Shortcut
-                Directory.CreateDirectory(App.BaseDirectory);
-                File.WriteAllText(Path.Combine(App.BaseDirectory, $"{ReplaceInvalid(this.ComicName)}.url"), $"[InternetShortcut]\r\nURL=" + this.Url);
-
                 IEnumerable<WasabisyrupLinks> items = lstArchives;
 
                 if (this.m_addNewOnly)
-                    items = ArchiveLog.CheckNewUrl(items, e => WasabiPage.GetArchiveCode(e.Url));
+                    items = ArchiveManager.CheckNewUrl(items, e => WasabiPage.GetArchiveCode(e.Url));
 
                 var comics = items.Select(e => new WasabiPage(this.m_mainWindow, false, false, e.Url, this.ComicName, e.TitleNo)).ToArray();
                 var noNew = this.m_addNewOnly && comics.Length == 0;
@@ -86,6 +83,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                     this.State = MaruComicState.Complete_3_NoNew;
 
                 count = lstArchives.Count;
+
+                return count > 0;
             }
             catch (Exception ex)
             {
@@ -93,6 +92,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 CrashReport.Error(ex);
             }
+
+            return false;
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace DaruDaru.Core
+namespace DaruDaru.Utilities
 {
     internal enum SortDirection
     {

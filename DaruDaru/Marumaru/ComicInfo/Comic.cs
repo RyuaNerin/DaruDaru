@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 
@@ -84,6 +85,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         public Comic(IMainWindow mainWindow, bool fromSearch, bool addNewOnly, string url, string comicName)
         {
+            this.m_cur = ConfigManager.Cur;
+
             this.m_mainWindow = mainWindow;
             this.m_fromSearch = fromSearch;
             this.m_addNewOnly = addNewOnly;
@@ -92,6 +95,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             this.Url          = url;
         }
 
+        protected readonly ConfigCur m_cur;
         protected readonly IMainWindow m_mainWindow;
         protected readonly bool m_fromSearch;
         protected readonly bool m_addNewOnly;
@@ -221,7 +225,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {            
             if (!this.IsRunning)
             {
-                ArchiveLog.Remove(WasabiPage.GetArchiveCode(this.Url));
+                ArchiveManager.Remove(WasabiPage.GetArchiveCode(this.Url));
 
                 this.SpeedOrFileSize = null;
 
@@ -236,15 +240,25 @@ namespace DaruDaru.Marumaru.ComicInfo
         public void GetInfomation()
         {
             int count = -1;
-            this.GetInfomationPriv(ref count);
+            if (this.GetInfomationPriv(ref count))
+            {
+                if (this.m_fromSearch)
+                {
+                    SearchLogManager.UpdateUnsafe(false, this.Url, this.ComicName, count);
 
-            if (this.m_fromSearch)
-                SearchLog.UpdateUnsafe(false, this.Url, this.ComicName, count);
+                    // Create Shortcut 
+                    if (this.m_cur.CreateUrlLink)
+                    {
+                        Directory.CreateDirectory(this.m_cur.UrlLinkPath);
+                        File.WriteAllText(Path.Combine(this.m_cur.UrlLinkPath, $"{ReplaceInvalid(this.ComicName)}.url"), $"[InternetShortcut]\r\nURL=" + this.Url);
+                    }
+                }
+            }
 
             this.m_mainWindow.WakeDownloader();
         }
 
-        protected abstract void GetInfomationPriv(ref int count);
+        protected abstract bool GetInfomationPriv(ref int count);
 
         public void StartDownload()
         {

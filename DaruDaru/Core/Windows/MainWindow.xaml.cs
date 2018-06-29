@@ -14,11 +14,15 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
+using DaruDaru.Config;
 using DaruDaru.Marumaru;
 using DaruDaru.Marumaru.ComicInfo;
+using DaruDaru.Marumaru.Entry; 
+using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
+using WinForms = System.Windows.Forms;
 
 namespace DaruDaru.Core.Windows
 {
@@ -31,6 +35,8 @@ namespace DaruDaru.Core.Windows
         {
             InitializeComponent();
 
+            this.DataContext = ConfigManager.Instance;
+
             CrashReport.Init();
 
             this.TaskbarItemInfo = new TaskbarItemInfo();
@@ -38,7 +44,7 @@ namespace DaruDaru.Core.Windows
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
             
             this.ctlSearch.ItemsSource = this.m_queue;
-            this.ctlRecent.ItemsSource = SearchLog.Collection;
+            this.ctlRecent.ItemsSource = SearchLogManager.Instance;
 
             var p = Environment.ProcessorCount;
 
@@ -73,7 +79,7 @@ namespace DaruDaru.Core.Windows
                 if (this.CheckExisted(url))
                     this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, url, comicName));
 
-            SearchLog.UpdateSafe(true, url, null, -1);
+            SearchLogManager.UpdateSafe(true, url, null, -1);
             this.m_eventQueue.Set();
         }
         public void SearchUrl<T>(bool addNewOnly, IEnumerable<T> src, Func<T, string> toUrl, Func<T, string> toComicName)
@@ -92,7 +98,7 @@ namespace DaruDaru.Core.Windows
                 }
             }
 
-            SearchLog.UpdateSafe(true, src, toUrl, toComicName, null);
+            SearchLogManager.UpdateSafe(true, src, toUrl, toComicName, null);
 
             this.m_eventQueue.Set();
         }
@@ -479,9 +485,9 @@ namespace DaruDaru.Core.Windows
             var items = this.ctlRecent.SelectedItems.Cast<SearchLogEntry>()
                                                     .ToArray();
 
-            lock (SearchLog.Collection)
+            lock (SearchLogManager.Instance)
                 foreach (var item in items)
-                    SearchLog.Collection.Remove(item);
+                    SearchLogManager.Instance.Remove(item);
         }
 
         private void ctlRecentRemoveAll_Click(object sender, RoutedEventArgs e)
@@ -624,6 +630,53 @@ namespace DaruDaru.Core.Windows
             }
         }
 
+        private static string ShowDirectory(string curPath)
+        {
+            using (var fsd = new WinForms.FolderBrowserDialog())
+            {
+                fsd.SelectedPath = curPath;
+
+                if (fsd.ShowDialog() == WinForms.DialogResult.OK)
+                    return curPath;
+            }
+
+            return null;
+        }
+
+        private void ctlConfigDownloadPathSelect_Click(object sender, RoutedEventArgs e)
+        {
+            var dir = ShowDirectory(ConfigManager.Instance.SavePath);
+            if (dir != null)
+                ConfigManager.Instance.SavePath = dir;
+        }
+
+        private void ctlConfigDownloadPathOpen_Click(object sender, RoutedEventArgs e)
+        {
+            StartProcess(ConfigManager.Instance.SavePath);
+        }
+
+        private void ctlConfigDownloadPathDefault_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigManager.Instance.SavePath = ConfigManager.DefaultSavePath;
+        }
+
+        private void ctlConfigLinkPathSelect_Click(object sender, RoutedEventArgs e)
+        {
+            var dir = ShowDirectory(ConfigManager.Instance.UrlLinkPath);
+            if (dir != null)
+                ConfigManager.Instance.UrlLinkPath = dir;
+        }
+
+        private void ctlConfigLinkPathOpen_Click(object sender, RoutedEventArgs e)
+        {
+            StartProcess(ConfigManager.Instance.UrlLinkPath);
+        }
+
+        private void ctlConfigLinkPathDefault_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigManager.Instance.SavePath = ConfigManager.DefaultSavePath;
+        }
+
         private async void ctlConfigClearSearchLog_Click(object sender, RoutedEventArgs e)
         {
             var setting = new MetroDialogSettings
@@ -636,7 +689,8 @@ namespace DaruDaru.Core.Windows
             if (await this.ShowMessageAsync(null, "모든 검색 기록을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
                 == MessageDialogResult.Affirmative)
             {
-                SearchLog.Clear();
+                SearchLogManager.Clear();
+                ConfigManager.Save();
 
                 ShowMessage(null, "검색 기록을 삭제했어요.", 5000);
             }
@@ -654,7 +708,8 @@ namespace DaruDaru.Core.Windows
             if (await this.ShowMessageAsync(null, "모든 다운로드 기록을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
                 == MessageDialogResult.Affirmative)
             {
-                ArchiveLog.Clear();
+                ArchiveManager.Clear();
+                ConfigManager.Save();
 
                 ShowMessage(null, "다운로드 기록을 삭제했어요.", 5000);
             }

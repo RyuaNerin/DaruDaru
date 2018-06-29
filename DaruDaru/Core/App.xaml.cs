@@ -2,7 +2,7 @@ using System.IO;
 using System.Net;
 using System.Net.Cache;
 using System.Windows;
-using DaruDaru.Marumaru;
+using DaruDaru.Config;
 using Microsoft.Win32;
 
 namespace DaruDaru.Core
@@ -10,14 +10,12 @@ namespace DaruDaru.Core
     internal partial class App : Application
     {
         public static readonly string AppPath;
-        public static readonly string BaseDirectory;
+        public static readonly string AppDir;
 
         static App()
         {
             AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            BaseDirectory = Path.Combine(Path.GetDirectoryName(AppPath), "DaruDaru");
-
-            EnsureBrowserEmulationEnabled(Path.GetFileName(AppPath));
+            AppDir  = Path.GetDirectoryName(AppPath);
 
             //WebRequest.DefaultWebProxy = null;
 
@@ -29,8 +27,7 @@ namespace DaruDaru.Core
 
         private void Application_Exit(object sender, ExitEventArgs e)
         {
-            SearchLog.Save();
-            ArchiveLog.Save();
+            ConfigManager.Save();
         }
 
         private static void EnsureBrowserEmulationEnabled(string exename, bool uninstall = false)

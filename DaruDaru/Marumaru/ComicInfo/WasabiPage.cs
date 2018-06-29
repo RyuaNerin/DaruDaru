@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using HtmlAgilityPack;
@@ -19,7 +20,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             this.ComicNoName = comicNoName;
 
-            if (ArchiveLog.CheckDownloaded(this.ArchiveCode))
+            if (ArchiveManager.CheckDownloaded(this.ArchiveCode))
             {
                 this.State = MaruComicState.Complete_2_Archived;
                 this.m_mainWindow.WakeDownloader();
@@ -48,7 +49,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string TempPath;
             public string Extension;
         }
-        protected override void GetInfomationPriv(ref int count)
+        protected override bool GetInfomationPriv(ref int count)
         {
             var lst = new List<ImageInfomation>();
 
@@ -124,13 +125,13 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (!success || lst.Count == 0)
                 {
                     this.State = MaruComicState.Error_1_Error;
-                    return;
+                    return false;
                 }
 
                 if (lst.Count == 1 && lst[0] == null)
                 {
                     this.State = MaruComicState.Error_2_Protected;
-                    return;
+                    return true;
                 }
             }
 
@@ -145,13 +146,15 @@ namespace DaruDaru.Marumaru.ComicInfo
             this.State = MaruComicState.Working_2_WaitDownload;
 
             count = 1;
+
+            return true;
         }
 
         protected override void StartDownloadPriv()
         {
             try
             {
-                this.FileDir  = Path.Combine(App.BaseDirectory, ReplaceInvalid(this.ComicName));
+                this.FileDir  = this.m_cur.SavePath;
                 this.FilePath = Path.Combine(this.FileDir, ReplaceInvalid(this.ComicNoName) + ".zip");
 
                 if (!File.Exists(this.FilePath))
@@ -171,7 +174,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 else
                     this.State = MaruComicState.Complete_2_Archived;
 
-                ArchiveLog.AddDownloaded(this.ArchiveCode);
+                ArchiveManager.AddDownloaded(this.ArchiveCode);
             }
             catch (Exception ex)
             {
