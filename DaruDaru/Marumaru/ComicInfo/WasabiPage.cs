@@ -28,8 +28,8 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
 
         private ImageInfomation[] m_images;
-        public string FilePath  { get; private set; }
-        public string FileDir   { get; private set; }
+        public string FilePath => this.m_cur.SavePath;
+        public string FileDir  => this.ComicNoName != null ? Path.Combine(this.FileDir, ReplaceInvalid(this.ComicNoName) + ".zip") : null;
 
         public string ArchiveCode => GetArchiveCode(this.Url);
 
@@ -154,9 +154,6 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             try
             {
-                this.FileDir  = this.m_cur.SavePath;
-                this.FilePath = Path.Combine(this.FileDir, ReplaceInvalid(this.ComicNoName) + ".zip");
-
                 if (!File.Exists(this.FilePath))
                 {
                     if (!Download())
