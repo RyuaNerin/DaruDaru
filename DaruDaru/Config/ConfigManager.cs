@@ -13,6 +13,7 @@ namespace DaruDaru.Config
     {
         public static ConfigManager Instance { get; } = new ConfigManager();
         private static readonly string ConfigPath = Path.ChangeExtension(App.AppPath, ".cfg");
+        private static readonly string ConfigPath2 = Path.ChangeExtension(App.AppPath, ".cfg.new");
         private static readonly JsonSerializer Serializer = JsonSerializer.Create();
 
         static ConfigManager()
@@ -40,7 +41,7 @@ namespace DaruDaru.Config
             
             try
             {
-                using (var fs = File.OpenWrite(ConfigPath))
+                using (var fs = File.OpenWrite(ConfigPath2))
                 {
                     fs.SetLength(0);
 
@@ -48,6 +49,9 @@ namespace DaruDaru.Config
                     using (var br = new JsonTextWriter(sr))
                         Serializer.Serialize(br, Instance);
                 }
+
+                File.Delete(ConfigPath);
+                File.Move(ConfigPath2, ConfigPath);
             }
             catch
             {
