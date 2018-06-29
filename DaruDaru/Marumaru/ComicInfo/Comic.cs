@@ -248,7 +248,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 if (this.m_fromSearch)
                 {
-                    SearchLogManager.UpdateUnsafe(false, this.Url, this.ComicName, count);
+                    SearchLogManager.UpdateUnsafe(false, this.Url, this.DisplayName, count);
 
                     // Create Shortcut 
                     if (this.m_cur.CreateUrlLink)

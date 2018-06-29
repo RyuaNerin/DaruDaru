@@ -48,6 +48,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 else
                 {
                     SearchLogManager.ChangeUrlUnsafe(this.Url, newUrl);
+                    SearchLogManager.UpdateSafe(true, newUrl, null, -1);
 
                     this.State = MaruComicState.Error_3_NotSupport;
                 }
