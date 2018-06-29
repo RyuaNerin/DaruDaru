@@ -229,7 +229,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 this.SpeedOrFileSize = null;
 
-                Interlocked.Exchange(ref this.m_progressValue, 0);
+                this.ProgressValue = 0;
                 this.State = MaruComicState.Wait;
                 return true;
             }
