@@ -1,45 +1,143 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Windows;
+using DaruDaru.Config.Entries;
+using System.Linq;
+using DaruDaru.Core;
+using DaruDaru.Marumaru;
 
 namespace DaruDaru.Config
 {
     internal static class ArchiveManager
     {
-        public static HashSet<string> Instance { get; } = new HashSet<string>();
+        public static ObservableCollection<MarumaruEntry> MarumaruLinks { get; } = new ObservableCollection<MarumaruEntry>();
 
-        public static void Remove(string archiveCode)
+        public static ObservableCollection<ArchiveEntry> Archives { get; } = new ObservableCollection<ArchiveEntry>();
+        private static readonly HashSet<string> ArchiveHash = new HashSet<string>();
+
+        static ArchiveManager()
         {
-            lock (Instance)
-                Instance.Remove(archiveCode);
+            Archives.CollectionChanged += Archives_CollectionChanged;
         }
 
-        public static void AddDownloaded(string archiveCode)
+        private static void Archives_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            lock (Instance)
-                Instance.Add(archiveCode);
+            var newItem = e.NewItems.Cast<ArchiveEntry>();
+
+            if (e.Action == NotifyCollectionChangedAction.Add)
+                lock (ArchiveHash)
+                    foreach (var item in newItem)
+                        ArchiveHash.Add(item.ArchiveCode);
+
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+                lock (ArchiveHash)
+                    foreach (var item in newItem)
+                        ArchiveHash.Remove(item.ArchiveCode);
+
+            else if (e.Action == NotifyCollectionChangedAction.Reset)
+                lock (ArchiveHash)
+                    ArchiveHash.Clear();
         }
 
-        public static bool CheckDownloaded(string archiveCode)
+        public static void UpdateMarumaru(string mangaCode, string mangaTitle)
         {
-            lock (Instance)
-                return Instance.Contains(archiveCode);
+            lock (MarumaruLinks)
+            {
+                bool found = false;
+                MarumaruEntry entry = null;
+
+                for (var i = 0; i < MarumaruLinks.Count; ++i)
+                {
+                    entry = MarumaruLinks[i];
+                    if (entry.MaruCode == mangaCode)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    entry = new MarumaruEntry
+                    {
+                        MaruCode = mangaCode
+                    };
+
+                    Application.Current.Dispatcher.Invoke(new Action<MarumaruEntry>(MarumaruLinks.Add), entry);
+                }
+
+                entry.Title = mangaTitle;
+                entry.LastUpdated = DateTime.Now;
+            }
         }
-        public static IEnumerable<TData> CheckNewUrl<TData>(IEnumerable<TData> src, Func<TData, string> keySelector)
+        
+        public static void UpdateArchive(string archiveCode, string fullTitle, string zipPath)
+        {
+            lock (Archives)
+            {
+                bool found = false;
+                ArchiveEntry entry = null;
+
+                for (var i = 0; i < Archives.Count; ++i)
+                {
+                    entry = Archives[i];
+                    if (entry.ArchiveCode == archiveCode)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    entry = new ArchiveEntry
+                    {
+                        ArchiveCode = archiveCode,
+                        TitleWithNo   = fullTitle,
+                        ZipPath     = zipPath,
+                    };
+
+                    Application.Current.Dispatcher.Invoke(new Action<ArchiveEntry>(Archives.Add), entry);
+                }
+
+                entry.Archived = DateTime.Now;
+            }
+        }
+
+        public static ArchiveEntry GetArchive(string archiveCode)
+        {
+            lock (Archives)
+            {
+                ArchiveEntry entry = null;
+
+                for (var i = 0; i < Archives.Count; ++i)
+                {
+                    entry = Archives[i];
+                    if (entry.ArchiveCode == archiveCode)
+                        return entry;
+                }
+
+                return null;
+            }
+        }
+
+        public static bool CheckNewArchive(string archiveCode)
+        {
+            lock (ArchiveHash)
+                return ArchiveHash.Contains(archiveCode);
+        }
+        public static IEnumerable<TData> IsNewArchive<TData>(IEnumerable<TData> src, Func<TData, string> keySelector)
         {
             var lst = new List<TData>();
 
-            lock (Instance)
+            lock (ArchiveHash)
                 foreach (var data in src)
-                    if (!Instance.Contains(keySelector(data)))
+                    if (!ArchiveHash.Contains(keySelector(data)))
                         lst.Add(data);
 
-            return lst.ToArray();
-        }
-
-        public static void Clear()
-        {
-            lock (Instance)
-                Instance.Clear();
+            return lst;
         }
     }
 }

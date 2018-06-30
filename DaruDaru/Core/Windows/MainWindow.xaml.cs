@@ -15,9 +15,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
 using DaruDaru.Config;
+using DaruDaru.Config.Entries;
 using DaruDaru.Marumaru;
 using DaruDaru.Marumaru.ComicInfo;
-using DaruDaru.Marumaru.Entries; 
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
@@ -44,9 +44,13 @@ namespace DaruDaru.Core.Windows
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
             
             this.ctlSearch.ItemsSource = this.m_queue;
-            this.ctlRecent.ItemsSource = SearchLogManager.Instance;
+            this.ctlRecent.ItemsSource = ArchiveManager.MarumaruLinks;
 
+#if DEBUG
+            var p = 1;
+#else
             var p = Environment.ProcessorCount;
+#endif
 
             ThreadPool.SetMinThreads(p * 2, p);
 
@@ -78,8 +82,7 @@ namespace DaruDaru.Core.Windows
             lock (this.m_queue)
                 if (this.CheckExisted(url))
                     this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, url, comicName));
-
-            SearchLogManager.UpdateSafe(true, url, null, -1);
+            
             this.m_eventQueue.Set();
         }
         public void SearchUrl<T>(bool addNewOnly, IEnumerable<T> src, Func<T, string> toUrl, Func<T, string> toComicName)
@@ -97,8 +100,6 @@ namespace DaruDaru.Core.Windows
                         this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, url, toComicName?.Invoke(item)));
                 }
             }
-
-            SearchLogManager.UpdateSafe(true, src, toUrl, toComicName, null);
 
             this.m_eventQueue.Set();
         }
@@ -204,11 +205,21 @@ namespace DaruDaru.Core.Windows
             return !string.IsNullOrWhiteSpace(honeyView) && File.Exists(honeyView) ? honeyView : null;
         }
 
+        private static void OpenDir(string directory)
+        {
+            try
+            {
+                Process.Start("explorer", $"\"{directory}\"").Dispose();
+            }
+            catch
+            {
+            }
+        }
         private static void StartProcess(string filename, string arg = null)
         {
             try
             {
-                Process.Start(new ProcessStartInfo { FileName = filename, Arguments = arg, UseShellExecute = true }).Dispose();
+                Process.Start(new ProcessStartInfo { FileName = filename, Arguments = arg }).Dispose();
             }
             catch
             {
@@ -304,15 +315,15 @@ namespace DaruDaru.Core.Windows
             var dirs = this.ctlSearch.SelectedItems.Cast<Comic>()
                                                    .Where(le => le is WasabiPage)
                                                    .Cast<WasabiPage>()
-                                                   .Where(le => !string.IsNullOrWhiteSpace(le.FileDir))
-                                                   .Select(le => le.FileDir)
+                                                   .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
+                                                   .Select(le => Path.GetDirectoryName(le.ZipPath))
                                                    .Where(le => !string.IsNullOrWhiteSpace(le) && Directory.Exists(le))
                                                    .Distinct()
                                                    .Take(5)
                                                    .ToArray();
 
             foreach (var dir in dirs)
-                StartProcess(dir);
+                OpenDir(dir);
         }
 
         private void ctlSearchOpenFile_Click(object sender, RoutedEventArgs e)
@@ -327,8 +338,8 @@ namespace DaruDaru.Core.Windows
                 var files = this.ctlSearch.SelectedItems.Cast<Comic>()
                                                         .Where(le => le is WasabiPage)
                                                         .Cast<WasabiPage>()
-                                                        .Where(le => !string.IsNullOrWhiteSpace(le.FilePath))
-                                                        .Select(le => le.FilePath)
+                                                        .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
+                                                        .Select(le => le.ZipPath)
                                                         .Where(le => !string.IsNullOrWhiteSpace(le) && File.Exists(le))
                                                         .Distinct()
                                                         .Take(5)
@@ -423,11 +434,11 @@ namespace DaruDaru.Core.Windows
             var comic = ((ListViewItem)sender).Content as WasabiPage;
             if (comic != null)
             {
-                if (!string.IsNullOrWhiteSpace(comic.FilePath) && File.Exists(comic.FilePath))
+                if (!string.IsNullOrWhiteSpace(comic.ZipPath) && File.Exists(comic.ZipPath))
                 {
                     var hv = GetHoneyView();
                     if (hv != null)
-                        StartProcess(hv, $"\"{comic.FilePath}\"");
+                        StartProcess(hv, $"\"{comic.ZipPath}\"");
                 }
             }
         }
@@ -440,7 +451,7 @@ namespace DaruDaru.Core.Windows
         {
             this.ctlRecentSearch.IsEnabled =
             this.ctlRecentOpenWeb.IsEnabled =
-            this.ctlRecentRemoveItem.IsEnabled = this.ctlRecent.SelectedItems.Count >= 0;
+            this.ctlRecent.SelectedItems.Count >= 0;
         }
 
         private void ctlRecentSearchNew_Click(object sender, RoutedEventArgs e)
@@ -458,10 +469,10 @@ namespace DaruDaru.Core.Windows
             if (this.ctlRecent.SelectedItems.Count == 0)
                 return;
 
-            var items = this.ctlRecent.SelectedItems.Cast<SearchLogEntry>()
+            var items = this.ctlRecent.SelectedItems.Cast<MarumaruEntry>()
                                                     .ToArray();
 
-            this.SearchUrl(addNewOnly, items, e => e.Url, e => e.ComicName);
+            this.SearchUrl(addNewOnly, items, e => e.Url, e => e.Title);
         }
 
         private void ctlRecentOpenWeb_Click(object sender, RoutedEventArgs e)
@@ -470,7 +481,7 @@ namespace DaruDaru.Core.Windows
                 return;
 
             // 다섯개까지만 연다
-            var items = this.ctlRecent.SelectedItems.Cast<SearchLogEntry>()
+            var items = this.ctlRecent.SelectedItems.Cast<MarumaruEntry>()
                                                     .Select(le => le.Url)
                                                     .Distinct()
                                                     .Take(5)
@@ -480,29 +491,11 @@ namespace DaruDaru.Core.Windows
                 Process.Start(new ProcessStartInfo { FileName = item, UseShellExecute = true })?.Dispose();
         }
 
-        private void ctlRecentRemoveItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.ctlRecent.SelectedItems.Count == 0)
-                return;
-
-            var items = this.ctlRecent.SelectedItems.Cast<SearchLogEntry>()
-                                                    .ToArray();
-
-            lock (SearchLogManager.Instance)
-                foreach (var item in items)
-                    SearchLogManager.Instance.Remove(item);
-        }
-
-        private void ctlRecentRemoveAll_Click(object sender, RoutedEventArgs e)
-        {
-            this.ctlConfigClearSearchLog_Click(sender, e);
-        }
-
         private void ctlRecentItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = ((ListViewItem)sender).Content as SearchLogEntry;
+            var item = ((ListViewItem)sender).Content as MarumaruEntry;
             if (item != null)
-                this.SearchUrl(false, item.Url, item.ComicName);
+                this.SearchUrl(false, item.Url, item.Title);
         }
 
         #endregion
@@ -655,7 +648,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlConfigDownloadPathOpen_Click(object sender, RoutedEventArgs e)
         {
-            StartProcess(ConfigManager.Instance.SavePath);
+            OpenDir(ConfigManager.Instance.SavePath);
         }
 
         private void ctlConfigDownloadPathDefault_Click(object sender, RoutedEventArgs e)
@@ -672,33 +665,14 @@ namespace DaruDaru.Core.Windows
 
         private void ctlConfigLinkPathOpen_Click(object sender, RoutedEventArgs e)
         {
-            StartProcess(ConfigManager.Instance.UrlLinkPath);
+            OpenDir(ConfigManager.Instance.UrlLinkPath);
         }
 
         private void ctlConfigLinkPathDefault_Click(object sender, RoutedEventArgs e)
         {
             ConfigManager.Instance.SavePath = ConfigManager.DefaultSavePath;
         }
-
-        private async void ctlConfigClearSearchLog_Click(object sender, RoutedEventArgs e)
-        {
-            var setting = new MetroDialogSettings
-            {
-                AffirmativeButtonText = "삭제",
-                NegativeButtonText = "취소",
-                DefaultButtonFocus = MessageDialogResult.Negative
-            };
-
-            if (await this.ShowMessageAsync(null, "모든 검색 기록을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
-                == MessageDialogResult.Affirmative)
-            {
-                SearchLogManager.Clear();
-                ConfigManager.Save();
-
-                ShowMessage(null, "검색 기록을 삭제했어요.", 5000);
-            }
-        }
-
+        
         private async void ctlConfigClearDownload_Click(object sender, RoutedEventArgs e)
         {
             var setting = new MetroDialogSettings
@@ -711,7 +685,7 @@ namespace DaruDaru.Core.Windows
             if (await this.ShowMessageAsync(null, "모든 다운로드 기록을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
                 == MessageDialogResult.Affirmative)
             {
-                ArchiveManager.Clear();
+                ArchiveManager.Archives.Clear();
                 ConfigManager.Save();
 
                 ShowMessage(null, "다운로드 기록을 삭제했어요.", 5000);
@@ -727,7 +701,7 @@ namespace DaruDaru.Core.Windows
 
             var url = await this.ShowInputAsync(null, "보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)", set);
 
-            if (string.IsNullOrWhiteSpace(url) || !Regexes.RegexArchive.IsMatch(url))
+            if (string.IsNullOrWhiteSpace(url) || RegexArchive.CheckUrl(url))
             {
                 this.ShowMessage(null, "주소를 확인해주세요", 5000);
                 this.ctlConfigDownloadProtected.IsChecked = false;

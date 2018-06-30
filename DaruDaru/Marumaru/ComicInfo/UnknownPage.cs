@@ -1,18 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using DaruDaru.Config;
 using DaruDaru.Core.Windows;
+using DaruDaru.Utilities;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class UnknownPage : Comic
     {
-        public UnknownPage(IMainWindow mainWindow, bool fromSearch, bool addNewOnly, string url, string comicName)
-            : base(mainWindow, fromSearch, addNewOnly, url, comicName)
+        public UnknownPage(IMainWindow mainWindow, bool addNewOnly, string url, string comicName)
+            : base(mainWindow, true, addNewOnly, url, comicName)
         {
         }
 
@@ -37,19 +32,14 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 Comic comic = null;
 
-                if (Regexes.RegexArchive.IsMatch(newUrl))
-                    comic = new WasabiPage(this.m_mainWindow, true, this.m_addNewOnly, newUrl, this.ComicName, null);
+                if (RegexComic.CheckUrl(newUrl))
+                    comic = new WasabiPage(this.IMainWindow, this.AddNewonly, newUrl, null);
 
-                else if (Regexes.MarumaruRegex.IsMatch(newUrl))
-                    comic = new MaruPage(this.m_mainWindow, true, this.m_addNewOnly, newUrl, this.ComicName);
+                else if (RegexArchive.CheckUrl(newUrl))
+                    comic = new MaruPage(this.IMainWindow, this.AddNewonly, newUrl, null);
 
                 if (comic != null)
-                {
-                    this.m_mainWindow.InsertNewComic(this, new Comic[] { comic }, true);
-
-                    SearchLogManager.ChangeUrlUnsafe(this.Url, newUrl);
-                    SearchLogManager.UpdateSafe(true, newUrl, null, -1);
-                }
+                    this.IMainWindow.InsertNewComic(this, new Comic[] { comic }, true);
                 else
                     this.State = MaruComicState.Error_3_NotSupport;
             }

@@ -1,10 +1,10 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using DaruDaru.Config.Entries;
 using DaruDaru.Core;
-using DaruDaru.Marumaru.Entries;
 using Newtonsoft.Json;
 
 namespace DaruDaru.Config
@@ -78,7 +78,7 @@ namespace DaruDaru.Config
         private string m_savePath = DefaultSavePath;
         public string SavePath
         {
-            get => this.m_savePath;
+            get => !string.IsNullOrWhiteSpace(this.m_savePath) ? this.m_savePath : DefaultSavePath;
             set
             {
                 this.m_savePath = string.IsNullOrWhiteSpace(value) ? DefaultSavePath : value;
@@ -101,7 +101,7 @@ namespace DaruDaru.Config
         private string m_urlLinkPath = DefaultSavePath;
         public string UrlLinkPath
         {
-            get => this.m_savePath;
+            get => !string.IsNullOrWhiteSpace(this.m_urlLinkPath) ? this.m_urlLinkPath : DefaultSavePath;
             set
             {
                 this.m_urlLinkPath = string.IsNullOrWhiteSpace(value) ? DefaultSavePath : value;
@@ -110,27 +110,11 @@ namespace DaruDaru.Config
             }
         }
 
-        public string[] Archived
-        {
-            get => ArchiveManager.Instance.ToArray();
-            set
-            {
-                lock (ArchiveManager.Instance)
-                    foreach (var item in value)
-                        ArchiveManager.Instance.Add(item);
-            }
-        }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public IList<MarumaruEntry> MaruLinks => ArchiveManager.MarumaruLinks;
 
-        public SearchLogEntry[] SearchLog
-        {
-            get => SearchLogManager.Instance.ToArray();
-            set
-            {
-                lock (SearchLogManager.Instance)
-                    foreach (var item in value)
-                        SearchLogManager.Instance.Add(item);
-            }
-        }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public IList<ArchiveEntry> Archives => ArchiveManager.Archives;
 
         public string ProtectedUrl { get; set; }
     }

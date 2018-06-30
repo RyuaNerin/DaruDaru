@@ -90,8 +90,10 @@
     </ApplicationDefinition>
     <Compile Include="Config\ConfigManager.cs" />
     <Compile Include="Config\ConfigCur.cs" />
-    <Compile Include="Config\Entries\SearchLogEntry.cs" />
+    <Compile Include="Config\Entries\ArchiveEntry.cs" />
+    <Compile Include="Config\Entries\MangaEntry.cs" />
     <Compile Include="Marumaru\ComicInfo\UnknownPage.cs" />
+    <Compile Include="Marumaru\Regexes.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
     <Compile Include="Utilities\GridViewSort.cs" />
     <Page Include="Core\Windows\MainWindow.xaml">
@@ -108,14 +110,12 @@
     </Compile>
     <Compile Include="Marumaru\ComicInfo\WasabiPage.cs" />
     <Compile Include="Marumaru\ComicInfo\MaruPage.cs" />
-    <Compile Include="Config\SearchLogManager.cs" />
-    <Compile Include="Marumaru\Regexes.cs" />
-    <Compile Include="Marumaru\Signature.cs" />
+    <Compile Include="Utilities\Signature.cs" />
     <Compile Include="Config\ArchiveManager.cs" />
     <Compile Include="Core\LastRelease.cs" />
     <Compile Include="Core\CrashReport.cs" />
     <Compile Include="Marumaru\ComicInfo\Comic.cs" />
-    <Compile Include="Marumaru\WebClient.cs">
+    <Compile Include="Utilities\WebClient.cs">
       <SubType>DOCE</SubType>
     </Compile>
     <Compile Include="Core\Windows\IMainWindow.cs" />

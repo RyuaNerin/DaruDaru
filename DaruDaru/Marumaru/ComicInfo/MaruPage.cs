@@ -5,14 +5,15 @@ using System.Linq;
 using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
+using DaruDaru.Utilities;
 using HtmlAgilityPack;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class MaruPage : Comic
     {
-        public MaruPage(IMainWindow mainWindow, bool fromSearch, bool addNewOnly, string url, string comicName)
-            : base(mainWindow, fromSearch, addNewOnly, url, comicName)
+        public MaruPage(IMainWindow mainWindow, bool addNewOnly, string url, string comicName)
+            : base(mainWindow, true, addNewOnly, url, comicName)
         {
         }
 
@@ -36,15 +37,14 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     doc.LoadHtml(wc.DownloadString(this.Url));
 
-                    this.ComicName = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
+                    this.Title = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
 
                     string titleNo;
                     foreach (var a in doc.DocumentNode.SelectSingleNode("//div[@class='content']").SelectNodes(".//a[@href]"))
                     {
                         var a_url = new Uri(baseUri, a.Attributes["href"].Value).AbsoluteUri;
 
-                        var match = Regexes.RegexArchive.Match(a_url);
-                        if (match.Success)
+                        if (RegexArchive.CheckUrl(a_url))
                         {
                             titleNo = a.InnerText;
 
@@ -69,20 +69,30 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             try
             {
+                ArchiveManager.UpdateMarumaru(RegexComic.GetCode(this.Url), this.Title);
+
                 IEnumerable<WasabisyrupLinks> items = lstArchives;
 
-                if (this.m_addNewOnly)
-                    items = ArchiveManager.CheckNewUrl(items, e => WasabiPage.GetArchiveCode(e.Url));
+                if (this.AddNewonly)
+                    items = ArchiveManager.IsNewArchive(items, e => RegexArchive.GetCode(e.Url));
 
-                var comics = items.Select(e => new WasabiPage(this.m_mainWindow, false, false, e.Url, this.ComicName, e.TitleNo)).ToArray();
-                var noNew = !(this.m_addNewOnly && comics.Length == 0);
+                var comics = items.Select(e => new WasabiPage(this.IMainWindow, this.AddNewonly, e.Url, this.Title, e.TitleNo)).ToArray();
+                
+                var noNew = !(this.AddNewonly && comics.Length == 0);
 
-                this.m_mainWindow.InsertNewComic(this, comics, noNew);
+                this.IMainWindow.InsertNewComic(this, comics, noNew);
 
                 if (noNew)
                     this.State = MaruComicState.Complete_3_NoNew;
 
                 count = lstArchives.Count;
+
+                // Create Shortcut
+                if (this.ConfigCur.CreateUrlLink)
+                {
+                    Directory.CreateDirectory(this.ConfigCur.UrlLinkPath);
+                    File.WriteAllText(Path.Combine(this.ConfigCur.UrlLinkPath, $"{ReplaceInvalid(this.Title)}.url"), $"[InternetShortcut]\r\nURL=" + this.Url);
+                }
 
                 return count > 0;
             }

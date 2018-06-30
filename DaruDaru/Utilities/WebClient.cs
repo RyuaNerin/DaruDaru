@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using DaruDaru.Core.Windows;
 
-namespace DaruDaru.Marumaru
+namespace DaruDaru.Utilities
 {
     [System.ComponentModel.DesignerCategory("DOCE")]
     internal class WebClientEx : WebClient

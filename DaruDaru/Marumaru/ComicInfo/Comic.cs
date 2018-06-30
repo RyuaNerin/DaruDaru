@@ -35,29 +35,29 @@ namespace DaruDaru.Marumaru.ComicInfo
 
     internal abstract class Comic : INotifyPropertyChanged
     {
-        public static Comic CreateForSearch(IMainWindow mainWindow, bool addNewOnly, string url, string comicName)
+        public static Comic CreateForSearch(IMainWindow mainWindow, bool addNewOnly, string url, string title)
         {
-            if (Regexes.RegexArchive.IsMatch(url))
-                return new WasabiPage(mainWindow, true, addNewOnly, url, comicName, null);
+            if (RegexComic.CheckUrl(url))
+                return new MaruPage(mainWindow, addNewOnly, url, title);
 
-            if (Regexes.MarumaruRegex.IsMatch(url))
-                return new MaruPage(mainWindow, true, addNewOnly, url, comicName);
+            if (RegexArchive.CheckUrl(url))
+                return new WasabiPage(mainWindow, addNewOnly, url, title);
 
-            return new UnknownPage(mainWindow, true, addNewOnly, url, comicName);
+            return new UnknownPage(mainWindow, addNewOnly, url, title);
         }
 
         private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
-        protected static string ReplaceInvalid(string s) => InvalidRegex.Replace(s, "");
+        protected static string ReplaceInvalid(string s) => InvalidRegex.Replace(s, "_");
 
-        protected static string ReplcaeHtmlTag(string s) => s.Replace("&nbsp;", " " )
-                                                             .Replace("&lt;"  , "<" )
-                                                             .Replace("&gt;"  , ">" )
-                                                             .Replace("&amp;" , "&" )
+        protected static string ReplcaeHtmlTag(string s) => s.Replace("&nbsp;", " ")
+                                                             .Replace("&lt;", "<")
+                                                             .Replace("&gt;", ">")
+                                                             .Replace("&amp;", "&")
                                                              .Replace("&quot;", "\"")
-                                                             .Replace("&apos;", "'" )
-                                                             .Replace("&copy;", "©" )
-                                                             .Replace("&reg;" , "®" );
-        
+                                                             .Replace("&apos;", "'")
+                                                             .Replace("&copy;", "©")
+                                                             .Replace("&reg;", "®");
+
         protected static bool Retry(Func<bool> action)
         {
             int retries = 3;
@@ -86,49 +86,54 @@ namespace DaruDaru.Marumaru.ComicInfo
             return false;
         }
 
-        public Comic(IMainWindow mainWindow, bool fromSearch, bool addNewOnly, string url, string comicName)
+        public Comic(IMainWindow mainWindow, bool isRootItem, bool addNewOnly, string url, string title)
         {
-            this.m_cur = ConfigManager.Cur;
+            this.ConfigCur = ConfigManager.Cur;
 
-            this.m_mainWindow = mainWindow;
-            this.m_fromSearch = fromSearch;
-            this.m_addNewOnly = addNewOnly;
-            this.m_comicName  = comicName;
+            this.IMainWindow = mainWindow;
+            this.RootItem = isRootItem;
+            this.AddNewonly = addNewOnly;
 
-            this.Url          = url;
+            this.Url = url;
+            this.Title = title;
         }
+        
+        protected internal ConfigCur ConfigCur { get; private set; }
+        
+        protected internal IMainWindow IMainWindow { get; private set; }
 
-        protected readonly ConfigCur m_cur;
-        protected readonly IMainWindow m_mainWindow;
-        protected readonly bool m_fromSearch;
-        protected readonly bool m_addNewOnly;
+        /// <summary>새 작품 검색하기로 추가된 경우</summary>
+        protected internal bool AddNewonly { get; private set; }
+
+        /// <summary>큐에 직접 추가된 아이템</summary>
+        protected internal bool RootItem { get; private set; }
 
         // Redirect 의 경우에 주소가 바뀌는 경우가 있다.
         public string Url { get; protected set; }
 
-        private string m_comicName;
-        public string ComicName
+        private string m_title;
+        public string Title
         {
-            get => this.m_comicName;
+            get => this.m_title;
             protected set
             {
-                this.m_comicName = value;
+                this.m_title = value;
                 this.InvokePropertyChanged("DisplayName");
             }
         }
 
-        private string m_comicNoName;
-        public string ComicNoName
+        private string m_titleWithNo;
+        public string TitleWithNo
         {
-            get => this.m_comicNoName;
+            get => this.m_titleWithNo;
             protected set
             {
-                this.m_comicNoName = value;
+                this.m_titleWithNo = value;
                 this.InvokePropertyChanged("DisplayName");
             }
         }
 
-        public string DisplayName => (this.ComicNoName ?? (this.ComicName ?? this.Url));
+        public string DisplayName => this.TitleWithNo ?? (this.Title ?? this.Url);
 
         private long m_state = (long)MaruComicState.Wait;
         public MaruComicState State
@@ -187,7 +192,11 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.InvokePropertyChanged();
             }
         }
-        
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void InvokePropertyChanged([CallerMemberName] string propertyName = null)
+            => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
         public string StateText
         {
             get
@@ -214,10 +223,6 @@ namespace DaruDaru.Marumaru.ComicInfo
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void InvokePropertyChanged([CallerMemberName] string propertyName = null)
-            => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
         protected void IncrementProgress()
         {
             Interlocked.Increment(ref this.m_progressValue);
@@ -229,8 +234,6 @@ namespace DaruDaru.Marumaru.ComicInfo
         {            
             if (!this.IsRunning)
             {
-                ArchiveManager.Remove(WasabiPage.GetArchiveCode(this.Url));
-
                 this.SpeedOrFileSize = null;
 
                 this.ProgressValue = 0;
@@ -244,22 +247,10 @@ namespace DaruDaru.Marumaru.ComicInfo
         public void GetInfomation()
         {
             int count = -1;
-            if (this.GetInfomationPriv(ref count))
-            {
-                if (this.m_fromSearch)
-                {
-                    SearchLogManager.UpdateUnsafe(false, this.Url, this.DisplayName, count);
 
-                    // Create Shortcut 
-                    if (this.m_cur.CreateUrlLink)
-                    {
-                        Directory.CreateDirectory(this.m_cur.UrlLinkPath);
-                        File.WriteAllText(Path.Combine(this.m_cur.UrlLinkPath, $"{ReplaceInvalid(this.ComicName)}.url"), $"[InternetShortcut]\r\nURL=" + this.Url);
-                    }
-                }
-            }
+            this.GetInfomationPriv(ref count);
 
-            this.m_mainWindow.WakeDownloader();
+            this.IMainWindow.WakeDownloader();
         }
 
         protected abstract bool GetInfomationPriv(ref int count);
@@ -268,8 +259,8 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             this.StartDownloadPriv();
 
-            this.m_mainWindow.WakeDownloader();
-            this.m_mainWindow.UpdateTaskbarProgress();
+            this.IMainWindow.WakeDownloader();
+            this.IMainWindow.UpdateTaskbarProgress();
         }
         protected virtual void StartDownloadPriv()
         {

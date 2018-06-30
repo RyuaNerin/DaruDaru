@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace DaruDaru.Marumaru
+namespace DaruDaru.Utilities
 {
     internal static class Signatures
     {

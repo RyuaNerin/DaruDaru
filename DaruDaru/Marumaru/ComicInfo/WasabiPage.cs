@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
+using DaruDaru.Utilities;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
@@ -15,35 +16,28 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class WasabiPage : Comic
     {
-        public WasabiPage(IMainWindow mainWindow, bool fromSearch, bool addNewOnly, string url, string comicName, string comicNoName)
-            : base(mainWindow, fromSearch, addNewOnly, url, comicName)
+        public WasabiPage(IMainWindow mainWindow, bool addNewOnly, string url, string title, string tempTitleWithNo = null)
+            : base(mainWindow, true, addNewOnly, url, title)
         {
-            this.ComicNoName = comicNoName;
+            this.TitleWithNo = tempTitleWithNo;
 
-            if (!string.IsNullOrWhiteSpace(comicName) &&
-                !string.IsNullOrWhiteSpace(comicNoName) &&
-                ArchiveManager.CheckDownloaded(this.ArchiveCode))
+            var entry = ArchiveManager.GetArchive(this.ArchiveCode);
+            if (entry != null)
             {
-                this.State = MaruComicState.Complete_2_Archived;
-                this.m_mainWindow.WakeDownloader();
+                this.TitleWithNo = entry.TitleWithNo;
+                this.ZipPath     = entry.ZipPath;
+                this.State       = MaruComicState.Complete_2_Archived;
+
+                this.IMainWindow.WakeDownloader();
             }
         }
 
         private ImageInfomation[] m_images;
-        public string FileDir  => this.ComicNoName == null ? null : Path.Combine(this.m_cur.SavePath, ReplaceInvalid(this.ComicName));
-        public string FilePath => this.ComicNoName == null ? null : Path.Combine(this.FileDir, ReplaceInvalid(this.ComicNoName) + ".zip");
 
-        public string ArchiveCode => GetArchiveCode(this.Url);
+        public string ZipPath { get; set; }
 
-        public static string GetArchiveCode(string url)
-        {
-            var m = Regexes.RegexArchive.Match(url);
-            if (!m.Success)
-                return null;
-
-            return m.Groups[1].Value;
-        }
-
+        public string ArchiveCode => RegexArchive.GetCode(this.Url);
+        
         private class ImageInfomation
         {
             public int Index;
@@ -70,13 +64,14 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     doc.LoadHtml(body);
 
-                    // 단편으로 다운로드 시작한 경우에만
-                    // 그 외의 경우에는 마루마루 페이지에서 설정되어있던 이름으로 사용.
-                    if (this.m_fromSearch)
-                    {
-                        this.ComicName   = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
-                        this.ComicNoName = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='article-title']").Attributes["title"].Value).Trim();
-                    }
+                    // 타이틀은 항상 마루마루 기준으로 맞춤.
+                    if (this.Title == null)
+                        this.Title   = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
+
+                    // 제목이 바뀌는 경우가 있어서
+                    // 제목은 그대로 사용하고, xx화 는 새로 가져온다.
+                    var titleNo = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
+                    this.TitleWithNo = $"{this.Title} {titleNo}";
 
                     // 암호걸린 파일
                     if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
@@ -154,9 +149,11 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         protected override void StartDownloadPriv()
         {
+            this.ZipPath = Path.Combine(this.ConfigCur.SavePath, ReplaceInvalid(this.Title), ReplaceInvalid(this.TitleWithNo) + ".zip");
+
             try
             {
-                if (!File.Exists(this.FilePath))
+                if (!File.Exists(this.ZipPath))
                 {
                     if (!Download())
                     {
@@ -166,17 +163,18 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     this.State = MaruComicState.Working_4_Compressing;
                     Compress();
-                    this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.FilePath).Length);
+                    this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.ZipPath).Length);
 
                     this.State = MaruComicState.Complete_1_Downloaded;
                     
                     // 디렉토리 수정시간 업데이트
-                    Directory.SetLastWriteTime(this.FileDir, DateTime.Now);
+                    Directory.SetLastWriteTime(this.ZipPath, DateTime.Now);
                 }
                 else
                     this.State = MaruComicState.Complete_2_Archived;
 
-                ArchiveManager.AddDownloaded(this.ArchiveCode);
+
+                ArchiveManager.UpdateArchive(this.ArchiveCode, this.TitleWithNo, this.ZipPath);
             }
             catch (Exception ex)
             {
@@ -296,9 +294,9 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             var padLength = Math.Min(3, this.m_images.Length.ToString().Length);
 
-            Directory.CreateDirectory(this.FileDir);
+            Directory.CreateDirectory(Path.GetDirectoryName(this.ZipPath));
 
-            using (var zipFile = new FileStream(this.FilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var zipFile = new FileStream(this.ZipPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var zipStream = new ZipOutputStream(zipFile))
             {
                 zipStream.SetComment(this.Url);
