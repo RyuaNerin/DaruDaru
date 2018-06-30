@@ -1,20 +1,28 @@
 # DaruDaru
 
-마루마루 만화 다운로더
+짱짱 마루마루 만화 다운로드 프로그램
 
-![discord](img/discord.jpg)
+## 주의 사항
 
-[Download](https://github.com/RyuaNerin/DaruDaru/releases/latest)
+- 해당 프로그램 및 소스코드는 GPLv3 로 배포되고 있습니다
+
+- 이용자는 반드시 저작권법을 준수하여야 합니다
+
+- 다운로드 받은 만화는 재배포, 판매 등의 행위를 해선 안됩니다
+
+- 해당 프로그램 및 소스코드를 이용하여 발생하는 모든 상황에 대해, 제작자는 어떠한 책임도 지지 않습니다
 
 ## 특징
 
-- zip 으로 압축해줌
+- 다운로드 받은 만화를 zip 으로 압축해줌
 
-- 고속 다운로드
+- **고속 다운로드**
 
 - **보호된 만화 다운로드**
 
 ## 사용법
+
+- 다운로드 : [Github Latest Release](https://github.com/RyuaNerin/DaruDaru/releases/latest)
 
 - 마루마루 링크를 주면 해당 만화 전체 다운로드
 
@@ -22,7 +30,9 @@
 
 - 검색, 다운로드 기록 저장
 
-- 다운로드 폴더 안에 마루마루 링크 생성
+- 우클릭 해보면 이것저것 많이 나옵니다
+
+- 여기저기 눌러보세요. 안 망가집니다.
 
 
 ## [LICENSE](LICENSE.txt)
