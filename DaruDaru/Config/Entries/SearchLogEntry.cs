@@ -9,12 +9,6 @@ namespace DaruDaru.Marumaru.Entries
 {
     internal class SearchLogEntry : INotifyPropertyChanged
     {
-        public static IEnumerable<SearchLogEntry> ConvertEnumerable(SearchLogEntry[] items)
-        {
-            foreach (var item in items)
-                yield return item;
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
             => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
