@@ -78,9 +78,9 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 var comics = items.Select(e => new WasabiPage(this.IMainWindow, this.AddNewonly, e.Url, this.Title, e.TitleNo)).ToArray();
                 
-                var noNew = !(this.AddNewonly && comics.Length == 0);
+                var noNew = this.AddNewonly && comics.Length == 0;
 
-                this.IMainWindow.InsertNewComic(this, comics, noNew);
+                this.IMainWindow.InsertNewComic(this, comics, !noNew);
 
                 if (noNew)
                     this.State = MaruComicState.Complete_3_NoNew;
