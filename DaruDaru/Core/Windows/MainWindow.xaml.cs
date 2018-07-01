@@ -85,20 +85,17 @@ namespace DaruDaru.Core.Windows
         public void SearchUrl<T>(bool addNewOnly, IEnumerable<T> src, Func<T, string> toUrl, Func<T, string> toComicName)
         {
             int count = 0;
-
-            using (this.ctlSearch.Items.DeferRefresh())
+            
+            lock (this.m_queue)
             {
-                lock (this.m_queue)
+                foreach (var item in src)
                 {
-                    foreach (var item in src)
-                    {
-                        count++;
+                    count++;
 
-                        var url = toUrl(item);
+                    var url = toUrl(item);
 
-                        if (this.CheckExisted(url))
-                            this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, url, toComicName?.Invoke(item)));
-                    }
+                    if (this.CheckExisted(url))
+                        this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, url, toComicName?.Invoke(item)));
                 }
             }
 
@@ -113,23 +110,20 @@ namespace DaruDaru.Core.Windows
         }
         private void InsertNewComicPriv(Comic sender, IEnumerable<Comic> newItems, bool removeSender)
         {
-            using (this.ctlSearch.Items.DeferRefresh())
+            lock (this.m_queue)
             {
-                lock (this.m_queue)
-                {
-                    var index = this.m_queue.IndexOf(sender);
+                var index = this.m_queue.IndexOf(sender);
 
-                    if (removeSender)
-                        this.m_queue.RemoveAt(index);
-                    else
-                        index += 1;
+                if (removeSender)
+                    this.m_queue.RemoveAt(index);
+                else
+                    index += 1;
 
-                    foreach (var newItem in newItems)
-                        if (this.CheckExisted(newItem.Url))
-                            this.m_queue.Insert(index++, newItem);
+                foreach (var newItem in newItems)
+                    if (this.CheckExisted(newItem.Url))
+                        this.m_queue.Insert(index++, newItem);
 
-                    this.m_eventQueue.Set();
-                }
+                this.m_eventQueue.Set();
             }
         }
 

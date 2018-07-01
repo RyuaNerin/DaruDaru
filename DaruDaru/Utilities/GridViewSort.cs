@@ -192,8 +192,7 @@ namespace DaruDaru.Utilities
 
                 return this.m_direction == ListSortDirection.Ascending ? r : r * -1;
             }
-
-
+            
             public static int CompareTo(string x, string y)
             {
                 int xindex, yindex;
