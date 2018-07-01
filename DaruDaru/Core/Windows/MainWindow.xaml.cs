@@ -46,12 +46,8 @@ namespace DaruDaru.Core.Windows
             this.ctlSearch.ItemsSource = this.m_queue;
             this.ctlMaru.ItemsSource = ArchiveManager.MarumaruLinks;
             this.ctlArchive.ItemsSource = ArchiveManager.Archives;
-
-#if DEBUG
-            var p = 1;
-#else
+            
             var p = Environment.ProcessorCount;
-#endif
 
             ThreadPool.SetMinThreads(p * 2, p);
 

@@ -16,12 +16,10 @@ namespace DaruDaru.Core
 
         public static void Init()
         {
-#if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += (s, e) => Error(e.ExceptionObject as Exception);
             TaskScheduler.UnobservedTaskException += (s, e) => Error(e.Exception);
             Application.Current.DispatcherUnhandledException += (s, e) => Error(e.Exception);
             Application.Current.Dispatcher.UnhandledException += (s, e) => Error(e.Exception);
-#endif
         }
 
         public static void Error(Exception ex)
