@@ -18,7 +18,7 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_maruCode = value;
-                this.Url = $"http://wasabisyrup.com/archives/" + value;
+                this.Url = $"https://www.marumaru.in/b/manga/" + value;
             }
         }
 
