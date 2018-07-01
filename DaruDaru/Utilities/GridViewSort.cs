@@ -1,7 +1,10 @@
+using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -72,7 +75,7 @@ namespace DaruDaru.Utilities
                     if (listView != null)
                     {
                         if (GetAutoSort(listView))
-                            ApplySort(listView.Items, propertyName, listView, headerClicked);
+                            ApplySort(listView, headerClicked, propertyName);
                     }
                 }
             }
@@ -90,8 +93,10 @@ namespace DaruDaru.Utilities
             return item as T;
         }
 
-        public static void ApplySort(ICollectionView view, string propertyName, ListView listView, GridViewColumnHeader column)
+        public static void ApplySort(ListView listView, GridViewColumnHeader column, string propertyName)
         {
+            var view = (ListCollectionView)CollectionViewSource.GetDefaultView(listView.ItemsSource);
+
             var direction = GetSortDirection(listView);
             if (direction == SortDirection.None)
                 direction = SortDirection.Ascending;
@@ -110,14 +115,12 @@ namespace DaruDaru.Utilities
                     layer.Remove(adorner);
             }
 
-            using (view.DeferRefresh())
+            if (!string.IsNullOrEmpty(propertyName))
             {
-                if (view.SortDescriptions.Count > 0)
-                    view.SortDescriptions.Clear();
-                
-                if (!string.IsNullOrEmpty(propertyName))
+                using (view.DeferRefresh())
                 {
-                    view.SortDescriptions.Add(new SortDescription(propertyName, (ListSortDirection)direction));
+                    view.CustomSort = new CustomSorter(propertyName, (ListSortDirection)direction);
+
                     SetSortedColumnHeader(listView, column);
 
                     SetSortDirection(listView, direction);
@@ -162,6 +165,102 @@ namespace DaruDaru.Utilities
                     drawingContext.DrawLine(GlpyhPen, new Point(x1, y1), new Point(x2, y2));
                     drawingContext.DrawLine(GlpyhPen,                    new Point(x2, y2), new Point(x3, y1));
                 }
+            }
+        }
+        
+        private class CustomSorter : IComparer
+        {
+            public CustomSorter(string propertyName, ListSortDirection direction)
+            {
+                this.m_propertyName = propertyName;
+                this.m_direction = direction;
+            }
+
+            private readonly string m_propertyName;
+            private readonly ListSortDirection m_direction;
+
+            public int Compare(object x, object y)
+            {
+                var xx = x.GetType().GetProperty(this.m_propertyName).GetValue(x);
+                var yy = y.GetType().GetProperty(this.m_propertyName).GetValue(y);
+
+                int r;
+                if (xx is string xxx && yy is string yyy)
+                    r = CompareTo(xxx, yyy);
+                else
+                    r = Comparer.Default.Compare(xx, yy);
+
+                return this.m_direction == ListSortDirection.Ascending ? r : r * -1;
+            }
+
+
+            public static int CompareTo(string x, string y)
+            {
+                int xindex, yindex;
+                int xlen, ylen;
+                float xint, yint;
+
+                int i;
+                int k;
+                int c;
+
+                xindex = yindex = 0;
+                while (xindex < x.Length && yindex < y.Length)
+                {
+                    xlen = Cut(x, xindex);
+                    ylen = Cut(y, yindex);
+
+                    if (xlen == 0 || ylen == 0)
+                        c = xlen.CompareTo(ylen);
+
+                    else if ((char.IsDigit(x[xindex]) || x[xindex] == '.') &&
+                             (char.IsDigit(y[yindex]) || y[yindex] == '.') &&
+                             float.TryParse(x.Substring(xindex, xlen), out xint) &&
+                             float.TryParse(y.Substring(yindex, ylen), out yint))
+                        c = xint.CompareTo(yint);
+
+                    else
+                    {
+                        k = Math.Min(xlen, ylen);
+                        c = 0;
+                        for (i = 0; i < k; ++i)
+                        {
+                            if (x[xindex + i] != y[yindex + i])
+                            {
+                                c = x[xindex + i].CompareTo(y[yindex + i]);
+                                break;
+                            }
+                        }
+
+                        if (c == 0)
+                            c = xlen.CompareTo(ylen);
+
+                    }
+
+                    xindex += xlen;
+                    yindex += ylen;
+
+                    if (c != 0)
+                        return c;
+                }
+
+                return x.Length - y.Length;
+            }
+
+            private static int Cut(string x, int xindex)
+            {
+                var isFloat = char.IsDigit(x[xindex]);
+
+                int nindex = xindex + 1;
+                while (nindex < x.Length)
+                {
+                    if (isFloat != (char.IsDigit(x[nindex]) || x[nindex] == '.'))
+                        break;
+
+                    nindex++;
+                }
+
+                return Math.Min(nindex, x.Length) - xindex;
             }
         }
     }
