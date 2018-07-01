@@ -44,7 +44,8 @@ namespace DaruDaru.Core.Windows
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
             
             this.ctlSearch.ItemsSource = this.m_queue;
-            this.ctlRecent.ItemsSource = ArchiveManager.MarumaruLinks;
+            this.ctlMaru.ItemsSource = ArchiveManager.MarumaruLinks;
+            this.ctlArchive.ItemsSource = ArchiveManager.Archives;
 
 #if DEBUG
             var p = 1;
@@ -344,12 +345,9 @@ namespace DaruDaru.Core.Windows
                                                         .Distinct()
                                                         .Take(5)
                                                         .ToArray();
-
-                if (files.Length > 0)
-                {
-                    foreach (var file in files)
-                        StartProcess(hv, $"\"{file}\"");
-                }
+                
+                foreach (var file in files)
+                    StartProcess(hv, $"\"{file}\"");
             }
         }
 
@@ -445,53 +443,127 @@ namespace DaruDaru.Core.Windows
 
         #endregion
 
-        #region Recent
+        #region Marumaru
 
-        private void ctlRecentContextMenu_Opened(object sender, RoutedEventArgs e)
+        private void ctlMaruContextMenu_Opened(object sender, RoutedEventArgs e)
         {
-            this.ctlRecentSearch.IsEnabled =
-            this.ctlRecentOpenWeb.IsEnabled =
-            this.ctlRecent.SelectedItems.Count >= 0;
+            this.ctlMaruSearch.IsEnabled =
+            this.ctlMaruOpenWeb.IsEnabled =
+            this.ctlMaru.SelectedItems.Count >= 0;
         }
 
-        private void ctlRecentSearchNew_Click(object sender, RoutedEventArgs e)
+        private void ctlMaruSearchNew_Click(object sender, RoutedEventArgs e)
         {
             this.AddRecentSelectedItems(true);
         }
 
-        private void ctlRecentSearch_Click(object sender, RoutedEventArgs e)
+        private void ctlMaruSearch_Click(object sender, RoutedEventArgs e)
         {
             this.AddRecentSelectedItems(false);
         }
 
         private void AddRecentSelectedItems(bool addNewOnly)
         {
-            if (this.ctlRecent.SelectedItems.Count == 0)
+            if (this.ctlMaru.SelectedItems.Count == 0)
                 return;
 
-            var items = this.ctlRecent.SelectedItems.Cast<MarumaruEntry>()
-                                                    .ToArray();
+            var items = this.ctlMaru.SelectedItems.Cast<MarumaruEntry>()
+                                                  .ToArray();
 
             this.SearchUrl(addNewOnly, items, e => e.Url, e => e.Title);
         }
 
-        private void ctlRecentOpenWeb_Click(object sender, RoutedEventArgs e)
+        private void ctlMaruOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlRecent.SelectedItems.Count == 0)
+            if (this.ctlMaru.SelectedItems.Count == 0)
                 return;
 
             // 다섯개까지만 연다
-            var items = this.ctlRecent.SelectedItems.Cast<MarumaruEntry>()
-                                                    .Select(le => le.Url)
-                                                    .Distinct()
-                                                    .Take(5)
-                                                    .ToArray();
+            var items = this.ctlMaru.SelectedItems.Cast<MarumaruEntry>()
+                                                  .Select(le => le.Url)
+                                                  .Distinct()
+                                                  .Take(5)
+                                                  .ToArray();
 
             foreach (var item in items)
-                Process.Start(new ProcessStartInfo { FileName = item, UseShellExecute = true })?.Dispose();
+                StartProcess(item);
         }
 
-        private void ctlRecentItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ctlMaruItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var item = ((ListViewItem)sender).Content as MarumaruEntry;
+            if (item != null)
+                this.SearchUrl(false, item.Url, item.Title);
+        }
+
+        #endregion
+
+        #region Archived
+
+        private void ctlArchiveContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            this.ctlArchiveOpen.IsEnabled =
+            this.ctlArchiveOpenDir.IsEnabled =
+            this.ctlArchiveOpenWeb.IsEnabled =
+            this.ctlArchive.SelectedItems.Count >= 0;
+        }
+
+        private void ctlArchiveOpen_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlSearch.SelectedItems.Count == 0)
+                return;
+
+            var hv = GetHoneyView();
+            if (hv != null)
+            {
+                // 다섯개까지만 연다
+                var files = this.ctlArchive.SelectedItems.Cast<ArchiveEntry>()
+                                                         .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath) && File.Exists(le.ZipPath))
+                                                         .Select(le => le.ZipPath)
+                                                         .Distinct()
+                                                         .Take(5)
+                                                         .ToArray();
+                
+                foreach (var file in files)
+                    StartProcess(hv, $"\"{file}\"");
+            }
+        }
+
+        private void ctlArchiveOpenDir_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlSearch.SelectedItems.Count == 0)
+                return;
+            
+            // 다섯개까지만 연다
+            var files = this.ctlArchive.SelectedItems.Cast<ArchiveEntry>()
+                                                     .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
+                                                     .Select(le => Path.GetDirectoryName(le.ZipPath))
+                                                     .Where(le => Directory.Exists(le))
+                                                     .Distinct()
+                                                     .Take(5)
+                                                     .ToArray();
+            
+            foreach (var file in files)
+                OpenDir(file);
+        }
+
+        private void ctlArchiveOpenWeb_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlMaru.SelectedItems.Count == 0)
+                return;
+
+            // 다섯개까지만 연다
+            var items = this.ctlArchive.SelectedItems.Cast<ArchiveEntry>()
+                                                     .Select(le => le.Url)
+                                                     .Distinct()
+                                                     .Take(5)
+                                                     .ToArray();
+
+            foreach (var item in items)
+                StartProcess(item);
+        }
+
+        private void ctlArchive_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = ((ListViewItem)sender).Content as MarumaruEntry;
             if (item != null)

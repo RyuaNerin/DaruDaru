@@ -147,10 +147,10 @@
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="제목"
-                                            Width="220"
+                                            Width="190"
                                             DisplayMemberBinding="{Binding DisplayName, Mode=OneWay}"/>
                             <GridViewColumn Header="상태"
-                                            Width="100">
+                                            Width="90">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid HorizontalAlignment="Stretch">
@@ -196,7 +196,7 @@
                 <DataTemplate>
                     <Viewbox Width="38"
                              Height="38"
-                             ToolTip="검색 기록"
+                             ToolTip="마루마루"
                              IsHitTestVisible="False">
                         <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
                             <Path Width="38" Height="30" Canvas.Left="19" Canvas.Top="23" Stretch="Fill" Fill="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Path=(TextElement.Foreground)}" Data="F1 M 19,23L 27,23L 27,31L 19,31L 19,23 Z M 19,34L 27,34L 27,42L 19,42L 19,34 Z M 31,23L 57,23L 57,31L 31,31L 31,23 Z M 19,45L 27,45L 27,53L 19,53L 19,45 Z M 31,34L 57,34L 57,42L 31,42L 31,34 Z M 31,45L 57,45L 57,53L 31,53L 31,45 Z "/>
@@ -205,7 +205,7 @@
                 </DataTemplate>
             </TabItem.HeaderTemplate>
 
-            <ListView x:Name="ctlRecent"
+            <ListView x:Name="ctlMaru"
                       BorderBrush="{DynamicResource AccentColorBrush}"
                       BorderThickness="1"
                       ScrollViewer.VerticalScrollBarVisibility="Visible"
@@ -216,30 +216,30 @@
                         <Style TargetType="{x:Type ListViewItem}"
                                BasedOn="{StaticResource MetroListViewItem}">
                             <EventSetter Event="MouseDoubleClick"
-                                         Handler="ctlRecentItem_MouseDoubleClick" />
+                                         Handler="ctlMaruItem_MouseDoubleClick" />
                         </Style>
                     </ResourceDictionary>
                 </ListView.Resources>
 
                 <ListView.ContextMenu>
-                    <ContextMenu Opened="ctlRecentContextMenu_Opened">
+                    <ContextMenu Opened="ctlMaruContextMenu_Opened">
                         <MenuItem Header="다시 검색 (새로운 것만)"
-                                  x:Name="ctlRecentSearchNew"
-                                  Click="ctlRecentSearchNew_Click" />
+                                  x:Name="ctlMaruSearchNew"
+                                  Click="ctlMaruSearchNew_Click" />
                         <MenuItem Header="다시 검색"
-                                  x:Name="ctlRecentSearch"
-                                  Click="ctlRecentSearch_Click" />
+                                  x:Name="ctlMaruSearch"
+                                  Click="ctlMaruSearch_Click" />
                         <Separator />
                         <MenuItem Header="홈페이지 열기"
-                                  x:Name="ctlRecentOpenWeb"
-                                  Click="ctlRecentOpenWeb_Click" />
+                                  x:Name="ctlMaruOpenWeb"
+                                  Click="ctlMaruOpenWeb_Click" />
                     </ContextMenu>
                 </ListView.ContextMenu>
 
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="제목"
-                                        Width="200"
+                                        Width="220"
                                         c:GridViewSort.PropertyName="Title"
                                         DisplayMemberBinding="{Binding Title, Mode=OneWay}" />
 
@@ -251,6 +251,74 @@
                                     <TextBlock Text="{Binding LastUpdated, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
                                                TextAlignment="Center"
                                                HorizontalAlignment="Stretch" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </TabItem>
+
+        <TabItem>
+            <TabItem.HeaderTemplate>
+                <DataTemplate>
+                    <Viewbox Width="38"
+                             Height="38"
+                             ToolTip="저장된 만화"
+                             IsHitTestVisible="False">
+                        <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
+                            <Path Width="36" Height="36" Canvas.Left="20" Canvas.Top="20" Stretch="Fill" Fill="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Path=(TextElement.Foreground)}" Data="F1 M 20,20L 50.25,20L 56,25.75L 56,56L 20,56L 20,20 Z M 52,27.25L 48.75,24L 48,24L 48,37L 28,37L 28,24L 24,24L 24,52L 52,52L 52,27.25 Z M 39,24L 39,34L 44,34L 44,24L 39,24 Z "/>
+                        </Canvas>
+                    </Viewbox>
+                </DataTemplate>
+            </TabItem.HeaderTemplate>
+
+            <ListView x:Name="ctlArchive"
+                      BorderBrush="{DynamicResource AccentColorBrush}"
+                      BorderThickness="1"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      c:GridViewSort.AutoSort="True">
+                <ListView.Resources>
+                    <ResourceDictionary>
+                        <Style TargetType="{x:Type ListViewItem}"
+                               BasedOn="{StaticResource MetroListViewItem}">
+                            <EventSetter Event="MouseDoubleClick"
+                                         Handler="ctlArchive_MouseDoubleClick" />
+                        </Style>
+                    </ResourceDictionary>
+                </ListView.Resources>
+
+                <ListView.ContextMenu>
+                    <ContextMenu Opened="ctlArchiveContextMenu_Opened">
+                        <MenuItem Header="꿀뷰로 열기"
+                                  x:Name="ctlArchiveOpen"
+                                  Click="ctlArchiveOpen_Click" />
+                        <MenuItem Header="폴더 열기"
+                                  x:Name="ctlArchiveOpenDir"
+                                  Click="ctlArchiveOpenDir_Click" />
+                        <Separator />
+                        <MenuItem Header="홈페이지 열기"
+                                  x:Name="ctlArchiveOpenWeb"
+                                  Click="ctlArchiveOpenWeb_Click" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="제목"
+                                        Width="220"
+                                        c:GridViewSort.PropertyName="TitleWithNo"
+                                        DisplayMemberBinding="{Binding TitleWithNo, Mode=OneWay}" />
+
+                        <GridViewColumn Header="저장된 날자"
+                                        Width="130"
+                                        c:GridViewSort.PropertyName="Archived">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Archived, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
+                                               TextAlignment="Center"
+                                               HorizontalAlignment="Center" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
