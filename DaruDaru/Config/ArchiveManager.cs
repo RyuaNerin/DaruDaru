@@ -41,7 +41,7 @@ namespace DaruDaru.Config
                     ArchiveHash.Clear();
         }
 
-        public static void UpdateMarumaru(string mangaCode, string mangaTitle)
+        public static void UpdateMarumaru(string maruCode, string title)
         {
             lock (MarumaruLinks)
             {
@@ -51,7 +51,7 @@ namespace DaruDaru.Config
                 for (var i = 0; i < MarumaruLinks.Count; ++i)
                 {
                     entry = MarumaruLinks[i];
-                    if (entry.MaruCode == mangaCode)
+                    if (entry.MaruCode == maruCode)
                     {
                         found = true;
                         break;
@@ -62,13 +62,13 @@ namespace DaruDaru.Config
                 {
                     entry = new MarumaruEntry
                     {
-                        MaruCode = mangaCode
+                        MaruCode = maruCode
                     };
 
                     Application.Current.Dispatcher.Invoke(new Action<MarumaruEntry>(MarumaruLinks.Add), entry);
                 }
 
-                entry.Title = mangaTitle;
+                entry.Title = title;
                 entry.LastUpdated = DateTime.Now;
             }
         }
