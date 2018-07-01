@@ -36,7 +36,7 @@
             <Style TargetType="TextBox"
                    BasedOn="{StaticResource MetroTextBox}">
                 <Setter Property="TextWrapping" Value="NoWrap" />
-                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
             </Style>
         </ResourceDictionary>
     </metro:MetroWindow.Resources>
