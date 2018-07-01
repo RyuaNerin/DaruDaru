@@ -100,30 +100,31 @@ namespace DaruDaru.Utilities
             else
                 direction = SortDirection.Ascending;
 
-            if (view.SortDescriptions.Count > 0)
+            var curColumn = GetSortedColumnHeader(listView);
+            if (curColumn != null)
             {
-                view.SortDescriptions.Clear();
+                var layer = AdornerLayer.GetAdornerLayer(curColumn);
+                var adorner = layer.GetAdorners(curColumn)?.FirstOrDefault(e => e is SortGlyphAdorner);
 
-                var curColumn = GetSortedColumnHeader(listView);
-                if (curColumn != null)
-                {
-                    var layer = AdornerLayer.GetAdornerLayer(curColumn);
-                    var adorner = layer.GetAdorners(curColumn)?.FirstOrDefault(e => e is SortGlyphAdorner);
-
-                    if (adorner != null)
-                        layer.Remove(adorner);
-                }
+                if (adorner != null)
+                    layer.Remove(adorner);
             }
 
-            if (!string.IsNullOrEmpty(propertyName))
+            using (view.DeferRefresh())
             {
-                view.SortDescriptions.Add(new SortDescription(propertyName, (ListSortDirection)direction));
-                SetSortedColumnHeader(listView, column);
+                if (view.SortDescriptions.Count > 0)
+                    view.SortDescriptions.Clear();
+                
+                if (!string.IsNullOrEmpty(propertyName))
+                {
+                    view.SortDescriptions.Add(new SortDescription(propertyName, (ListSortDirection)direction));
+                    SetSortedColumnHeader(listView, column);
 
-                SetSortDirection(listView, direction);
+                    SetSortDirection(listView, direction);
 
-                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(column);
-                adornerLayer.Add(new SortGlyphAdorner(column, direction));
+                    AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(column);
+                    adornerLayer.Add(new SortGlyphAdorner(column, direction));
+                }
             }
         }
         
