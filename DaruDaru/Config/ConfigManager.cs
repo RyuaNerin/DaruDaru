@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using DaruDaru.Config.Entries;
 using DaruDaru.Core;
 using Newtonsoft.Json;
@@ -35,26 +36,35 @@ namespace DaruDaru.Config
             }
         }
 
+        private static readonly object SaveSync = new object();
         public static void Save()
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
-            
-            try
+            if (Monitor.TryEnter(SaveSync, 0))
             {
-                using (var fs = File.OpenWrite(ConfigPath2))
+                try
                 {
-                    fs.SetLength(0);
+                    Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
 
-                    using (var sr = new StreamWriter(fs, Encoding.UTF8))
-                    using (var br = new JsonTextWriter(sr))
-                        Serializer.Serialize(br, Instance);
+                    using (var fs = File.OpenWrite(ConfigPath2))
+                    {
+                        fs.SetLength(0);
+
+                        using (var sr = new StreamWriter(fs, Encoding.UTF8))
+                        using (var br = new JsonTextWriter(sr))
+                            Serializer.Serialize(br, Instance);
+                    }
+
+                    File.Delete(ConfigPath);
+                    File.Move(ConfigPath2, ConfigPath);
                 }
-
-                File.Delete(ConfigPath);
-                File.Move(ConfigPath2, ConfigPath);
-            }
-            catch
-            {
+                catch
+                {
+                    File.Delete(ConfigPath2);
+                }
+                finally
+                {
+                    Monitor.Exit(SaveSync);
+                }
             }
         }
 
@@ -84,6 +94,8 @@ namespace DaruDaru.Config
                 this.m_savePath = string.IsNullOrWhiteSpace(value) ? DefaultSavePath : value;
 
                 this.InvokePropertyChanged();
+
+                Save();
             }
         }
 
@@ -95,6 +107,8 @@ namespace DaruDaru.Config
             {
                 this.m_createUrlLink = value;
                 this.InvokePropertyChanged();
+
+                Save();
             }
         }
 
@@ -107,6 +121,8 @@ namespace DaruDaru.Config
                 this.m_urlLinkPath = string.IsNullOrWhiteSpace(value) ? DefaultSavePath : value;
 
                 this.InvokePropertyChanged();
+
+                Save();
             }
         }
 
@@ -116,6 +132,16 @@ namespace DaruDaru.Config
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public IList<ArchiveEntry> Archives => ArchiveManager.Archives;
 
-        public string ProtectedUrl { get; set; }
+        private string m_protectedUrl;
+        public string ProtectedUrl
+        {
+            get => this.m_protectedUrl;
+            set
+            {
+                this.m_protectedUrl = value;
+
+                Save();
+            }
+        }
     }
 }

@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Windows;
 using DaruDaru.Config.Entries;
-using System.Linq;
-using DaruDaru.Core;
-using DaruDaru.Marumaru;
 
 namespace DaruDaru.Config
 {
@@ -70,6 +68,8 @@ namespace DaruDaru.Config
 
                 entry.Title = title;
                 entry.LastUpdated = DateTime.Now;
+
+                ConfigManager.Save();
             }
         }
         
@@ -103,6 +103,8 @@ namespace DaruDaru.Config
                 }
 
                 entry.Archived = DateTime.Now;
+
+                ConfigManager.Save();
             }
         }
 
