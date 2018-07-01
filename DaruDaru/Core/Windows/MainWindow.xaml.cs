@@ -772,7 +772,7 @@ namespace DaruDaru.Core.Windows
 
             var url = await this.ShowInputAsync(null, "보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)", set);
 
-            if (string.IsNullOrWhiteSpace(url) || RegexArchive.CheckUrl(url))
+            if (string.IsNullOrWhiteSpace(url) || !RegexArchive.CheckUrl(url))
             {
                 this.ShowMessage(null, "주소를 확인해주세요", 5000);
                 this.ctlConfigDownloadProtected.IsChecked = false;

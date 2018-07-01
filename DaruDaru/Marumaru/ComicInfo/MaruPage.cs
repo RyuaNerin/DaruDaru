@@ -83,7 +83,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.IMainWindow.InsertNewComic(this, comics, !noNew);
 
                 if (noNew)
+                {
                     this.State = MaruComicState.Complete_3_NoNew;
+                    this.IMainWindow.UpdateTaskbarProgress();
+                }
 
                 count = lstArchives.Count;
 

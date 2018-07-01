@@ -169,11 +169,11 @@ namespace DaruDaru.Marumaru.ComicInfo
                     
                     // 디렉토리 수정시간 업데이트
                     Directory.SetLastWriteTime(this.ZipPath, DateTime.Now);
+                    Directory.SetCreationTime(this.ZipPath, DateTime.Now);
                 }
                 else
                     this.State = MaruComicState.Complete_2_Archived;
-
-
+                
                 ArchiveManager.UpdateArchive(this.ArchiveCode, this.TitleWithNo, this.ZipPath);
             }
             catch (Exception ex)
