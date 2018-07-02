@@ -212,10 +212,10 @@ namespace DaruDaru.Utilities
                     if (xlen == 0 || ylen == 0)
                         c = xlen.CompareTo(ylen);
 
-                    else if ((char.IsDigit(x[xindex]) || x[xindex] == '.') &&
-                             (char.IsDigit(y[yindex]) || y[yindex] == '.') &&
-                             float.TryParse(x.Substring(xindex, xlen), out xint) &&
-                             float.TryParse(y.Substring(yindex, ylen), out yint))
+                    else if ((char.IsDigit(x[xindex]) || x[xindex] == '.' || x[xindex] == '-') &&
+                             (char.IsDigit(y[yindex]) || y[yindex] == '.' || y[yindex] == '-') &&
+                             float.TryParse(x.Substring(xindex, xlen).Replace('-', '.'), out xint) &&
+                             float.TryParse(y.Substring(yindex, ylen).Replace('-', '.'), out yint))
                         c = xint.CompareTo(yint);
 
                     else
@@ -253,7 +253,7 @@ namespace DaruDaru.Utilities
                 int nindex = xindex + 1;
                 while (nindex < x.Length)
                 {
-                    if (isFloat != (char.IsDigit(x[nindex]) || x[nindex] == '.'))
+                    if (isFloat != (char.IsDigit(x[nindex]) || x[nindex] == '.' || x[nindex] == '-'))
                         break;
 
                     nindex++;
