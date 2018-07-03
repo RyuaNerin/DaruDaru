@@ -357,11 +357,11 @@ namespace DaruDaru.Core.Windows
 
             // 다섯개까지만 연다
             var urls = this.ctlSearch.SelectedItems.Cast<Comic>()
-                                                    .Where(le => !string.IsNullOrWhiteSpace(le.Url))
-                                                    .Select(le => le.Url)
-                                                    .Distinct()
-                                                    .Take(5)
-                                                    .ToArray();
+                                                   .Where(le => !string.IsNullOrWhiteSpace(le.Url))
+                                                   .Select(le => le.Url)
+                                                   .Distinct()
+                                                   .Take(5)
+                                                   .ToArray();
 
             foreach (var url in urls)
                 StartProcess(url);
