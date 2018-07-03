@@ -19,7 +19,7 @@ namespace DaruDaru.Config
 
         static ConfigManager()
         {
-            Serializer.Formatting = Formatting.Indented;
+            //Serializer.Formatting = Formatting.Indented;
 
             if (File.Exists(ConfigPath))
             {
