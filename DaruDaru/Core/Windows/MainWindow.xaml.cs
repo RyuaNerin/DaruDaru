@@ -509,7 +509,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlArchiveOpen_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlSearch.SelectedItems.Count == 0)
+            if (this.ctlArchive.SelectedItems.Count == 0)
                 return;
 
             var hv = GetHoneyView();
@@ -530,7 +530,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlArchiveOpenDir_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlSearch.SelectedItems.Count == 0)
+            if (this.ctlArchive.SelectedItems.Count == 0)
                 return;
             
             // 다섯개까지만 연다
@@ -548,7 +548,7 @@ namespace DaruDaru.Core.Windows
 
         private void ctlArchiveOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlMaru.SelectedItems.Count == 0)
+            if (this.ctlArchive.SelectedItems.Count == 0)
                 return;
 
             // 다섯개까지만 연다
