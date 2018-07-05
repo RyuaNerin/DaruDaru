@@ -13,7 +13,7 @@ namespace DaruDaru.Config
         public static ObservableCollection<MarumaruEntry> MarumaruLinks { get; } = new ObservableCollection<MarumaruEntry>();
 
         public static ObservableCollection<ArchiveEntry> Archives { get; } = new ObservableCollection<ArchiveEntry>();
-        private static readonly HashSet<string> ArchiveHash = new HashSet<string>();
+        private static readonly HashSet<string> ArchiveHash = new HashSet<string>(StringComparer.Ordinal);
 
         static ArchiveManager()
         {
@@ -49,7 +49,7 @@ namespace DaruDaru.Config
                 for (var i = 0; i < MarumaruLinks.Count; ++i)
                 {
                     entry = MarumaruLinks[i];
-                    if (entry.MaruCode == maruCode)
+                    if (string.Equals(entry.MaruCode, maruCode, StringComparison.OrdinalIgnoreCase))
                     {
                         found = true;
                         break;
@@ -83,7 +83,7 @@ namespace DaruDaru.Config
                 for (var i = 0; i < Archives.Count; ++i)
                 {
                     entry = Archives[i];
-                    if (entry.ArchiveCode == archiveCode)
+                    if (string.Equals(entry.ArchiveCode, archiveCode, StringComparison.OrdinalIgnoreCase))
                     {
                         found = true;
                         break;
@@ -95,7 +95,7 @@ namespace DaruDaru.Config
                     entry = new ArchiveEntry
                     {
                         ArchiveCode = archiveCode,
-                        TitleWithNo   = fullTitle,
+                        TitleWithNo = fullTitle,
                         ZipPath     = zipPath,
                     };
 
@@ -117,7 +117,7 @@ namespace DaruDaru.Config
                 for (var i = 0; i < Archives.Count; ++i)
                 {
                     entry = Archives[i];
-                    if (entry.ArchiveCode == archiveCode)
+                    if (string.Equals(entry.ArchiveCode, archiveCode, StringComparison.OrdinalIgnoreCase))
                         return entry;
                 }
 
