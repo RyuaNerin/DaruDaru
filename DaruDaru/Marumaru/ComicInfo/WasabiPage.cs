@@ -16,8 +16,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class WasabiPage : Comic
     {
-        public WasabiPage(IMainWindow mainWindow, bool addNewOnly, string url, string title, string tempTitleWithNo = null)
-            : base(mainWindow, true, addNewOnly, url, title)
+        public WasabiPage(IMainWindow mainWindow, bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
+            : base(mainWindow, addNewOnly, uri, title)
         {
             this.TitleWithNo = tempTitleWithNo;
 
@@ -36,20 +36,19 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         public string ZipPath { get; set; }
 
-        public string ArchiveCode => RegexArchive.GetCode(this.Url);
+        public string ArchiveCode => RegexArchive.GetCode(this.Uri);
         
         private class ImageInfomation
         {
             public int Index;
-            public string ImageUrl;
+            public Uri ImageUri;
             public string TempPath;
             public string Extension;
         }
         protected override bool GetInfomationPriv(ref int count)
         {
             var lst = new List<ImageInfomation>();
-
-            var baseUri = new Uri(this.Url);
+            Uri newUri = null;
 
             using (var wc = new WebClientEx())
             {
@@ -57,10 +56,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                 
                 var success = Retry(() =>
                 {
-                    wc.Headers.Set(HttpRequestHeader.Referer, this.Url);
-                    var body = wc.DownloadString(this.Url);
+                    wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
+                    var body = wc.DownloadString(this.Uri);
 
-                    baseUri = wc.ResponseUri ?? baseUri;
+                    newUri = wc.ResponseUri ?? this.Uri;
 
                     doc.LoadHtml(body);
 
@@ -87,7 +86,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                             lst.Add(new ImageInfomation
                             {
                                 Index = lst.Count + 1,
-                                ImageUrl = new Uri(baseUri, img.Attributes["data-src"].Value).AbsoluteUri,
+                                ImageUri = new Uri(newUri, img.Attributes["data-src"].Value),
                                 TempPath = Path.GetTempFileName()
                             });
                     }
@@ -98,7 +97,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         var sig = Uri.EscapeDataString(galleryTemplate.Attributes["data-signature"].Value);
                         var key = Uri.EscapeDataString(galleryTemplate.Attributes["data-key"].Value);
 
-                        wc.Headers.Set(HttpRequestHeader.Referer, this.Url);
+                        wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
                         var jsonDoc = wc.DownloadString($"http://wasabisyrup.com/assets/{this.ArchiveCode}/1.json?signature={sig}&key={key}");
 
                         var json = JsonConvert.DeserializeObject<Assets>(jsonDoc);
@@ -110,7 +109,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                             lst.Add(new ImageInfomation
                             {
                                 Index = lst.Count + 1,
-                                ImageUrl = new Uri(baseUri, img).AbsoluteUri,
+                                ImageUri = new Uri(newUri, img),
                                 TempPath = Path.GetTempFileName()
                             });
                     }
@@ -132,7 +131,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 }
             }
 
-            this.Url = baseUri.AbsoluteUri;
+            this.Uri = newUri;
 
             this.ProgressValue = 0;
             this.ProgressMaximum = lst.Count;
@@ -166,10 +165,11 @@ namespace DaruDaru.Marumaru.ComicInfo
                     this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.ZipPath).Length);
 
                     this.State = MaruComicState.Complete_1_Downloaded;
-                    
+
                     // 디렉토리 수정시간 업데이트
-                    Directory.SetLastWriteTime(this.ZipPath, DateTime.Now);
                     Directory.SetCreationTime(this.ZipPath, DateTime.Now);
+                    Directory.SetLastWriteTime(this.ZipPath, DateTime.Now);
+                    Directory.SetLastAccessTime(this.ZipPath, DateTime.Now);
                 }
                 else
                     this.State = MaruComicState.Complete_2_Archived;
@@ -222,10 +222,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                         {
                             var succ = Retry(() =>
                             {
-                                var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUrl));
+                                var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri));
                                 if (req is HttpWebRequest hreq)
                                 {
-                                    hreq.Referer = this.Url;
+                                    hreq.Referer = this.Uri.AbsoluteUri;
                                     hreq.AllowWriteStreamBuffering = false;
                                     hreq.AllowReadStreamBuffering = false;
                                 }
@@ -299,7 +299,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             using (var zipFile = new FileStream(this.ZipPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var zipStream = new ZipOutputStream(zipFile))
             {
-                zipStream.SetComment(this.Url);
+                zipStream.SetComment(this.Uri.AbsoluteUri + "\nby DaruDaru");
                 zipStream.SetLevel(0);
 
                 var buff = new byte[4096];

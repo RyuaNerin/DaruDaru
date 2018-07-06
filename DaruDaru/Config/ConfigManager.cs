@@ -133,7 +133,7 @@ namespace DaruDaru.Config
         public IList<ArchiveEntry> Archives => ArchiveManager.Archives;
 
         private string m_protectedUrl;
-        public string ProtectedUrl
+        public string ProtectedUri
         {
             get => this.m_protectedUrl;
             set

@@ -35,15 +35,15 @@ namespace DaruDaru.Marumaru.ComicInfo
 
     internal abstract class Comic : INotifyPropertyChanged
     {
-        public static Comic CreateForSearch(IMainWindow mainWindow, bool addNewOnly, string url, string title)
+        public static Comic CreateForSearch(IMainWindow mainWindow, bool addNewOnly, Uri uri, string title)
         {
-            if (RegexComic.CheckUrl(url))
-                return new MaruPage(mainWindow, addNewOnly, url, title);
+            if (RegexComic.CheckUri(uri))
+                return new MaruPage(mainWindow, addNewOnly, uri, title);
 
-            if (RegexArchive.CheckUrl(url))
-                return new WasabiPage(mainWindow, addNewOnly, url, title);
+            if (RegexArchive.CheckUri(uri))
+                return new WasabiPage(mainWindow, addNewOnly, uri, title);
 
-            return new UnknownPage(mainWindow, addNewOnly, url, title);
+            return new UnknownPage(mainWindow, addNewOnly, uri, title);
         }
 
         private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
@@ -86,15 +86,14 @@ namespace DaruDaru.Marumaru.ComicInfo
             return false;
         }
 
-        public Comic(IMainWindow mainWindow, bool isRootItem, bool addNewOnly, string url, string title)
+        public Comic(IMainWindow mainWindow, bool addNewOnly, Uri uri, string title)
         {
             this.ConfigCur = ConfigManager.Cur;
 
             this.IMainWindow = mainWindow;
-            this.RootItem = isRootItem;
             this.AddNewonly = addNewOnly;
 
-            this.Url = url;
+            this.Uri   = uri;
             this.Title = title;
         }
         
@@ -105,11 +104,8 @@ namespace DaruDaru.Marumaru.ComicInfo
         /// <summary>새 작품 검색하기로 추가된 경우</summary>
         protected internal bool AddNewonly { get; private set; }
 
-        /// <summary>큐에 직접 추가된 아이템</summary>
-        protected internal bool RootItem { get; private set; }
-
         // Redirect 의 경우에 주소가 바뀌는 경우가 있다.
-        public string Url { get; protected set; }
+        public Uri Uri { get; protected set; }
 
         private string m_title;
         public string Title
@@ -133,7 +129,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             }
         }
 
-        public string DisplayName => this.TitleWithNo ?? (this.Title ?? this.Url);
+        public string DisplayName => this.TitleWithNo ?? (this.Title ?? this.Uri.AbsoluteUri);
 
         private long m_state = (long)MaruComicState.Wait;
         public MaruComicState State

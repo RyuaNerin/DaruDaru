@@ -18,12 +18,12 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_maruCode = value;
-                this.Url = $"https://www.marumaru.in/b/manga/" + value;
+                this.Uri = new Uri($"https://www.marumaru.in/b/manga/" + value);
             }
         }
 
         [JsonIgnore]
-        public string Url { get; private set; }
+        public Uri Uri { get; private set; }
 
         public string Title { get; set; }
 

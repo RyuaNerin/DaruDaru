@@ -12,22 +12,21 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class MaruPage : Comic
     {
-        public MaruPage(IMainWindow mainWindow, bool addNewOnly, string url, string comicName)
-            : base(mainWindow, true, addNewOnly, url, comicName)
+        public MaruPage(IMainWindow mainWindow, bool addNewOnly, Uri uri, string comicName)
+            : base(mainWindow, addNewOnly, uri, comicName)
         {
         }
 
         struct WasabisyrupLinks
         {
-            public string Url;
+            public Uri Uri;
             public string TitleNo;
         }
 
         protected override bool GetInfomationPriv(ref int count)
         {
             var lstArchives = new List<WasabisyrupLinks>();
-
-            var baseUri = new Uri(this.Url);
+            Uri newUri = null;
 
             using (var wc = new WebClientEx())
             {
@@ -35,23 +34,25 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 var success = Retry(() =>
                 {
-                    doc.LoadHtml(wc.DownloadString(this.Url));
+                    doc.LoadHtml(wc.DownloadString(this.Uri));
+
+                    newUri = wc.ResponseUri ?? this.Uri;
 
                     this.Title = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
 
                     string titleNo;
                     foreach (var a in doc.DocumentNode.SelectSingleNode("//div[@class='content']").SelectNodes(".//a[@href]"))
                     {
-                        var a_url = new Uri(baseUri, a.Attributes["href"].Value).AbsoluteUri;
+                        var a_uri = new Uri(newUri, a.Attributes["href"].Value);
 
-                        if (RegexArchive.CheckUrl(a_url))
+                        if (RegexArchive.CheckUri(a_uri))
                         {
                             titleNo = a.InnerText;
 
                             if (!string.IsNullOrWhiteSpace(titleNo))
                                 lstArchives.Add(new WasabisyrupLinks
                                 {
-                                    Url = a_url,
+                                    Uri     = a_uri,
                                     TitleNo = ReplcaeHtmlTag(a.InnerText)
                                 });
                         }
@@ -67,16 +68,18 @@ namespace DaruDaru.Marumaru.ComicInfo
                 }
             }
 
+            this.Uri = newUri;
+
             try
             {
-                ArchiveManager.UpdateMarumaru(RegexComic.GetCode(this.Url), this.Title);
+                ArchiveManager.UpdateMarumaru(RegexComic.GetCode(this.Uri), this.Title);
 
                 IEnumerable<WasabisyrupLinks> items = lstArchives;
 
                 if (this.AddNewonly)
-                    items = ArchiveManager.IsNewArchive(items, e => RegexArchive.GetCode(e.Url));
+                    items = ArchiveManager.IsNewArchive(items, e => RegexArchive.GetCode(e.Uri));
 
-                var comics = items.Select(e => new WasabiPage(this.IMainWindow, this.AddNewonly, e.Url, this.Title, e.TitleNo)).ToArray();
+                var comics = items.Select(e => new WasabiPage(this.IMainWindow, this.AddNewonly, e.Uri, this.Title, e.TitleNo)).ToArray();
                 
                 var noNew = this.AddNewonly && comics.Length == 0;
 
@@ -94,7 +97,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (this.ConfigCur.CreateUrlLink)
                 {
                     Directory.CreateDirectory(this.ConfigCur.UrlLinkPath);
-                    File.WriteAllText(Path.Combine(this.ConfigCur.UrlLinkPath, $"{ReplaceInvalid(this.Title)}.url"), $"[InternetShortcut]\r\nURL=" + this.Url);
+
+                    var path = Path.Combine(this.ConfigCur.UrlLinkPath, $"{ReplaceInvalid(this.Title)}.url");
+                    if (!File.Exists(path))
+                        File.WriteAllText(path, $"[InternetShortcut]\r\nURL=" + this.Uri.AbsoluteUri);
                 }
 
                 return count > 0;

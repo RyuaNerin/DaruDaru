@@ -18,12 +18,12 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_archiveCode = value;
-                this.Url = $"http://wasabisyrup.com/archives/{value}/";
+                this.Uri = new Uri($"http://wasabisyrup.com/archives/{value}/");
             }
         }
 
         [JsonIgnore]
-        public string Url { get; private set; }
+        public Uri Uri { get; private set; }
 
         public string TitleWithNo { get; set; }
 

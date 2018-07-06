@@ -74,15 +74,15 @@ namespace DaruDaru.Core.Windows
             }
         }
         
-        public void SearchUrl(bool addNewOnly, string url, string comicName)
+        public void SearchUri(bool addNewOnly, Uri uri, string comicName)
         {
             lock (this.m_queue)
-                if (this.CheckExisted(url))
-                    this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, url, comicName));
+                if (this.CheckExisted(uri))
+                    this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, uri, comicName));
             
             this.m_eventQueue.Set();
         }
-        public void SearchUrl<T>(bool addNewOnly, IEnumerable<T> src, Func<T, string> toUrl, Func<T, string> toComicName)
+        public void SearchUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName)
         {
             int count = 0;
             
@@ -92,10 +92,10 @@ namespace DaruDaru.Core.Windows
                 {
                     count++;
 
-                    var url = toUrl(item);
+                    var uri = toUri(item);
 
-                    if (this.CheckExisted(url))
-                        this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, url, toComicName?.Invoke(item)));
+                    if (this.CheckExisted(uri))
+                        this.m_queue.Add(Comic.CreateForSearch(this, addNewOnly, uri, toComicName?.Invoke(item)));
                 }
             }
 
@@ -120,17 +120,17 @@ namespace DaruDaru.Core.Windows
                     index += 1;
 
                 foreach (var newItem in newItems)
-                    if (this.CheckExisted(newItem.Url))
+                    if (this.CheckExisted(newItem.Uri))
                         this.m_queue.Insert(index++, newItem);
 
                 this.m_eventQueue.Set();
             }
         }
 
-        private bool CheckExisted(string url)
+        private bool CheckExisted(Uri uri)
         {
             for (int i = 0; i < this.m_queue.Count; ++i)
-                if (this.m_queue[i].Url == url)
+                if (this.m_queue[i].Uri == uri)
                     return false;
 
             return true;
@@ -174,16 +174,16 @@ namespace DaruDaru.Core.Windows
 
         private void ctlSearchDownload_Click(object sender, RoutedEventArgs e)
         {
-            var url = this.ctlSearchUrl.Text.Trim();
+            var uriString = this.ctlSearchUrl.Text.Trim();
 
-            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            if (!Uri.TryCreate(uriString, UriKind.Absolute, out Uri uri))
             {
                 this.ctlSearchUrl.SelectAll();
                 this.ctlSearchUrl.Focus();
                 return;
             }
 
-            this.SearchUrl(false, url, null);
+            this.SearchUri(false, uri, null);
 
             this.ctlSearchUrl.Text = null;
             this.ctlSearchUrl.Focus();
@@ -356,15 +356,15 @@ namespace DaruDaru.Core.Windows
                 return;
 
             // 다섯개까지만 연다
-            var urls = this.ctlSearch.SelectedItems.Cast<Comic>()
-                                                   .Where(le => !string.IsNullOrWhiteSpace(le.Url))
-                                                   .Select(le => le.Url)
+            var uris = this.ctlSearch.SelectedItems.Cast<Comic>()
+                                                   .Where(le => le.Uri != null)
+                                                   .Select(le => le.Uri.AbsoluteUri)
                                                    .Distinct()
                                                    .Take(5)
                                                    .ToArray();
 
-            foreach (var url in urls)
-                StartProcess(url);
+            foreach (var uri in uris)
+                StartProcess(uri);
         }
 
         private void ctlSearchRetry_Click(object sender, RoutedEventArgs e)
@@ -469,7 +469,7 @@ namespace DaruDaru.Core.Windows
             var items = this.ctlMaru.SelectedItems.Cast<MarumaruEntry>()
                                                   .ToArray();
 
-            this.SearchUrl(addNewOnly, items, e => e.Url, e => e.Title);
+            this.SearchUri(addNewOnly, items, e => e.Uri, e => e.Title);
         }
 
         private void ctlMaruOpenWeb_Click(object sender, RoutedEventArgs e)
@@ -479,7 +479,7 @@ namespace DaruDaru.Core.Windows
 
             // 다섯개까지만 연다
             var items = this.ctlMaru.SelectedItems.Cast<MarumaruEntry>()
-                                                  .Select(le => le.Url)
+                                                  .Select(le => le.Uri.AbsoluteUri)
                                                   .Distinct()
                                                   .Take(5)
                                                   .ToArray();
@@ -492,7 +492,7 @@ namespace DaruDaru.Core.Windows
         {
             var item = ((ListViewItem)sender).Content as MarumaruEntry;
             if (item != null)
-                this.SearchUrl(false, item.Url, item.Title);
+                this.SearchUri(false, item.Uri, item.Title);
         }
 
         #endregion
@@ -553,7 +553,7 @@ namespace DaruDaru.Core.Windows
 
             // 다섯개까지만 연다
             var items = this.ctlArchive.SelectedItems.Cast<ArchiveEntry>()
-                                                     .Select(le => le.Url)
+                                                     .Select(le => le.Uri.AbsoluteUri)
                                                      .Distinct()
                                                      .Take(5)
                                                      .ToArray();
@@ -566,7 +566,7 @@ namespace DaruDaru.Core.Windows
         {
             var item = ((ListViewItem)sender).Content as MarumaruEntry;
             if (item != null)
-                this.SearchUrl(false, item.Url, item.Title);
+                this.SearchUri(false, item.Uri, item.Title);
         }
 
         #endregion
@@ -591,11 +591,13 @@ namespace DaruDaru.Core.Windows
             if (e.Data.GetDataPresent(DataFormats.FileDrop) && e.Data.GetData(DataFormats.FileDrop) is string[] files)
                 succ = files.Any(le => le.EndsWith(".url"));
 
-            else if (e.Data.GetDataPresent("text/x-moz-url") && !string.IsNullOrEmpty(GetStringFromMemoryStream(e.Data, "text/x-moz-url")))
-                succ = true;
+            else
+            {
+                Uri uri;
 
-            else if (e.Data.GetDataPresent("UniformResourceLocatorW") && !string.IsNullOrEmpty(GetStringFromMemoryStream(e.Data, "UniformResourceLocatorW")))
-                succ = true;
+                succ = GetUriFromStream(out uri, e.Data, "text/x-moz-url") ||
+                       GetUriFromStream(out uri, e.Data, "UniformResourceLocatorW");
+            }
 
             if (succ)
             {
@@ -622,56 +624,51 @@ namespace DaruDaru.Core.Windows
                 var data = e.Data.GetData(DataFormats.FileDrop) as string[];
                 if (data != null)
                 {
-                    var urls = data.Where(le => le.EndsWith(".url"))
+                    var uris = data.Where(le => le.EndsWith(".url"))
                                    .SelectMany(le => File.ReadAllLines(le).Where(lee => lee.StartsWith("URL=", StringComparison.CurrentCultureIgnoreCase)))
-                                   .Select(le => le.Substring(4))
+                                   .Select(le => new Uri(le.Substring(4)))
                                    .ToArray();
 
-                    this.SearchUrl(false, urls, le => le, null);
+                    this.SearchUri(false, uris, le => le, null);
                 }
             }
-
-            else if (e.Data.GetDataPresent("text/x-moz-url"))
+            else
             {
-                var url = GetStringFromMemoryStream(e.Data, "text/x-moz-url");
-                if (!string.IsNullOrWhiteSpace(url))
-                    this.SearchUrl(false, url, null);
-            }
+                Uri uri;
 
-            else if (e.Data.GetDataPresent("UniformResourceLocatorW"))
-            {
-                var url = GetStringFromMemoryStream(e.Data, "UniformResourceLocatorW");
-                if (!string.IsNullOrWhiteSpace(url))
-                    this.SearchUrl(false, url, null);
+                if (GetUriFromStream(out uri, e.Data, "text/x-moz-url") ||
+                    GetUriFromStream(out uri, e.Data, "UniformResourceLocatorW"))
+                    this.SearchUri(false, uri, null);
             }
 
             SetDragDropAdnorner(false);
         }
 
-        private static string GetStringFromMemoryStream(IDataObject e, string dataFormat)
+        private static bool GetUriFromStream(out Uri uri, IDataObject e, string dataFormat)
         {
             if (e.GetDataPresent(dataFormat) &&
                 e.GetData(dataFormat, false) is MemoryStream dt)
             {
-                string url;
+                string UriString;
 
                 using (dt)
                 {
                     dt.Position = 0;
-                    url = Encoding.Unicode.GetString(dt.ToArray());
+                    UriString = Encoding.Unicode.GetString(dt.ToArray());
                 }
 
-                var e0 = url.IndexOf('\0');
+                var e0 = UriString.IndexOf('\0');
                 if (e0 > 0)
-                    url = url.Substring(0, e0);
+                    UriString = UriString.Substring(0, e0);
 
-                url = url.Split(new char[] { '\r', '\n' })[0];
+                UriString = UriString.Split(new char[] { '\r', '\n' })[0];
 
-                if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
-                    return url;
+                if (Uri.TryCreate(UriString, UriKind.Absolute, out uri))
+                    return true;
             }
 
-            return null;
+            uri = null;
+            return false;
         }
 
         #endregion
@@ -767,19 +764,21 @@ namespace DaruDaru.Core.Windows
         {
             var set = new MetroDialogSettings
             {
-                DefaultText = ConfigManager.Instance.ProtectedUrl
+                DefaultText = ConfigManager.Instance.ProtectedUri
             };
 
-            var url = await this.ShowInputAsync(null, "보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)", set);
+            var uriStr = await this.ShowInputAsync(null, "보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)", set);
 
-            if (string.IsNullOrWhiteSpace(url) || !RegexArchive.CheckUrl(url))
+            if (string.IsNullOrWhiteSpace(uriStr) ||
+                Uri.TryCreate(uriStr, UriKind.Absolute, out Uri uri) ||
+                !RegexArchive.CheckUri(uri))
             {
                 this.ShowMessage(null, "주소를 확인해주세요", 5000);
                 this.ctlConfigDownloadProtected.IsChecked = false;
                 return;
             }
 
-            var wnd = new Recaptcha(url)
+            var wnd = new Recaptcha(uriStr)
             {
                 Owner = this
             };
@@ -806,7 +805,7 @@ namespace DaruDaru.Core.Windows
                 return;
             }
 
-            ConfigManager.Instance.ProtectedUrl = url;
+            ConfigManager.Instance.ProtectedUri = uriStr;
 
             this.ctlConfigDownloadProtected.IsEnabled = false;
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 
 namespace DaruDaru.Marumaru
@@ -9,17 +10,17 @@ namespace DaruDaru.Marumaru
 .Replace("@", @"[\w\-\._~:\/#\[\]@!\$&'\(\)\*\+,;=.%]"),
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static bool CheckUrl(string url)
-            => string.IsNullOrWhiteSpace(url) ? false : Re.IsMatch(url);
+        public static bool CheckUri(Uri uri)
+            => Re.IsMatch(uri.AbsoluteUri);
 
-        public static string GetUrl(string code)
-            => "https://marumaru.in/b/manga/" + code;
+        public static Uri GetUri(string code)
+            => new Uri("https://marumaru.in/b/manga/" + code);
 
-        public static string GetCode(string url)
+        public static string GetCode(Uri uri)
         {
-            if (url == null) return null;
+            if (uri == null) return null;
 
-            var m = Re.Match(url);
+            var m = Re.Match(uri.AbsoluteUri);
             if (m.Success)
                 return m.Groups[1].Value;
             else
@@ -32,17 +33,17 @@ namespace DaruDaru.Marumaru
             @"^https?:\/\/(?:[^\.]*\.)?(?:mangaumaru\.com|shencomics\.com|yuncomics\.com|wasabisyrup\.com)\/archives\/([^\?""']+)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static bool CheckUrl(string url)
-            => string.IsNullOrWhiteSpace(url) ? false : Re.IsMatch(url);
+        public static bool CheckUri(Uri uri)
+            => Re.IsMatch(uri.AbsoluteUri);
 
-        public static string GetUrl(string code)
-            => "http://wasabisyrup.com/archives/" + code;
+        public static Uri GetUri(string code)
+            => new Uri("http://wasabisyrup.com/archives/" + code);
 
-        public static string GetCode(string url)
+        public static string GetCode(Uri uri)
         {
-            if (url == null) return null;
+            if (uri == null) return null;
 
-            var m = Re.Match(url);
+            var m = Re.Match(uri.AbsoluteUri);
             if (m.Success)
                 return m.Groups[1].Value;
             else

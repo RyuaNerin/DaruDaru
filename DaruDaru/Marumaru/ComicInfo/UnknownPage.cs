@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using DaruDaru.Core.Windows;
 using DaruDaru.Utilities;
@@ -6,24 +7,24 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class UnknownPage : Comic
     {
-        public UnknownPage(IMainWindow mainWindow, bool addNewOnly, string url, string comicName)
-            : base(mainWindow, true, addNewOnly, url, comicName)
+        public UnknownPage(IMainWindow mainWindow, bool addNewOnly, Uri uri, string comicName)
+            : base(mainWindow, addNewOnly, uri, comicName)
         {
         }
 
         protected override bool GetInfomationPriv(ref int count)
         {
-            // Short url 검증용 페이지
-            string newUrl = null;
+            // Short uri 검증용 페이지
+            Uri newUri = null;
 
             var succ = Retry(() =>
             {
-                var req = WebRequest.CreateHttp(this.Url);
+                var req = WebRequest.CreateHttp(this.Uri);
                 WebClientEx.AddHeader(req);
                 req.AllowAutoRedirect = true;
 
                 using (var res = req.GetResponse() as HttpWebResponse)
-                    newUrl = res.ResponseUri.AbsoluteUri;
+                    newUri = res.ResponseUri;
 
                 return true;
             });
@@ -32,11 +33,11 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 Comic comic = null;
 
-                if (RegexComic.CheckUrl(newUrl))
-                    comic = new WasabiPage(this.IMainWindow, this.AddNewonly, newUrl, null);
+                if (RegexComic.CheckUri(newUri))
+                    comic = new WasabiPage(this.IMainWindow, this.AddNewonly, newUri, null);
 
-                else if (RegexArchive.CheckUrl(newUrl))
-                    comic = new MaruPage(this.IMainWindow, this.AddNewonly, newUrl, null);
+                else if (RegexArchive.CheckUri(newUri))
+                    comic = new MaruPage(this.IMainWindow, this.AddNewonly, newUri, null);
 
                 if (comic != null)
                     this.IMainWindow.InsertNewComic(this, new Comic[] { comic }, true);
