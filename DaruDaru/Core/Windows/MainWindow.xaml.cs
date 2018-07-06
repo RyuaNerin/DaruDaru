@@ -37,8 +37,6 @@ namespace DaruDaru.Core.Windows
 
             this.DataContext = ConfigManager.Instance;
 
-            CrashReport.Init();
-
             this.TaskbarItemInfo = new TaskbarItemInfo();
 
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));

@@ -84,13 +84,13 @@ namespace DaruDaru.Utilities
         public static T GetAncestor<T>(DependencyObject item)
             where T : DependencyObject
         {
-            do
+            while (item != null)
             {
                 item = VisualTreeHelper.GetParent(item);
+                if (item is T t)
+                    return t;
             }
-            while (!(item is T));
-
-            return item as T;
+            return null;
         }
 
         public static void ApplySort(ListView listView, GridViewColumnHeader column, string propertyName)

@@ -23,6 +23,8 @@ namespace DaruDaru.Core
 
             ServicePointManager.DefaultConnectionLimit = 16;
             ServicePointManager.MaxServicePoints = 0;
+            
+            CrashReport.Init();
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)
@@ -32,7 +34,6 @@ namespace DaruDaru.Core
 
         private static void EnsureBrowserEmulationEnabled(string exename, bool uninstall = false)
         {
-
             try
             {
                 using (var rk = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true))

@@ -218,6 +218,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     Parallel.ForEach(
                         this.m_images,
+                        po,
                         e =>
                         {
                             var succ = Retry(() =>
