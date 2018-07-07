@@ -650,9 +650,13 @@ namespace DaruDaru.Core.Windows
 
         private void ctlArchive_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = ((ListViewItem)sender).Content as MarumaruEntry;
-            if (item != null)
-                this.SearchUri(false, item.Uri, item.Title);
+            var hv = GetHoneyView();
+            if (hv != null)
+            {
+                var item = ((ListViewItem)sender).Content as ArchiveEntry;
+                if (item != null && File.Exists(item.ZipPath))
+                    StartProcess(hv, $"\"{item.ZipPath}\"");
+            }
         }
 
         private void ctlArchiveFilterText_KeyDown(object sender, KeyEventArgs e)
