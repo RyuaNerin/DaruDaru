@@ -771,7 +771,7 @@ namespace DaruDaru.Core.Windows
 
             if (string.IsNullOrWhiteSpace(uriStr) ||
                 Uri.TryCreate(uriStr, UriKind.Absolute, out Uri uri) ||
-                !RegexArchive.CheckUri(uri))
+                !DaruUriParser.Archive.CheckUri(uri))
             {
                 this.ShowMessage(null, "주소를 확인해주세요", 5000);
                 this.ctlConfigDownloadProtected.IsChecked = false;

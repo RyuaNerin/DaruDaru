@@ -45,7 +45,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         var a_uri = new Uri(newUri, a.Attributes["href"].Value);
 
-                        if (RegexArchive.CheckUri(a_uri))
+                        if (DaruUriParser.Archive.CheckUri(a_uri))
                         {
                             titleNo = a.InnerText;
 
@@ -72,12 +72,12 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             try
             {
-                ArchiveManager.UpdateMarumaru(RegexComic.GetCode(this.Uri), this.Title);
+                ArchiveManager.UpdateMarumaru(DaruUriParser.Marumaru.GetCode(this.Uri), this.Title);
 
                 IEnumerable<WasabisyrupLinks> items = lstArchives;
 
                 if (this.AddNewonly)
-                    items = ArchiveManager.IsNewArchive(items, e => RegexArchive.GetCode(e.Uri));
+                    items = ArchiveManager.IsNewArchive(items, e => DaruUriParser.Archive.GetCode(e.Uri));
 
                 var comics = items.Select(e => new WasabiPage(this.IMainWindow, this.AddNewonly, e.Uri, this.Title, e.TitleNo)).ToArray();
                 

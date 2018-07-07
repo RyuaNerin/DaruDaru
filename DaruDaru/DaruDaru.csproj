@@ -93,7 +93,7 @@
     <Compile Include="Config\Entries\ArchiveEntry.cs" />
     <Compile Include="Config\Entries\MarumaruEntry.cs" />
     <Compile Include="Marumaru\ComicInfo\UnknownPage.cs" />
-    <Compile Include="Marumaru\Regexes.cs" />
+    <Compile Include="Marumaru\DaruUriParser.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
     <Compile Include="Utilities\GridViewSort.cs" />
     <Page Include="Core\Windows\MainWindow.xaml">

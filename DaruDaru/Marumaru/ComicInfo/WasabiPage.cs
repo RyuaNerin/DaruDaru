@@ -36,7 +36,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         public string ZipPath { get; set; }
 
-        public string ArchiveCode => RegexArchive.GetCode(this.Uri);
+        public string ArchiveCode => DaruUriParser.Archive.GetCode(this.Uri);
         
         private class ImageInfomation
         {

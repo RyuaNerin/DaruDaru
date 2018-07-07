@@ -37,10 +37,10 @@ namespace DaruDaru.Marumaru.ComicInfo
     {
         public static Comic CreateForSearch(IMainWindow mainWindow, bool addNewOnly, Uri uri, string title)
         {
-            if (RegexComic.CheckUri(uri))
+            if (DaruUriParser.Marumaru.CheckUri(uri))
                 return new MaruPage(mainWindow, addNewOnly, uri, title);
 
-            if (RegexArchive.CheckUri(uri))
+            if (DaruUriParser.Archive.CheckUri(uri))
                 return new WasabiPage(mainWindow, addNewOnly, uri, title);
 
             return new UnknownPage(mainWindow, addNewOnly, uri, title);

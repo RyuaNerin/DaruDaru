@@ -19,7 +19,7 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_archiveCode = value;
-                this.Uri = RegexArchive.GetUri(value);
+                this.Uri = DaruUriParser.Archive.GetUri(value);
             }
         }
 

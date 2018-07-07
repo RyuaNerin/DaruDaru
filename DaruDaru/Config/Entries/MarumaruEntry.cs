@@ -19,7 +19,7 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_maruCode = value;
-                this.Uri = RegexComic.GetUri(value);
+                this.Uri = DaruUriParser.Marumaru.GetUri(value);
             }
         }
 

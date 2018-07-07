@@ -33,10 +33,10 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 Comic comic = null;
 
-                if (RegexComic.CheckUri(newUri))
+                if (DaruUriParser.Marumaru.CheckUri(newUri))
                     comic = new WasabiPage(this.IMainWindow, this.AddNewonly, newUri, null);
 
-                else if (RegexArchive.CheckUri(newUri))
+                else if (DaruUriParser.Archive.CheckUri(newUri))
                     comic = new MaruPage(this.IMainWindow, this.AddNewonly, newUri, null);
 
                 if (comic != null)
