@@ -39,7 +39,7 @@ namespace DaruDaru.Config
                     ArchiveHash.Clear();
         }
 
-        public static void UpdateMarumaru(string maruCode, string title)
+        public static void UpdateMarumaru(string maruCode, string title, string[] archiveCodes)
         {
             lock (MarumaruLinks)
             {
@@ -68,6 +68,7 @@ namespace DaruDaru.Config
 
                 entry.Title = title;
                 entry.LastUpdated = DateTime.Now;
+                entry.ArchiveCodes = archiveCodes;
 
                 ConfigManager.Save();
             }

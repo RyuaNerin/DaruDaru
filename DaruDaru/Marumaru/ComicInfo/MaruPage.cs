@@ -72,7 +72,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             try
             {
-                ArchiveManager.UpdateMarumaru(DaruUriParser.Marumaru.GetCode(this.Uri), this.Title);
+                ArchiveManager.UpdateMarumaru(DaruUriParser.Marumaru.GetCode(this.Uri), this.Title, lstArchives.Select(e => DaruUriParser.Archive.GetCode(e.Uri)).ToArray());
 
                 IEnumerable<WasabisyrupLinks> items = lstArchives;
 

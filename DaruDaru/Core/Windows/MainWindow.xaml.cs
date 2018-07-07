@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -30,6 +32,8 @@ namespace DaruDaru.Core.Windows
     {
         private readonly ObservableCollection<Comic> m_queue = new ObservableCollection<Comic>();
         private readonly Adorner m_dragDropAdorner;
+        private readonly ICollectionView m_viewMaru;
+        private readonly ICollectionView m_viewArchive;
 
         public MainWindow()
         {
@@ -46,7 +50,26 @@ namespace DaruDaru.Core.Windows
             this.ctlSearch.ItemsSource = this.m_queue;
             this.ctlMaru.ItemsSource = ArchiveManager.MarumaruLinks;
             this.ctlArchive.ItemsSource = ArchiveManager.Archives;
-            
+
+            this.m_viewMaru    = CollectionViewSource.GetDefaultView(this.ctlMaru   .ItemsSource);
+            this.m_viewArchive = CollectionViewSource.GetDefaultView(this.ctlArchive.ItemsSource);
+
+            this.m_viewMaru   .Filter = this.FilterMaru;
+            this.m_viewArchive.Filter = this.FilterArchive;
+
+            TextBoxHelper.SetButtonCommand(this.ctlMaruFilterText   , new SimpleCommand(e =>
+            {
+                this.ctlMaruFilterText.Text = null;
+                this.m_maruFilterEnabled = false;
+                this.m_viewMaru.Refresh();
+            }));
+            TextBoxHelper.SetButtonCommand(this.ctlArchiveFilterText, new SimpleCommand(e =>
+            {
+                this.ctlArchiveFilterText.Text = null;
+                this.m_archiveFilterEnabled = 0;
+                this.m_viewArchive.Refresh();
+            }));
+
             var p = Environment.ProcessorCount;
 
             ThreadPool.SetMinThreads(p * 2, p);
@@ -488,11 +511,74 @@ namespace DaruDaru.Core.Windows
                 StartProcess(item);
         }
 
+        private void ctlMaruArchiveSearch_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlMaru.SelectedItems.Count == 0)
+                return;
+
+            this.FilterArchiveByMarumaruEntry((MarumaruEntry)this.ctlMaru.SelectedItem);
+        }
+
         private void ctlMaruItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = ((ListViewItem)sender).Content as MarumaruEntry;
             if (item != null)
-                this.SearchUri(false, item.Uri, item.Title);
+                FilterArchiveByMarumaruEntry(item);
+        }
+
+        private void FilterArchiveByMarumaruEntry(MarumaruEntry entry)
+        {
+            this.ctlArchiveFilterText.Text = entry.Title;
+
+            this.m_archiveFilterEnabled = 2;
+            this.m_archiveFilterCodes = entry.ArchiveCodes;
+            this.m_viewArchive.Refresh();
+
+            this.ctlTab.SelectedIndex = 2;
+
+        }
+
+        private void ctlMaruFilterText_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                this.ctlMaruFilter_Click(null, null);
+        }
+
+        private void ctlMaruFilter_Click(object sender, RoutedEventArgs e)
+        {
+            var str = this.ctlMaruFilterText.Text;
+
+            if (string.IsNullOrWhiteSpace(str))
+                this.m_maruFilterEnabled = false;
+            else
+            {
+                this.m_maruFilterEnabled = true;
+                this.m_maruFilterByCode = Uri.TryCreate(str, UriKind.Absolute, out Uri uri);
+
+                if (this.m_maruFilterByCode)
+                    this.m_maruFilterStr = DaruUriParser.Marumaru.GetCode(uri);
+                else
+                    this.m_maruFilterStr = str;
+            }
+
+            this.m_viewMaru.Refresh();
+        }
+
+        private bool     m_maruFilterEnabled = false;
+        private bool     m_maruFilterByCode;
+        private string   m_maruFilterStr;
+        private bool FilterMaru(object o)
+        {
+            if (!this.m_maruFilterEnabled)
+                return true;
+
+            var entry = (MarumaruEntry)o;
+
+            if (this.m_maruFilterByCode)
+                return entry.MaruCode == this.m_maruFilterStr;
+            else
+                return entry.Title.Contains(this.m_maruFilterStr);
+
         }
 
         #endregion
@@ -569,6 +655,55 @@ namespace DaruDaru.Core.Windows
                 this.SearchUri(false, item.Uri, item.Title);
         }
 
+        private void ctlArchiveFilterText_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                this.ctlArchiveFilter_Click(null, null);
+        }
+
+        private void ctlArchiveFilter_Click(object sender, RoutedEventArgs e)
+        {
+            var str = this.ctlArchiveFilterText.Text;
+
+            if (string.IsNullOrWhiteSpace(str))
+                this.m_archiveFilterEnabled = 0;
+            else
+            {
+                this.m_archiveFilterEnabled = 1;
+                this.m_archiveFilterByCode = Uri.TryCreate(str, UriKind.Absolute, out Uri uri);
+
+                if (this.m_archiveFilterByCode)
+                    this.m_archiveFilterStr = DaruUriParser.Archive.GetCode(uri);
+                else
+                    this.m_archiveFilterStr = str;
+            }
+
+            this.m_viewArchive.Refresh();
+        }
+
+        private byte     m_archiveFilterEnabled = 0;
+        private bool     m_archiveFilterByCode;
+        private string[] m_archiveFilterCodes;
+        private string   m_archiveFilterStr;
+        private bool FilterArchive(object o)
+        {
+            if (this.m_archiveFilterEnabled == 0)
+                return true;
+
+            var entry = (ArchiveEntry)o;
+
+            if (this.m_archiveFilterEnabled == 1)
+            {
+                if (this.m_archiveFilterByCode)
+                    return entry.ArchiveCode == this.m_archiveFilterStr;
+                else
+                    return entry.TitleWithNo.Contains(this.m_archiveFilterStr);
+            }
+            else
+                return Array.IndexOf<string>(this.m_archiveFilterCodes, entry.ArchiveCode) >= 0;
+
+        }
+
         #endregion
 
         #region Drag Drop
@@ -584,7 +719,7 @@ namespace DaruDaru.Core.Windows
 
             this.m_dragDropAdornerEnabled = value;
         }
-        private void ctlSearchGrid_DragEnter(object sender, DragEventArgs e)
+        private void MetroWindow_DragEnter(object sender, DragEventArgs e)
         {
             var succ = false;
 
@@ -607,17 +742,17 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        private void ctlSearchGrid_DragOver(object sender, DragEventArgs e)
+        private void MetroWindow_DragOver(object sender, DragEventArgs e)
         {
-            this.ctlSearchGrid_DragEnter(sender, e);
+            this.MetroWindow_DragEnter(sender, e);
         }
 
-        private void ctlSearchGrid_DragLeave(object sender, DragEventArgs e)
+        private void MetroWindow_DragLeave(object sender, DragEventArgs e)
         {
             SetDragDropAdnorner(false);
         }
 
-        private void ctlSearchGrid_Drop(object sender, DragEventArgs e)
+        private void MetroWindow_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -811,5 +946,24 @@ namespace DaruDaru.Core.Windows
         }
 
         #endregion
+
+        class SimpleCommand : ICommand
+        {
+            public SimpleCommand(Action<object> execute)
+            {
+                this.m_execute = execute;
+            }
+
+            private readonly Action<object> m_execute;
+
+            public event EventHandler CanExecuteChanged;
+
+            public bool CanExecute(object parameter)
+                => true;
+
+            public void Execute(object parameter)
+                => this.m_execute(parameter);
+
+        }
     }
 }

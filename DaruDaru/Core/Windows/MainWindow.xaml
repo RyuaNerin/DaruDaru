@@ -12,10 +12,10 @@
                    BorderThickness="1"
                    AllowDrop="True"
                    WindowStartupLocation="CenterScreen"
-                   DragOver="ctlSearchGrid_DragOver"
-                   DragLeave="ctlSearchGrid_DragLeave"
-                   DragEnter="ctlSearchGrid_DragEnter"
-                   Drop="ctlSearchGrid_Drop"
+                   DragOver="MetroWindow_DragOver"
+                   DragLeave="MetroWindow_DragLeave"
+                   DragEnter="MetroWindow_DragEnter"
+                   Drop="MetroWindow_Drop"
                    Loaded="MetroWindow_Loaded">
     <metro:MetroWindow.Resources>
         <ResourceDictionary>
@@ -23,6 +23,12 @@
                    BasedOn="{StaticResource MetroTextBox}">
                 <Setter Property="TextWrapping" Value="NoWrap" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>
+            
+            <Style TargetType="Button"
+                   BasedOn="{StaticResource MetroButton}">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="MinWidth" Value="50" />
             </Style>
 
             <Style TargetType="{x:Type ListView}">
@@ -223,56 +229,92 @@
                 </DataTemplate>
             </TabItem.HeaderTemplate>
 
-            <ListView x:Name="ctlMaru"
-                      BorderBrush="{DynamicResource AccentColorBrush}"
-                      BorderThickness="1"
-                      c:GridViewSort.AutoSort="True">
-                <ListView.Resources>
-                    <ResourceDictionary>
-                        <Style TargetType="{x:Type ListViewItem}"
-                               BasedOn="{StaticResource MetroListViewItem}">
-                            <EventSetter Event="MouseDoubleClick"
-                                         Handler="ctlMaruItem_MouseDoubleClick" />
-                        </Style>
-                    </ResourceDictionary>
-                </ListView.Resources>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
 
-                <ListView.ContextMenu>
-                    <ContextMenu Opened="ctlMaruContextMenu_Opened">
-                        <MenuItem Header="다시 검색 (새로운 것만)"
-                                  x:Name="ctlMaruSearchNew"
-                                  Click="ctlMaruSearchNew_Click" />
-                        <MenuItem Header="다시 검색"
-                                  x:Name="ctlMaruSearch"
-                                  Click="ctlMaruSearch_Click" />
-                        <Separator />
-                        <MenuItem Header="홈페이지 열기"
-                                  x:Name="ctlMaruOpenWeb"
-                                  Click="ctlMaruOpenWeb_Click" />
-                    </ContextMenu>
-                </ListView.ContextMenu>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
 
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="제목"
-                                        Width="220"
-                                        c:GridViewSort.PropertyName="Title"
-                                        DisplayMemberBinding="{Binding Title, Mode=OneWay}" />
+                <TextBox x:Name="ctlMaruFilterText"
+                         Grid.Row="0"
+                         Grid.Column="0"
+                         VerticalContentAlignment="Center"
+                         metro:TextBoxHelper.Watermark="검색"
+                         metro:TextBoxHelper.ClearTextButton="True"
+                         metro:TextBoxHelper.SelectAllOnFocus="True"
+                         AllowDrop="False"
+                         KeyDown="ctlMaruFilterText_KeyDown" />
 
-                        <GridViewColumn Header="마지막 검색"
-                                        Width="130"
-                                        c:GridViewSort.PropertyName="LastUpdated">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding LastUpdated, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                               TextAlignment="Center"
-                                               HorizontalAlignment="Stretch" />
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+                <Button x:Name="ctlMaruFilter"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Content="  검색  "
+                        Margin="5 0 0 0"
+                        Click="ctlMaruFilter_Click" />
+                
+                <ListView Grid.Row="1"
+                          Grid.ColumnSpan="2"
+                          x:Name="ctlMaru"
+                          Margin="0 5 0 0"
+                          BorderBrush="{DynamicResource AccentColorBrush}"
+                          BorderThickness="1"
+                          c:GridViewSort.AutoSort="True">
+                    <ListView.Resources>
+                        <ResourceDictionary>
+                            <Style TargetType="{x:Type ListViewItem}"
+                                   BasedOn="{StaticResource MetroListViewItem}">
+                                <EventSetter Event="MouseDoubleClick"
+                                             Handler="ctlMaruItem_MouseDoubleClick" />
+                            </Style>
+                        </ResourceDictionary>
+                    </ListView.Resources>
+
+                    <ListView.ContextMenu>
+                        <ContextMenu Opened="ctlMaruContextMenu_Opened">
+                            <MenuItem Header="다운로드 기록 검색"
+                                      x:Name="ctlMaruArchiveSearch"
+                                      Click="ctlMaruArchiveSearch_Click" />
+                            <Separator />
+                            <MenuItem Header="다시 검색 (새로운 것만)"
+                                      x:Name="ctlMaruSearchNew"
+                                      Click="ctlMaruSearchNew_Click" />
+                            <MenuItem Header="다시 검색"
+                                      x:Name="ctlMaruSearch"
+                                      Click="ctlMaruSearch_Click" />
+                            <Separator />
+                            <MenuItem Header="홈페이지 열기"
+                                      x:Name="ctlMaruOpenWeb"
+                                      Click="ctlMaruOpenWeb_Click" />
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="제목"
+                                            Width="220"
+                                            c:GridViewSort.PropertyName="Title"
+                                            DisplayMemberBinding="{Binding Title, Mode=OneWay}" />
+
+                            <GridViewColumn Header="마지막 검색"
+                                            Width="130"
+                                            c:GridViewSort.PropertyName="LastUpdated">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LastUpdated, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
+                                                   TextAlignment="Center"
+                                                   HorizontalAlignment="Stretch" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
         </TabItem>
 
         <TabItem>
@@ -289,56 +331,89 @@
                 </DataTemplate>
             </TabItem.HeaderTemplate>
 
-            <ListView x:Name="ctlArchive"
-                      BorderBrush="{DynamicResource AccentColorBrush}"
-                      BorderThickness="1"
-                      c:GridViewSort.AutoSort="True">
-                <ListView.Resources>
-                    <ResourceDictionary>
-                        <Style TargetType="{x:Type ListViewItem}"
-                               BasedOn="{StaticResource MetroListViewItem}">
-                            <EventSetter Event="MouseDoubleClick"
-                                         Handler="ctlArchive_MouseDoubleClick" />
-                        </Style>
-                    </ResourceDictionary>
-                </ListView.Resources>
 
-                <ListView.ContextMenu>
-                    <ContextMenu Opened="ctlArchiveContextMenu_Opened">
-                        <MenuItem Header="꿀뷰로 열기"
-                                  x:Name="ctlArchiveOpen"
-                                  Click="ctlArchiveOpen_Click" />
-                        <MenuItem Header="폴더 열기"
-                                  x:Name="ctlArchiveOpenDir"
-                                  Click="ctlArchiveOpenDir_Click" />
-                        <Separator />
-                        <MenuItem Header="홈페이지 열기"
-                                  x:Name="ctlArchiveOpenWeb"
-                                  Click="ctlArchiveOpenWeb_Click" />
-                    </ContextMenu>
-                </ListView.ContextMenu>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
 
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="제목"
-                                        Width="220"
-                                        c:GridViewSort.PropertyName="TitleWithNo"
-                                        DisplayMemberBinding="{Binding TitleWithNo, Mode=OneWay}" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
 
-                        <GridViewColumn Header="저장된 날자"
-                                        Width="130"
-                                        c:GridViewSort.PropertyName="Archived">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Archived, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                               TextAlignment="Center"
-                                               HorizontalAlignment="Center" />
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+                <TextBox x:Name="ctlArchiveFilterText"
+                         Grid.Row="0"
+                         Grid.Column="0"
+                         VerticalContentAlignment="Center"
+                         metro:TextBoxHelper.Watermark="검색"
+                         metro:TextBoxHelper.ClearTextButton="True"
+                         metro:TextBoxHelper.SelectAllOnFocus="True"
+                         AllowDrop="False"
+                         KeyDown="ctlArchiveFilterText_KeyDown" />
+
+                <Button x:Name="ctlArchiveFilter"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Content="  검색  "
+                        Margin="5 0 0 0"
+                        Click="ctlArchiveFilter_Click" />
+
+                <ListView Grid.Row="1"
+                          Grid.ColumnSpan="2"
+                          x:Name="ctlArchive"
+                          Margin="0 5 0 0"
+                          BorderBrush="{DynamicResource AccentColorBrush}"
+                          BorderThickness="1"
+                          c:GridViewSort.AutoSort="True">
+                    <ListView.Resources>
+                        <ResourceDictionary>
+                            <Style TargetType="{x:Type ListViewItem}"
+                                   BasedOn="{StaticResource MetroListViewItem}">
+                                <EventSetter Event="MouseDoubleClick"
+                                             Handler="ctlArchive_MouseDoubleClick" />
+                            </Style>
+                        </ResourceDictionary>
+                    </ListView.Resources>
+
+                    <ListView.ContextMenu>
+                        <ContextMenu Opened="ctlArchiveContextMenu_Opened">
+                            <MenuItem Header="꿀뷰로 열기"
+                                      x:Name="ctlArchiveOpen"
+                                      Click="ctlArchiveOpen_Click" />
+                            <MenuItem Header="폴더 열기"
+                                      x:Name="ctlArchiveOpenDir"
+                                      Click="ctlArchiveOpenDir_Click" />
+                            <Separator />
+                            <MenuItem Header="홈페이지 열기"
+                                      x:Name="ctlArchiveOpenWeb"
+                                      Click="ctlArchiveOpenWeb_Click" />
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="제목"
+                                            Width="220"
+                                            c:GridViewSort.PropertyName="TitleWithNo"
+                                            DisplayMemberBinding="{Binding TitleWithNo, Mode=OneWay}" />
+
+                            <GridViewColumn Header="저장된 날자"
+                                            Width="130"
+                                            c:GridViewSort.PropertyName="Archived">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Archived, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
+                                                   TextAlignment="Center"
+                                                   HorizontalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
         </TabItem>
 
         <TabItem>
@@ -360,11 +435,6 @@
                 <StackPanel>
                     <StackPanel.Resources>
                         <ResourceDictionary>
-                            <Style TargetType="Button"
-                                   BasedOn="{StaticResource MetroButton}">
-                                <Setter Property="Padding" Value="0" />
-                                <Setter Property="MinWidth" Value="50" />
-                            </Style>
                             <Style TargetType="GroupBox"
                                    BasedOn="{StaticResource MetroGroupBox}">
                                 <Setter Property="Margin" Value="0 0 5 5" />
