@@ -199,27 +199,44 @@ namespace DaruDaru.Utilities
                 int xlen, ylen;
                 float xint, yint;
 
+                bool xIsNum , yIsNum;
+                bool xIsNumb, yIsNumb;
+                bool xb, yb;
+
                 int i;
                 int k;
                 int c;
 
+                xIsNumb = yIsNumb = false;
+
                 xindex = yindex = 0;
                 while (xindex < x.Length && yindex < y.Length)
                 {
-                    xlen = Cut(x, xindex);
-                    ylen = Cut(y, yindex);
+                    xlen = GetPartLength(x, xindex, out xIsNum);
+                    ylen = GetPartLength(y, yindex, out yIsNum);
 
                     if (xlen == 0 || ylen == 0)
                         c = xlen.CompareTo(ylen);
 
-                    else if ((char.IsDigit(x[xindex]) || x[xindex] == '.' || x[xindex] == '-') &&
-                             (char.IsDigit(y[yindex]) || y[yindex] == '.' || y[yindex] == '-') &&
-                             float.TryParse(x.Substring(xindex, xlen).Replace('-', '.'), out xint) &&
-                             float.TryParse(y.Substring(yindex, ylen).Replace('-', '.'), out yint))
+                    else if (xIsNum && yIsNum)
+                    {
+                        xint = float.Parse(x.Substring(xindex, xlen).Replace('-', '.'));
+                        yint = float.Parse(y.Substring(yindex, ylen).Replace('-', '.'));
                         c = xint.CompareTo(yint);
-
+                    }
                     else
                     {
+                        if (!xIsNum  && !yIsNum &&
+                             xIsNumb &&  yIsNumb)
+                        {
+                            xb = x[xindex] == '-';
+                            yb = y[yindex] == '-';
+
+                            if (xb && !yb) return  1;
+                            if (!xb && yb) return -1;
+
+                        }
+
                         k = Math.Min(xlen, ylen);
                         c = 0;
                         for (i = 0; i < k; ++i)
@@ -236,30 +253,37 @@ namespace DaruDaru.Utilities
 
                     }
 
-                    xindex += xlen;
-                    yindex += ylen;
-
                     if (c != 0)
                         return c;
+
+                    xindex += xlen;
+                    yindex += ylen;
                 }
 
                 return x.Length - y.Length;
             }
 
-            private static int Cut(string x, int xindex)
+            static bool isExt(char x) => x == '.' || x == '-';
+            static int GetPartLength(string x, int startIndex, out bool xIsNumber)
             {
-                var isFloat = char.IsDigit(x[xindex]);
+                xIsNumber = char.IsDigit(x[startIndex]);
 
-                int nindex = xindex + 1;
-                while (nindex < x.Length)
+                var i = startIndex;
+
+                if (xIsNumber)
                 {
-                    if (isFloat != (char.IsDigit(x[nindex]) || x[nindex] == '.' || x[nindex] == '-'))
-                        break;
-
-                    nindex++;
+                    while (++i < x.Length)
+                        if (!char.IsDigit(x[i]) && x[i] != '.')
+                            return i - startIndex;
+                }
+                else
+                {
+                    while (++i < x.Length)
+                        if (char.IsDigit(x[i]))
+                            return i - startIndex;
                 }
 
-                return Math.Min(nindex, x.Length) - xindex;
+                return x.Length - startIndex;
             }
         }
     }
