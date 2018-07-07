@@ -23,8 +23,6 @@ namespace DaruDaru.Core
 
             ServicePointManager.DefaultConnectionLimit = 16;
             ServicePointManager.MaxServicePoints = 0;
-            
-            CrashReport.Init();
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)

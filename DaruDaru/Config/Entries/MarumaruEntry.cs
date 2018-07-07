@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using DaruDaru.Marumaru;
 using Newtonsoft.Json;
 
 namespace DaruDaru.Config.Entries
@@ -18,7 +19,7 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_maruCode = value;
-                this.Uri = new Uri($"https://www.marumaru.in/b/manga/" + value);
+                this.Uri = RegexComic.GetUri(value);
             }
         }
 

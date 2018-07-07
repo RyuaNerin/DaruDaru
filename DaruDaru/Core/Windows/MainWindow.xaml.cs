@@ -35,6 +35,8 @@ namespace DaruDaru.Core.Windows
         {
             InitializeComponent();
 
+            CrashReport.Init();
+
             this.DataContext = ConfigManager.Instance;
 
             this.TaskbarItemInfo = new TaskbarItemInfo();
