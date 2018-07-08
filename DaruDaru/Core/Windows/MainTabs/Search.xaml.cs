@@ -173,18 +173,31 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuRemoveAll_Click(object sender, RoutedEventArgs e)
         {
-            var setting = new MetroDialogSettings
+            lock (this.Queue)
+                if (this.Queue.Count == 0)
+                    return;
+
+                var setting = new MetroDialogSettings
             {
                 AffirmativeButtonText = "삭제",
                 NegativeButtonText = "취소",
                 DefaultButtonFocus = MessageDialogResult.Negative
             };
 
-            if (await MainWindow.Instance.ShowMessageBox("모든 대기열을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
+            if (await MainWindow.Instance.ShowMessageBox("완료되거나 대기중인 모든 대기열을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
                 == MessageDialogResult.Affirmative)
             {
                 lock (this.Queue)
-                    this.Queue.Clear();
+                {
+                    int i = 0;
+                    while (i < this.Queue.Count)
+                    {
+                        if (!this.Queue[i].IsRunning)
+                            this.Queue.RemoveAt(i);
+                        else
+                            i++;
+                    }
+                }
             }
         }
 
