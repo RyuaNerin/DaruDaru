@@ -158,8 +158,8 @@ namespace DaruDaru.Core.Windows
 
             while (this.ctlSearch.GetComicFromQueue(ref comic, MaruComicState.Wait, MaruComicState.Working_1_GetInfomation))
             {
+                //Thread.Sleep(500);
                 comic.GetInfomation();
-                Thread.Sleep(500);
             }
         }
         private void Worker_Download()
@@ -168,7 +168,7 @@ namespace DaruDaru.Core.Windows
 
             while (this.ctlSearch.GetComicFromQueue(ref comic, MaruComicState.Working_2_WaitDownload, MaruComicState.Working_3_Downloading))
             {
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
                 comic.StartDownload();
             }
         }
