@@ -161,8 +161,8 @@ namespace DaruDaru.Core.Windows
 
         static class NativeMethods
         {
-            [DllImport("wininet.dll", CharSet = CharSet.Auto)]
-            public static extern bool InternetGetCookieEx(string url, string cookieName, StringBuilder cookieData, ref int size, int dwFlags, IntPtr lpReserved);
+            [DllImport("wininet.dll", CharSet = CharSet.Unicode)]
+            private static extern bool InternetGetCookieEx(string url, string cookieName, StringBuilder cookieData, ref int size, int dwFlags, IntPtr lpReserved);
 
             private const int InternetCookieHttponly = 0x2000;
 

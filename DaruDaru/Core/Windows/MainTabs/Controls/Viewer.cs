@@ -79,7 +79,6 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.m_textBox     = GetTemplateChild(TextBoxName ) as TextBox;
             this.m_button      = GetTemplateChild(ButtonName  ) as Button;
             this.m_listView    = GetTemplateChild(ListName    ) as ListView;
-            this.m_gridView    = GetTemplateChild(ListViewName) as GridView;
 
             if (this.m_button != null)
             {
@@ -97,7 +96,6 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         private TextBox m_textBox;
         private Button m_button;
         private ListView m_listView;
-        private GridView m_gridView;
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(Viewer), new PropertyMetadata(null));
         public string Text
