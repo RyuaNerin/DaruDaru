@@ -56,7 +56,13 @@ namespace DaruDaru.Core.Windows
                 return;
             }
         }
-        
+
+        public void DownloadUri(bool addNewOnly, Uri uri, string comicName)
+            => this.ctlSearch.DownloadUri(addNewOnly, uri, comicName);
+
+        public void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName)
+            => this.ctlSearch.DownloadUri(addNewOnly, src, toUri, toComicName);
+
         public void InsertNewComic(Comic sender, IEnumerable<Comic> newItems, bool removeSender)
             => this.ctlSearch.InsertNewComic(sender, newItems, removeSender);
 
@@ -103,12 +109,6 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        public void DownloadUri(bool addNewOnly, Uri uri, string comicName)
-            => this.ctlSearch.DownloadUri(addNewOnly, uri, comicName);
-        
-        public void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName)
-            => this.ctlSearch.DownloadUri(addNewOnly, src, toUri, toComicName);
-
         public void SearchArchiveByCodes(string[] codes, string text)
         {
             this.ctlArchive.SearchArchiveByCodes(codes, text);
@@ -127,7 +127,7 @@ namespace DaruDaru.Core.Windows
                     if (this.m_workerInfo[i] == null || this.m_workerInfo[i].IsCompleted)
                     {
                         this.m_workerInfo[i]?.Dispose();
-                        this.m_workerInfo[i] = Task.Factory.StartNew(Worker_Infomation);
+                        this.m_workerInfo[i] = Task.Factory.StartNew(this.Worker_Infomation);
 
                         if (--count <= 0) return;
                     }
@@ -144,7 +144,7 @@ namespace DaruDaru.Core.Windows
                     if (this.m_workerDown[i] == null || this.m_workerDown[i].IsCompleted)
                     {
                         this.m_workerDown[i]?.Dispose();
-                        this.m_workerDown[i] = Task.Factory.StartNew(Worker_Download);
+                        this.m_workerDown[i] = Task.Factory.StartNew(this.Worker_Download);
 
                         if (--count <= 0) return;
                     }
