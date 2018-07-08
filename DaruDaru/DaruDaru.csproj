@@ -108,7 +108,7 @@
     </Compile>
     <Compile Include="Marumaru\ComicInfo\UnknownPage.cs" />
     <Compile Include="Marumaru\DaruUriParser.cs" />
-    <Compile Include="Utilities\Commands.cs" />
+    <Compile Include="Utilities\Utility.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
     <Compile Include="Utilities\GridViewSort.cs" />
     <Page Include="Core\Windows\MainTabs\Config.xaml">
