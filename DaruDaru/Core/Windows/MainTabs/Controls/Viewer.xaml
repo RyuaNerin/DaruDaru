@@ -12,6 +12,7 @@
                 <Setter Property="Height" Value="24" />
             </Style>
 
+            <!--
             <Style TargetType="{x:Type DataGridCell}">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -21,6 +22,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            -->
 
             <!-- 프리징 이유 : MetroListView -->
             <Style TargetType="{x:Type ListView}">
