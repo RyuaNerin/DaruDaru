@@ -65,6 +65,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                     this.ICollectionView?.Refresh();
                 }
             });
+
+            this.OnApplyTemplate();
         }
 
         public ICommand TextBoxClearCommand => this.m_filterClearCommand;
@@ -78,11 +80,17 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.m_listView    = GetTemplateChild(ListName    ) as ListView;
             this.m_gridView    = GetTemplateChild(ListViewName) as GridView;
 
-            this.m_button.Click -= this.Button_Click;
-            this.m_textBox.KeyDown -= this.TextBox_KeyDown;
+            if (this.m_button != null)
+            {
+                this.m_button.Click -= this.Button_Click;
+                this.m_button.Click += this.Button_Click;
+            }
 
-            this.m_button.Click += this.Button_Click;
-            this.m_textBox.KeyDown += this.TextBox_KeyDown;
+            if (this.m_textBox != null)
+            {
+                this.m_textBox.KeyDown -= this.TextBox_KeyDown;
+                this.m_textBox.KeyDown += this.TextBox_KeyDown;
+            }
         }
 
         private TextBox m_textBox;
