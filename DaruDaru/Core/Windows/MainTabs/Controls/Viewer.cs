@@ -11,6 +11,21 @@ using DaruDaru.Utilities;
 
 namespace DaruDaru.Core.Windows.MainTabs.Controls
 {
+    internal class DragDropStartedEventArgs : EventArgs
+    {
+        public DragDropStartedEventArgs(IList iList)
+        {
+            this.IList = iList;
+        }
+
+        public IList IList { get; private set; }
+        public string DataFormat { get; set; }
+        public object Data { get; set; }
+        public DragDropEffects AllowedEffects { get; set; }
+    }
+
+    internal delegate void DragDropStartedEventHandler(object sender, DragDropStartedEventArgs e);
+
     internal class Viewer : Control
     {
         private const string TextBoxName  = "PART_TextBox";
@@ -56,7 +71,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
         public Viewer()
         {
-            this.m_filterClearCommand = new SimpleCommand(e =>
+            this.TextBoxClearCommand = new SimpleCommand(e =>
             {
                 this.Text = null;
 
@@ -70,32 +85,82 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.OnApplyTemplate();
         }
 
-        public ICommand TextBoxClearCommand => this.m_filterClearCommand;
+        public ICommand TextBoxClearCommand { get; }
 
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-
-            this.m_textBox     = GetTemplateChild(TextBoxName ) as TextBox;
-            this.m_button      = GetTemplateChild(ButtonName  ) as Button;
-            this.m_listView    = GetTemplateChild(ListName    ) as ListView;
-
-            if (this.m_button != null)
-            {
-                this.m_button.Click -= this.Button_Click;
-                this.m_button.Click += this.Button_Click;
-            }
-
-            if (this.m_textBox != null)
-            {
-                this.m_textBox.KeyDown -= this.TextBox_KeyDown;
-                this.m_textBox.KeyDown += this.TextBox_KeyDown;
-            }
+            
+            this.TextBoxControl  = GetTemplateChild(TextBoxName ) as TextBox;
+            this.ButtonControl   = GetTemplateChild(ButtonName  ) as Button;
+            this.ListViewControl = GetTemplateChild(ListName    ) as ListView;
         }
 
         private TextBox m_textBox;
+        public TextBox TextBoxControl
+        {
+            get => this.m_textBox;
+            set
+            {
+                if (this.m_textBox != value)
+                    return;
+
+                if (this.m_textBox != null)
+                    this.m_textBox.KeyDown -= this.TextBox_KeyDown;
+
+                this.m_textBox = value;
+
+                if (this.m_textBox != null)
+                    this.m_textBox.KeyDown += this.TextBox_KeyDown;
+            }
+        }
+
         private Button m_button;
+        public Button ButtonControl
+        {
+            get => this.m_button;
+            set
+            {
+                if (this.m_button == value)
+                    return;
+
+                if (this.m_button != null)
+                    this.m_button.Click -= this.Button_Click;
+
+                this.m_button = value;
+
+                if (this.m_button != null)
+                    this.m_button.Click += this.Button_Click;
+            }
+        }
+
         private ListView m_listView;
+        public ListView ListViewControl
+        {
+            get => this.m_listView;
+            set
+            {
+                if (this.m_listView == value)
+                    return;
+
+                if (this.m_listView != null)
+                {
+                    this.m_listView.PreviewMouseDown -= this.ListView_PreviewMouseDown;
+                    this.m_listView.MouseMove        -= this.ListView_MouseMove;
+                    this.m_listView.PreviewMouseUp   -= this.ListView_PreviewMouseUp;
+                }
+
+                this.m_listView = value;
+                this.m_collectionView = null;
+
+                if (this.m_listView != null)
+                {
+                    this.m_listView.PreviewMouseDown += this.ListView_PreviewMouseDown;
+                    this.m_listView.MouseMove        += this.ListView_MouseMove;
+                    this.m_listView.PreviewMouseUp   += this.ListView_PreviewMouseUp;
+                }
+            }
+        }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(Viewer), new PropertyMetadata(null));
         public string Text
@@ -141,6 +206,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
         public DaruUriParser DaruUriParser { get; set; }
 
+        public event DragDropStartedEventHandler DragDropStarted;
+
         private bool m_useSearch = true;
         public bool UseSearch
         {
@@ -156,8 +223,6 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
         public object SelectedItem => this.m_listView?.SelectedItem;
         public IList SelectedItems => this.m_listView?.SelectedItems;
-        
-        private readonly ICommand m_filterClearCommand;
 
         private FileterModes m_filterMode = 0;
         private string[] m_FilterCodes;
@@ -176,6 +241,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
                 return this.m_collectionView;
             }
+            set => this.m_collectionView = value;
         }
 
         private bool Filter(object item)
@@ -187,8 +253,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
             switch (this.m_filterMode)
             {
-                case FileterModes.ByCode: return entry.Code == this.m_filterString;
-                case FileterModes.String: return entry.Text.Contains(this.m_filterString);
+                case FileterModes.ByCode:  return entry.Code == this.m_filterString;
+                case FileterModes.String:  return entry.Text.Contains(this.m_filterString);
                 case FileterModes.ByCodes: return Array.IndexOf(this.m_FilterCodes, entry.Code) >= 0;
             }
 
@@ -246,10 +312,51 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
         protected virtual string GetCode(Uri uri) => null;
 
+        private Point m_listViewPoint;
+        private bool m_listViewLeftButton;
+        private void ListView_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.m_listViewPoint = e.GetPosition(null);
+            this.m_listViewLeftButton = true;
+        }
+
+        private void ListView_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!this.m_listViewLeftButton || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            if (this.DragDropStarted == null) return;
+
+            var diff = this.m_listViewPoint - e.GetPosition(null);
+
+            Console.WriteLine($"{diff.X} / {diff.Y}");
+
+            if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+            {
+                var listView = sender as ListView;
+
+                var arg = new DragDropStartedEventArgs(new ArrayList(listView.SelectedItems));
+                this.DragDropStarted.Invoke(sender, arg);
+
+                if (arg.AllowedEffects != DragDropEffects.None && arg.Data != null)
+                {
+                    var dataObject = new DataObject(arg.DataFormat, arg.Data);
+
+                    DragDrop.DoDragDrop(listView, dataObject, arg.AllowedEffects);
+                }
+            }
+        }
+
+        private void ListView_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            this.m_listViewLeftButton = false;
+        }
+
         public void FocusTextBox()
         {
-            this.m_textBox?.SelectAll();
-            this.m_textBox?.Focus();
+            this.TextBoxControl?.SelectAll();
+            this.TextBoxControl?.Focus();
         }
     }
 }

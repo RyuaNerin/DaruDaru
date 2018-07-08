@@ -4,26 +4,26 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                xmlns:bc="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
+                xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                 xmlns:util="clr-namespace:DaruDaru.Utilities"
                 xmlns:mr="clr-namespace:DaruDaru.Marumaru"
                 mc:Ignorable="d"
                 d:DesignHeight="250"
                 d:DesignWidth="400">
-    <bc:Viewer x:Name="ctlViewer"
-               TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
-               ButtonContent="검색"
-               DaruUriParser="{x:Static mr:DaruUriParser.Marumaru}">
-        <bc:Viewer.Resources>
+    <ctrs:Viewer x:Name="ctlViewer"
+                 TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
+                 ButtonContent="검색"
+                 DaruUriParser="{x:Static mr:DaruUriParser.Marumaru}">
+        <ctrs:Viewer.Resources>
             <ResourceDictionary>
                 <Style TargetType="{x:Type ListViewItem}"
                        BasedOn="{StaticResource MetroListViewItem}">
                     <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
                 </Style>
             </ResourceDictionary>
-        </bc:Viewer.Resources>
+        </ctrs:Viewer.Resources>
         
-        <bc:Viewer.ListContextMenu>
+        <ctrs:Viewer.ListContextMenu>
             <ContextMenu Opened="ctlMenuContextMenu_Opened">
                 <MenuItem Header="다운로드 기록 검색"
                           x:Name="ctlMenuArchiveSearch"
@@ -40,19 +40,14 @@
                           x:Name="ctlMenuOpenWeb"
                           Click="ctlMenuOpenWeb_Click" />
             </ContextMenu>
-        </bc:Viewer.ListContextMenu>
+        </ctrs:Viewer.ListContextMenu>
         
-        <bc:Viewer.ListView>
+        <ctrs:Viewer.ListView>
             <GridView>
                 <GridViewColumn Header="제목"
                                 Width="220"
-                                util:GridViewSort.PropertyName="Title">
-                    <GridViewColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Title, Mode=OneWay}" />
-                        </DataTemplate>
-                    </GridViewColumn.CellTemplate>
-                </GridViewColumn>
+                                util:GridViewSort.PropertyName="Title"
+                                DisplayMemberBinding="{Binding Title, Mode=OneWay}" />
 
                 <GridViewColumn Header="마지막 검색"
                                 Width="130"
@@ -66,6 +61,6 @@
                     </GridViewColumn.CellTemplate>
                 </GridViewColumn>
             </GridView>
-        </bc:Viewer.ListView>
-    </bc:Viewer>
+        </ctrs:Viewer.ListView>
+    </ctrs:Viewer>
 </ContentControl>

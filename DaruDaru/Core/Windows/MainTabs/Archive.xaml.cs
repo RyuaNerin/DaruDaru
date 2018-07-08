@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using DaruDaru.Config;
 using DaruDaru.Config.Entries;
+using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Utilities;
 
 namespace DaruDaru.Core.Windows.MainTabs
@@ -93,5 +94,15 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         public void SearchArchiveByCodes(string[] codes, string text)
             => this.ctlViewer.FilterByCode(codes, text);
+
+        private void ctlViewer_DragDropStarted(object sender, DragDropStartedEventArgs e)
+        {
+            if (e.IList.Count == 0)
+                return;
+
+            e.AllowedEffects = DragDropEffects.Copy | DragDropEffects.Link;
+            e.Data           = e.IList.Cast<ArchiveEntry>().Select(le => le.ZipPath).ToArray();
+            e.DataFormat     = DataFormats.FileDrop;
+        }
     }
 }

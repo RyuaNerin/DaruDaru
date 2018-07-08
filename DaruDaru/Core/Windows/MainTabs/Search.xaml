@@ -10,66 +10,59 @@
                 mc:Ignorable="d"
                 d:DesignHeight="250"
                 d:DesignWidth="400">
-    <ContentControl.Resources>
-        <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
-                                   BrushNormal    ="#FFB6D2DE"
-                                   BrushCompete   ="#FFB3CEB3"
-                                   BrushDownloaded="#FFB3D5D5"
-                                   BrushNoNew     ="#FFD4DAB3"
-                                   BrushError     ="#FFE1B7B3"
-                                   BrushProtected ="#FFE4CADC" />
-    </ContentControl.Resources>
-    
     <ctrs:Viewer x:Name="ctlViewer"
-               TextWatermark="만화 주소 입력 혹은 링크 드래그"
-               ButtonContent="다운로드"
-               UseSearch="False"
-               ButtonClick="Viewer_ButtonClick">
+                 TextWatermark="만화 주소 입력 혹은 링크 드래그"
+                 ButtonContent="다운로드"
+                 UseSearch="False"
+                 ButtonClick="Viewer_ButtonClick">
         <ctrs:Viewer.Resources>
             <ResourceDictionary>
                 <Style TargetType="{x:Type ListViewItem}"
                        BasedOn="{StaticResource MetroListViewItem}">
                     <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
                 </Style>
+
+                <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
+                                            BrushNormal    ="#FFB6D2DE"
+                                            BrushCompete   ="#FFB3CEB3"
+                                            BrushDownloaded="#FFB3D5D5"
+                                            BrushNoNew     ="#FFD4DAB3"
+                                            BrushError     ="#FFE1B7B3"
+                                            BrushProtected ="#FFE4CADC" />
             </ResourceDictionary>
         </ctrs:Viewer.Resources>
         
         <ctrs:Viewer.ListContextMenu>
             <ContextMenu Opened="ctlMenu_Opened">
                 <MenuItem Header="꿀뷰로 열기"
-                      x:Name="ctlMenuOpenFile"
-                      Click="ctlMenuOpenFile_Click" />
+                          x:Name="ctlMenuOpenFile"
+                          Click="ctlMenuOpenFile_Click" />
                 <MenuItem Header="폴더 열기"
-                      x:Name="ctlMenuOpenDir"
-                      Click="ctlMenuOpenDir_Click" />
+                          x:Name="ctlMenuOpenDir"
+                          Click="ctlMenuOpenDir_Click" />
                 <MenuItem Header="홈페이지 열기"
-                      x:Name="ctlMenuOpenWeb"
-                      Click="ctlMenuOpenWeb_Click" />
+                          x:Name="ctlMenuOpenWeb"
+                          Click="ctlMenuOpenWeb_Click" />
                 <Separator />
                 <MenuItem Header="다시 시도"
-                      x:Name="ctlMenuRetry"
-                      Click="ctlMenuRetry_Click" />
+                          x:Name="ctlMenuRetry"
+                          Click="ctlMenuRetry_Click" />
                 <Separator />
                 <MenuItem Header="선택 항목 목록에서 제거"
-                      x:Name="ctlMenuRemoveItem"
-                      Click="ctlMenuRemoveItem_Click" />
+                          x:Name="ctlMenuRemoveItem"
+                          Click="ctlMenuRemoveItem_Click" />
                 <MenuItem Header="완료된 항목 제거"
-                      Click="ctlMenuRemoveCompleted_Click" />
+                          Click="ctlMenuRemoveCompleted_Click" />
                 <MenuItem Header="모두 제거"
-                      Click="ctlMenuRemoveAll_Click" />
+                          Click="ctlMenuRemoveAll_Click" />
             </ContextMenu>
         </ctrs:Viewer.ListContextMenu>
         
         <ctrs:Viewer.ListView>
             <GridView>
                 <GridViewColumn Header="제목"
-                                Width="190">
-                    <GridViewColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayName, Mode=OneWay}" />
-                        </DataTemplate>
-                    </GridViewColumn.CellTemplate>
-                </GridViewColumn>
+                                Width="190"
+                                DisplayMemberBinding="{Binding DisplayName, Mode=OneWay}" />
 
                 <GridViewColumn Header="상태"
                                 Width="90">
