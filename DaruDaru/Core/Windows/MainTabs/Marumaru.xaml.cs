@@ -8,7 +8,7 @@ using DaruDaru.Utilities;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
-    public partial class Marumaru : ContentControl
+    internal partial class Marumaru : ContentControl
     {
         public Marumaru()
         {

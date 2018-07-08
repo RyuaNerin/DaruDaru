@@ -9,7 +9,7 @@ using WinForms = System.Windows.Forms;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
-    public partial class Config : ContentControl
+    internal partial class Config : ContentControl
     {
         public Config()
         {

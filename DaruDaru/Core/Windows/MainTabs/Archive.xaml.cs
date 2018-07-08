@@ -9,7 +9,7 @@ using DaruDaru.Utilities;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
-    public partial class Archive : ContentControl
+    internal partial class Archive : ContentControl
     {
         public Archive()
         {
