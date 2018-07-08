@@ -21,14 +21,12 @@ namespace DaruDaru.Core.Windows
     internal partial class MainWindow : MetroWindow, IMainWindow
     {
         public static IMainWindow Instance { get; private set; }
-        public static MainWindow InstanceWindow { get; private set; }
 
         private readonly Adorner m_dragDropAdorner;
 
         public MainWindow()
         {
             Instance = this;
-            InstanceWindow = this;
 
             InitializeComponent();
 
@@ -56,6 +54,8 @@ namespace DaruDaru.Core.Windows
                 return;
             }
         }
+
+        public Window Window => this;
 
         public void DownloadUri(bool addNewOnly, Uri uri, string comicName)
             => this.ctlSearch.DownloadUri(addNewOnly, uri, comicName);

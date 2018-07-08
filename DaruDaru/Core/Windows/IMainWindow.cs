@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows;
 using DaruDaru.Marumaru.ComicInfo;
 using MahApps.Metro.Controls.Dialogs;
 
@@ -8,6 +9,8 @@ namespace DaruDaru.Core.Windows
 {
     internal interface IMainWindow
     {
+        Window Window { get; }
+
         void DownloadUri(bool addNewOnly, Uri uri, string comicName);
         void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName);
         void InsertNewComic(Comic sender, IEnumerable<Comic> newItems, bool removeSender);

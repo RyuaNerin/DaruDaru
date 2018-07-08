@@ -102,7 +102,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             var wnd = new Recaptcha(uriStr)
             {
-                Owner = MainWindow.InstanceWindow
+                Owner = MainWindow.Instance.Window
             };
 
             wnd.ShowDialog();
