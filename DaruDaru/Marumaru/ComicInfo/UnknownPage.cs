@@ -17,7 +17,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             // Short uri 검증용 페이지
             Uri newUri = null;
 
-            var succ = Retry(() =>
+            var succ = Utility.Retry(() =>
             {
                 var req = WebRequest.CreateHttp(this.Uri);
                 WebClientEx.AddHeader(req);

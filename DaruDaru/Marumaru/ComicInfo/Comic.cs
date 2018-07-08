@@ -46,46 +46,6 @@ namespace DaruDaru.Marumaru.ComicInfo
             return new UnknownPage(addNewOnly, uri, title);
         }
 
-        private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
-        protected static string ReplaceInvalid(string s) => InvalidRegex.Replace(s, "_");
-
-        protected static string ReplcaeHtmlTag(string s) => s.Replace("&nbsp;", " ")
-                                                             .Replace("&lt;", "<")
-                                                             .Replace("&gt;", ">")
-                                                             .Replace("&amp;", "&")
-                                                             .Replace("&quot;", "\"")
-                                                             .Replace("&apos;", "'")
-                                                             .Replace("&copy;", "©")
-                                                             .Replace("&reg;", "®");
-
-        protected static bool Retry(Func<bool> action)
-        {
-            int retries = 3;
-
-            do
-            {
-                try
-                {
-                    if (action())
-                        return true;
-                }
-                catch (WebException)
-                {
-                }
-                catch (SocketException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    CrashReport.Error(ex);
-                }
-
-                Thread.Sleep(1000);
-            } while (--retries > 0);
-
-            return false;
-        }
-
         public Comic(bool addNewOnly, Uri uri, string title)
         {
             this.ConfigCur = ConfigManager.Cur;

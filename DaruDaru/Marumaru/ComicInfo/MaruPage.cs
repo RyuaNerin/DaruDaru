@@ -32,13 +32,13 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 var doc = new HtmlDocument();
 
-                var success = Retry(() =>
+                var success = Utility.Retry(() =>
                 {
                     doc.LoadHtml(wc.DownloadString(this.Uri));
 
                     newUri = wc.ResponseUri ?? this.Uri;
 
-                    this.Title = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
+                    this.Title = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
 
                     string titleNo;
                     foreach (var a in doc.DocumentNode.SelectSingleNode("//div[@class='content']").SelectNodes(".//a[@href]"))
@@ -53,7 +53,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                                 lstArchives.Add(new WasabisyrupLinks
                                 {
                                     Uri     = a_uri,
-                                    TitleNo = ReplcaeHtmlTag(a.InnerText)
+                                    TitleNo = Utility.ReplcaeHtmlTag(a.InnerText)
                                 });
                         }
                     }
@@ -98,7 +98,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     Directory.CreateDirectory(this.ConfigCur.UrlLinkPath);
 
-                    var path = Path.Combine(this.ConfigCur.UrlLinkPath, $"{ReplaceInvalid(this.Title)}.url");
+                    var path = Path.Combine(this.ConfigCur.UrlLinkPath, $"{Utility.ReplaceInvalid(this.Title)}.url");
                     if (!File.Exists(path))
                         File.WriteAllText(path, $"[InternetShortcut]\r\nURL=" + this.Uri.AbsoluteUri);
                 }

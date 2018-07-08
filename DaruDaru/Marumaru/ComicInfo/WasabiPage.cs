@@ -54,7 +54,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 var doc = new HtmlDocument();
                 
-                var success = Retry(() =>
+                var success = Utility.Retry(() =>
                 {
                     wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
                     var body = wc.DownloadString(this.Uri);
@@ -65,11 +65,11 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     // 타이틀은 항상 마루마루 기준으로 맞춤.
                     if (this.Title == null)
-                        this.Title   = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
+                        this.Title = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
 
                     // 제목이 바뀌는 경우가 있어서
                     // 제목은 그대로 사용하고, xx화 는 새로 가져온다.
-                    var titleNo = ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
+                    var titleNo = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
                     this.TitleWithNo = $"{this.Title} {titleNo}";
 
                     // 암호걸린 파일
@@ -148,7 +148,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         protected override void StartDownloadPriv()
         {
-            this.ZipPath = Path.Combine(this.ConfigCur.SavePath, ReplaceInvalid(this.Title), ReplaceInvalid(this.TitleWithNo) + ".zip");
+            this.ZipPath = Path.Combine(this.ConfigCur.SavePath, Utility.ReplaceInvalid(this.Title), Utility.ReplaceInvalid(this.TitleWithNo) + ".zip");
 
             try
             {
@@ -221,7 +221,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         po,
                         e =>
                         {
-                            var succ = Retry(() =>
+                            var succ = Utility.Retry(() =>
                             {
                                 var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri));
                                 if (req is HttpWebRequest hreq)
