@@ -35,15 +35,15 @@ namespace DaruDaru.Marumaru.ComicInfo
 
     internal abstract class Comic : INotifyPropertyChanged
     {
-        public static Comic CreateForSearch(IMainWindow mainWindow, bool addNewOnly, Uri uri, string title)
+        public static Comic CreateForSearch(bool addNewOnly, Uri uri, string title)
         {
             if (DaruUriParser.Marumaru.CheckUri(uri))
-                return new MaruPage(mainWindow, addNewOnly, uri, title);
+                return new MaruPage(addNewOnly, uri, title);
 
             if (DaruUriParser.Archive.CheckUri(uri))
-                return new WasabiPage(mainWindow, addNewOnly, uri, title);
+                return new WasabiPage(addNewOnly, uri, title);
 
-            return new UnknownPage(mainWindow, addNewOnly, uri, title);
+            return new UnknownPage(addNewOnly, uri, title);
         }
 
         private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
@@ -86,11 +86,10 @@ namespace DaruDaru.Marumaru.ComicInfo
             return false;
         }
 
-        public Comic(IMainWindow mainWindow, bool addNewOnly, Uri uri, string title)
+        public Comic(bool addNewOnly, Uri uri, string title)
         {
             this.ConfigCur = ConfigManager.Cur;
-
-            this.IMainWindow = mainWindow;
+            
             this.AddNewonly = addNewOnly;
 
             this.Uri   = uri;
@@ -98,8 +97,6 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
         
         protected internal ConfigCur ConfigCur { get; private set; }
-        
-        protected internal IMainWindow IMainWindow { get; private set; }
 
         /// <summary>새 작품 검색하기로 추가된 경우</summary>
         protected internal bool AddNewonly { get; private set; }
@@ -246,7 +243,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             this.GetInfomationPriv(ref count);
 
-            this.IMainWindow.WakeDownloader();
+            MainWindow.Instance.WakeDownloader(count);
         }
 
         protected abstract bool GetInfomationPriv(ref int count);
@@ -255,8 +252,8 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             this.StartDownloadPriv();
 
-            this.IMainWindow.WakeDownloader();
-            this.IMainWindow.UpdateTaskbarProgress();
+            MainWindow.Instance.WakeDownloader(1);
+            MainWindow.Instance.UpdateTaskbarProgress();
         }
         protected virtual void StartDownloadPriv()
         {

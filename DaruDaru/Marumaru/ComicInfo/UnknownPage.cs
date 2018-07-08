@@ -7,8 +7,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class UnknownPage : Comic
     {
-        public UnknownPage(IMainWindow mainWindow, bool addNewOnly, Uri uri, string comicName)
-            : base(mainWindow, addNewOnly, uri, comicName)
+        public UnknownPage(bool addNewOnly, Uri uri, string comicName)
+            : base(addNewOnly, uri, comicName)
         {
         }
 
@@ -34,13 +34,13 @@ namespace DaruDaru.Marumaru.ComicInfo
                 Comic comic = null;
 
                 if (DaruUriParser.Marumaru.CheckUri(newUri))
-                    comic = new WasabiPage(this.IMainWindow, this.AddNewonly, newUri, null);
+                    comic = new WasabiPage(this.AddNewonly, newUri, null);
 
                 else if (DaruUriParser.Archive.CheckUri(newUri))
-                    comic = new MaruPage(this.IMainWindow, this.AddNewonly, newUri, null);
+                    comic = new MaruPage(this.AddNewonly, newUri, null);
 
                 if (comic != null)
-                    this.IMainWindow.InsertNewComic(this, new Comic[] { comic }, true);
+                    MainWindow.Instance.InsertNewComic(this, new Comic[] { comic }, true);
                 else
                     this.State = MaruComicState.Error_3_NotSupport;
             }

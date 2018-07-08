@@ -1,0 +1,61 @@
+<ContentControl x:Class="DaruDaru.Core.Windows.MainTabs.Archive"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:bc="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
+                xmlns:util="clr-namespace:DaruDaru.Utilities"
+                xmlns:mr="clr-namespace:DaruDaru.Marumaru"
+                mc:Ignorable="d"
+                d:DesignHeight="250"
+                d:DesignWidth="400">
+    <bc:Viewer x:Name="ctlViewer"
+               TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
+               ButtonContent="검색"
+               DaruUriParser="{x:Static mr:DaruUriParser.Marumaru}">
+        <bc:Viewer.Resources>
+            <ResourceDictionary>
+                <Style TargetType="{x:Type ListViewItem}"
+                       BasedOn="{StaticResource MetroListViewItem}">
+                    <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
+                </Style>
+            </ResourceDictionary>
+        </bc:Viewer.Resources>
+        
+        <bc:Viewer.ListContextMenu>
+            <ContextMenu Opened="ctlMenuContextMenu_Opened">
+                <MenuItem Header="꿀뷰로 열기"
+                          x:Name="ctlMenuOpen"
+                          Click="ctlMenuOpen_Click" />
+                <MenuItem Header="폴더 열기"
+                          x:Name="ctlMenuOpenDir"
+                          Click="ctlMenuOpenDir_Click" />
+                <Separator />
+                <MenuItem Header="웹에서 보기"
+                          x:Name="ctlMenuOpenWeb"
+                          Click="ctlMenuOpenWeb_Click" />
+            </ContextMenu>
+        </bc:Viewer.ListContextMenu>
+        
+        <bc:Viewer.ListView>
+            <GridView>
+                <GridViewColumn Header="제목"
+                                Width="220"
+                                util:GridViewSort.PropertyName="TitleWithNo"
+                                DisplayMemberBinding="{Binding TitleWithNo, Mode=OneWay}" />
+
+                <GridViewColumn Header="저장된 날자"
+                                Width="130"
+                                util:GridViewSort.PropertyName="Archived">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Archived, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
+                                       TextAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+            </GridView>
+        </bc:Viewer.ListView>
+    </bc:Viewer>
+</ContentControl>

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Config.Entries
 {
-    internal class MarumaruEntry : INotifyPropertyChanged
+    internal class MarumaruEntry : INotifyPropertyChanged, IEntry
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
@@ -41,5 +41,8 @@ namespace DaruDaru.Config.Entries
                 this.InvokePropertyChanged();
             }
         }
+
+        [JsonIgnore] string IEntry.Code => this.MaruCode;
+        [JsonIgnore] string IEntry.Text => this.Title;
     }
 }

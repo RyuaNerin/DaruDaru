@@ -12,8 +12,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class MaruPage : Comic
     {
-        public MaruPage(IMainWindow mainWindow, bool addNewOnly, Uri uri, string comicName)
-            : base(mainWindow, addNewOnly, uri, comicName)
+        public MaruPage(bool addNewOnly, Uri uri, string comicName)
+            : base(addNewOnly, uri, comicName)
         {
         }
 
@@ -79,16 +79,16 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (this.AddNewonly)
                     items = ArchiveManager.IsNewArchive(items, e => DaruUriParser.Archive.GetCode(e.Uri));
 
-                var comics = items.Select(e => new WasabiPage(this.IMainWindow, this.AddNewonly, e.Uri, this.Title, e.TitleNo)).ToArray();
+                var comics = items.Select(e => new WasabiPage(this.AddNewonly, e.Uri, this.Title, e.TitleNo)).ToArray();
                 
                 var noNew = this.AddNewonly && comics.Length == 0;
 
-                this.IMainWindow.InsertNewComic(this, comics, !noNew);
+                MainWindow.Instance.InsertNewComic(this, comics, !noNew);
 
                 if (noNew)
                 {
                     this.State = MaruComicState.Complete_3_NoNew;
-                    this.IMainWindow.UpdateTaskbarProgress();
+                    MainWindow.Instance.UpdateTaskbarProgress();
                 }
 
                 count = lstArchives.Count;

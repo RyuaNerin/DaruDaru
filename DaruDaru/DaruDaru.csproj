@@ -92,10 +92,45 @@
     <Compile Include="Config\ConfigCur.cs" />
     <Compile Include="Config\Entries\ArchiveEntry.cs" />
     <Compile Include="Config\Entries\MarumaruEntry.cs" />
+    <Compile Include="Config\IEntry.cs" />
+    <Compile Include="Core\Windows\MainTabs\Controls\Viewer.cs" />
+    <Compile Include="Core\Windows\MainTabs\Config.xaml.cs">
+      <DependentUpon>Config.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Core\Windows\MainTabs\Archive.xaml.cs">
+      <DependentUpon>Archive.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Core\Windows\MainTabs\Marumaru.xaml.cs">
+      <DependentUpon>Marumaru.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Core\Windows\MainTabs\Search.xaml.cs">
+      <DependentUpon>Search.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Marumaru\ComicInfo\UnknownPage.cs" />
     <Compile Include="Marumaru\DaruUriParser.cs" />
+    <Compile Include="Utilities\Commands.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
     <Compile Include="Utilities\GridViewSort.cs" />
+    <Page Include="Core\Windows\MainTabs\Config.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Core\Windows\MainTabs\Controls\Viewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Core\Windows\MainTabs\Archive.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Core\Windows\MainTabs\Marumaru.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Core\Windows\MainTabs\Search.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Core\Windows\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -139,6 +174,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="WinForms\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.3.0.4\build\Fody.targets" Condition="Exists('..\packages\Fody.3.0.4\build\Fody.targets')" />

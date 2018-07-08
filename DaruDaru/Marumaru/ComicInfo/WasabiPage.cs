@@ -16,8 +16,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class WasabiPage : Comic
     {
-        public WasabiPage(IMainWindow mainWindow, bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
-            : base(mainWindow, addNewOnly, uri, title)
+        public WasabiPage(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
+            : base(addNewOnly, uri, title)
         {
             this.TitleWithNo = tempTitleWithNo;
 
@@ -28,7 +28,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.ZipPath     = entry.ZipPath;
                 this.State       = MaruComicState.Complete_2_Archived;
 
-                this.IMainWindow.WakeDownloader();
+                MainWindow.Instance.WakeDownloader(1);
             }
         }
 

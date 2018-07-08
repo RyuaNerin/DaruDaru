@@ -18,11 +18,23 @@
                 <!-- Accent and AppTheme setting -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
+
+                <ResourceDictionary Source="Windows/MainTabs/Controls/Viewer.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
             <FontFamily x:Key="DefaultFont">Malgun Gothic</FontFamily>
             <s:Double x:Key="ContextMenuFontSize">12</s:Double>
             <s:Double x:Key="UpperCaseContentFontSize">12</s:Double>
+
+            <Style x:Key="NewMetroTextBox"
+                   TargetType="TextBox"
+                   BasedOn="{StaticResource MetroTextBox}">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>
+
+            <Style TargetType="{x:Type TextBox}"
+                   BasedOn="{StaticResource NewMetroTextBox}" />
 
             <ControlTemplate x:Key="NewMetroDialogTemplate"
                              TargetType="{x:Type Dialogs:BaseMetroDialog}">
