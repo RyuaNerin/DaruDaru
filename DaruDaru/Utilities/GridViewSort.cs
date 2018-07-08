@@ -227,8 +227,8 @@ namespace DaruDaru.Utilities
                             xb = x[xindex] == '-';
                             yb = y[yindex] == '-';
 
-                            if (xb && !yb) return  1;
-                            if (!xb && yb) return -1;
+                            if ( xb && !yb) return  1;
+                            if (!xb &&  yb) return -1;
 
                         }
 
@@ -253,6 +253,9 @@ namespace DaruDaru.Utilities
 
                     xindex += xlen;
                     yindex += ylen;
+
+                    xIsNumb = xIsNum;
+                    yIsNumb = yIsNum;
                 }
 
                 return x.Length - y.Length;
