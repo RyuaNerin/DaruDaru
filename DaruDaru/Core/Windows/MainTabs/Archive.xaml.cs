@@ -81,9 +81,14 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = ((ListViewItem)sender).Content as MarumaruEntry;
-            if (item != null)
-                MainWindow.Instance.DownloadUri(false, item.Uri, item.Title);
+            var hv = Utility.GetHoneyView();
+            if (hv != null)
+            {
+                var item = ((ListViewItem)sender).Content as ArchiveEntry;
+
+                if (File.Exists(item.ZipPath))
+                    Utility.StartProcess(hv, $"\"{item.ZipPath}\"");
+            }
         }
 
         public void SearchArchiveByCodes(string[] codes, string text)
