@@ -7,6 +7,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using DaruDaru.Config;
 using DaruDaru.Marumaru;
+using DaruDaru.Utilities;
 
 namespace DaruDaru.Core.Windows.MainTabs.Controls
 {
@@ -227,7 +228,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                     this.m_filterMode = FileterModes.NoFilter;
                 else
                 {
-                    var code = Uri.TryCreate(str, UriKind.Absolute, out Uri uri) ? this.DaruUriParser?.GetCode(uri) : null;
+                    var code = Utility.TryCreateUri(str, out Uri uri) ? this.DaruUriParser?.GetCode(uri) : null;
 
                     if (code == null)
                     {

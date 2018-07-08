@@ -83,12 +83,17 @@ namespace DaruDaru.Marumaru.ComicInfo
                     if (imgs != null && imgs.Count > 0)
                     {
                         foreach (var img in imgs)
-                            lst.Add(new ImageInfomation
+                        {
+                            if (Utility.TryCreateUri(newUri, img.Attributes["data-src"].Value, out Uri imgUri))
                             {
-                                Index = lst.Count + 1,
-                                ImageUri = new Uri(newUri, img.Attributes["data-src"].Value),
-                                TempPath = Path.GetTempFileName()
-                            });
+                                lst.Add(new ImageInfomation
+                                {
+                                    Index    = lst.Count + 1,
+                                    ImageUri = Uri,
+                                    TempPath = Path.GetTempFileName()
+                                });
+                            }
+                        }
                     }
                     else
                     {
@@ -106,12 +111,17 @@ namespace DaruDaru.Marumaru.ComicInfo
                             return false;
 
                         foreach (var img in json.Sources)
-                            lst.Add(new ImageInfomation
+                        {
+                            if (Utility.TryCreateUri(newUri, img, out Uri imgUri))
                             {
-                                Index = lst.Count + 1,
-                                ImageUri = new Uri(newUri, img),
-                                TempPath = Path.GetTempFileName()
-                            });
+                                lst.Add(new ImageInfomation
+                                {
+                                    Index    = lst.Count + 1,
+                                    ImageUri = imgUri,
+                                    TempPath = Path.GetTempFileName()
+                                });
+                            }
+                        }
                     }
 
 

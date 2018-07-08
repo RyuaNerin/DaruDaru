@@ -210,7 +210,7 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             var uriString = this.ctlViewer.Text.Trim();
 
-            if (!Uri.TryCreate(uriString, UriKind.Absolute, out Uri uri))
+            if (!Utility.TryCreateUri(uriString, out Uri uri))
             {
                 this.ctlViewer.FocusTextBox();
                 return;

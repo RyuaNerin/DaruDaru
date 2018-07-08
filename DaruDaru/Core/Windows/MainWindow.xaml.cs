@@ -226,7 +226,7 @@ namespace DaruDaru.Core.Windows
                 {
                     var uris = data.Where(le => le.EndsWith(".url"))
                                    .SelectMany(le => File.ReadAllLines(le).Where(lee => lee.StartsWith("URL=", StringComparison.CurrentCultureIgnoreCase)))
-                                   .Select(le => new Uri(le.Substring(4)))
+                                   .Select(le => Utility.CreateUri(le.Substring(4)))
                                    .ToArray();
 
                     this.DownloadUri(false, uris, le => le, null);
@@ -263,7 +263,7 @@ namespace DaruDaru.Core.Windows
 
                 UriString = UriString.Split(new char[] { '\r', '\n' })[0];
 
-                if (Uri.TryCreate(UriString, UriKind.Absolute, out uri))
+                if (Utility.TryCreateUri(UriString, out uri))
                     return true;
             }
 

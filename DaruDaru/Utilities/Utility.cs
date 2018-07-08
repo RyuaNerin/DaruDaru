@@ -88,5 +88,81 @@ namespace DaruDaru.Utilities
 
             return false;
         }
+
+        public static Uri CreateUri(string uriString)
+            => ReplaceHost(new Uri(uriString));
+
+        public static Uri CreateUri(Uri baseUri, string relativeUri)
+            => ReplaceHost(new Uri(baseUri, relativeUri));
+
+        public static bool TryCreateUri(string uriString, out Uri uri)
+        {
+            if (Uri.TryCreate(uriString, UriKind.Absolute, out Uri tempUri))
+            {
+                uri = ReplaceHost(tempUri);
+                return true;
+            }
+
+            uri = null;
+            return false;
+        }
+        public static bool TryCreateUri(Uri baseUri, string relativeUri, out Uri uri)
+        {
+            if (Uri.TryCreate(baseUri, relativeUri, out Uri tempUri))
+            {
+                uri = ReplaceHost(tempUri);
+                return true;
+            }
+
+            uri = null;
+            return false;
+        }
+
+
+        private static Uri ReplaceHost(Uri uri)
+        {
+            var ub = new UriBuilder(uri);
+            var sb = new StringBuilder(ub.Host.Length);
+
+            char c;
+            for (var i = 0; i < ub.Host.Length; ++i)
+            {
+                c = ub.Host[i];
+
+                // ① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨
+                     if ('①' <= c && c <= '⑨') sb.Append((char)(c - '①' + '1'));
+
+                // ⑴ ⑵ ⑶ ⑷ ⑸ ⑹ ⑺ ⑻ ⑼
+                else if ('⑴' <= c && c <= '⑼') sb.Append((char)(c - '⑴' + '1'));
+
+                // ⒈ ⒉ ⒊ ⒋ ⒌ ⒍ ⒎ ⒏ ⒐
+                else if ('⒈' <= c && c <= '⒐') sb.Append((char)(c - '⒈' + '1'));
+
+                // ⑴ ⑵ ⑶ ⑷ ⑸ ⑹ ⑺ ⑻ ⑼
+                else if ('⑴' <= c && c <= '⑼') sb.Append((char)(c - '⑴' + '1'));
+
+                // ⑴ ⑵ ⑶ ⑷ ⑸ ⑹ ⑺ ⑻ ⑼
+                else if ('⑴' <= c && c <= '⑼') sb.Append((char)(c - '⑴' + '1'));
+
+                // ⑴ ⑵ ⑶ ⑷ ⑸ ⑹ ⑺ ⑻ ⑼
+                else if ('⑴' <= c && c <= '⑼') sb.Append((char)(c - '⑴' + '1'));
+
+                // ⒜ ⒝ ⒞ ⒟ ⒠ ⒡ ⒢ ⒣ ⒤ ⒥ ⒦ ⒧ ⒨ ⒩ ⒪ ⒫ ⒬ ⒭ ⒮ ⒯ ⒰ ⒱ ⒲ ⒳ ⒴ ⒵
+                else if ('⒜' <= c && c <= '⒵') sb.Append((char)(c - '⒜' + 'a'));
+
+                // Ⓐ Ⓑ Ⓒ Ⓓ Ⓔ Ⓕ Ⓖ Ⓗ Ⓘ Ⓙ Ⓚ Ⓛ Ⓜ Ⓝ Ⓞ Ⓟ Ⓠ Ⓡ Ⓢ Ⓣ Ⓤ Ⓥ Ⓦ Ⓧ Ⓨ Ⓩ
+                else if ('Ⓐ' <= c && c <= 'Ⓩ') sb.Append((char)(c - 'Ⓐ' + 'a'));
+
+                // ⓐ ⓑ ⓒ ⓓ ⓔ ⓕ ⓖ ⓗ ⓘ ⓙ ⓚ ⓛ ⓜ ⓝ ⓞ ⓟ ⓠ ⓡ ⓢ ⓣ ⓤ ⓥ ⓦ ⓧ ⓨ ⓩ
+                else if ('ⓐ' <= c && c <= 'ⓩ') sb.Append((char)(c - 'ⓐ' + 'a'));
+
+                else
+                    sb.Append(c);
+            }
+
+            ub.Host = sb.ToString();
+
+            return ub.Uri;
+        }
     }
 }

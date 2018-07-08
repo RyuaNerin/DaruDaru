@@ -92,7 +92,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             var uriStr = await MainWindow.Instance.ShowInput("보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)", set);
 
             if (string.IsNullOrWhiteSpace(uriStr) ||
-                Uri.TryCreate(uriStr, UriKind.Absolute, out Uri uri) ||
+                Utility.TryCreateUri(uriStr, out Uri uri) ||
                 !DaruUriParser.Archive.CheckUri(uri))
             {
                 MainWindow.Instance.ShowMessageBox("주소를 확인해주세요", 5000);

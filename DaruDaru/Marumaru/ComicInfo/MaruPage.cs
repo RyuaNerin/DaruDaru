@@ -43,18 +43,19 @@ namespace DaruDaru.Marumaru.ComicInfo
                     string titleNo;
                     foreach (var a in doc.DocumentNode.SelectSingleNode("//div[@class='content']").SelectNodes(".//a[@href]"))
                     {
-                        var a_uri = new Uri(newUri, a.Attributes["href"].Value);
-
-                        if (DaruUriParser.Archive.CheckUri(a_uri))
+                        if (Utility.TryCreateUri(newUri, a.Attributes["href"].Value, out Uri a_uri))
                         {
-                            titleNo = a.InnerText;
+                            if (DaruUriParser.Archive.CheckUri(a_uri))
+                            {
+                                titleNo = a.InnerText;
 
-                            if (!string.IsNullOrWhiteSpace(titleNo))
-                                lstArchives.Add(new WasabisyrupLinks
-                                {
-                                    Uri     = a_uri,
-                                    TitleNo = Utility.ReplcaeHtmlTag(a.InnerText)
-                                });
+                                if (!string.IsNullOrWhiteSpace(titleNo))
+                                    lstArchives.Add(new WasabisyrupLinks
+                                    {
+                                        Uri     = a_uri,
+                                        TitleNo = Utility.ReplcaeHtmlTag(a.InnerText)
+                                    });
+                            }
                         }
                     }
 
