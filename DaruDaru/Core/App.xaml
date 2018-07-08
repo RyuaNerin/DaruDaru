@@ -19,7 +19,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
 
-                <ResourceDictionary Source="Windows/MainTabs/Controls/Viewer.xaml" />
+                <ResourceDictionary Source="Windows/MainTabs/Controls/ViewerTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
             <FontFamily x:Key="DefaultFont">Malgun Gothic</FontFamily>
