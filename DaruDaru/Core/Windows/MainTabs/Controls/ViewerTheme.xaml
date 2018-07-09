@@ -28,7 +28,7 @@
                 </Setter>
             </Style>
         </ControlTemplate.Resources>
-        
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -48,7 +48,6 @@
                      Text="{Binding Text, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
                      metro:TextBoxHelper.AutoWatermark="True"
                      metro:TextBoxHelper.Watermark="{Binding TextWatermark, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
-                     metro:TextBoxHelper.ButtonCommand="{Binding TextBoxClearCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
                      metro:TextBoxHelper.ClearTextButton="True"
                      metro:TextBoxHelper.SelectAllOnFocus="True" />
 

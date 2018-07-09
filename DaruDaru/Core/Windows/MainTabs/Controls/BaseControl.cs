@@ -9,6 +9,7 @@ using System.Windows.Input;
 using DaruDaru.Config;
 using DaruDaru.Marumaru;
 using DaruDaru.Utilities;
+using MahApps.Metro.Controls;
 
 namespace DaruDaru.Core.Windows.MainTabs.Controls
 {
@@ -72,7 +73,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
         public BaseControl()
         {
-            this.TextBoxClearCommand = new SimpleCommand(e =>
+            this.m_textBoxCommand = new SimpleCommand(e =>
             {
                 this.Text = null;
 
@@ -86,7 +87,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.OnApplyTemplate();
         }
 
-        protected internal ICommand TextBoxClearCommand { get; }
+        public readonly ICommand m_textBoxCommand;
 
         public override void OnApplyTemplate()
         {
@@ -103,16 +104,24 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             get => this.m_textBox;
             set
             {
-                if (this.m_textBox != value)
+                if (this.m_textBox == value)
                     return;
 
                 if (this.m_textBox != null)
+                {
+                    TextBoxHelper.SetButtonCommand(this.m_textBox, TextBoxHelper.ButtonCommandProperty.DefaultMetadata.DefaultValue as ICommand);
+
                     this.m_textBox.KeyDown -= this.TextBox_KeyDown;
+                }
 
                 this.m_textBox = value;
 
                 if (this.m_textBox != null)
+                {
+                    TextBoxHelper.SetButtonCommand(this.m_textBox, this.m_textBoxCommand);
+
                     this.m_textBox.KeyDown += this.TextBox_KeyDown;
+                }
             }
         }
 
