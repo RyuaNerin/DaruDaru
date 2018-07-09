@@ -44,6 +44,10 @@
                           x:Name="ctlMenuOpenWeb"
                           Click="ctlMenuOpenWeb_Click" />
                 <Separator />
+                <MenuItem Header="주소 복사"
+                          x:Name="ctlMenuCopyUri"
+                          Click="ctlMenuCopyUri_Click" />
+                <Separator />
                 <MenuItem Header="다시 시도"
                           x:Name="ctlMenuRetry"
                           Click="ctlMenuRetry_Click" />

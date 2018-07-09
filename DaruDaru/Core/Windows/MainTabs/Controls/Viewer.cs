@@ -224,10 +224,6 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         public object SelectedItem => this.m_listView?.SelectedItem;
         public IList SelectedItems => this.m_listView?.SelectedItems;
 
-        private FileterModes m_filterMode = 0;
-        private string[] m_FilterCodes;
-        private string m_filterString;
-
         private ICollectionView m_collectionView;
         private ICollectionView ICollectionView
         {
@@ -243,7 +239,10 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             }
             set => this.m_collectionView = value;
         }
-
+        
+        private FileterModes m_filterMode = 0;
+        private string[] m_FilterCodes;
+        private string m_filterString;
         private bool Filter(object item)
         {
             if (this.m_filterMode == FileterModes.NoFilter)

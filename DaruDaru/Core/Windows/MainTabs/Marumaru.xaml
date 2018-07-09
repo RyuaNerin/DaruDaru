@@ -29,6 +29,10 @@
                           x:Name="ctlMenuArchiveSearch"
                           Click="ctlMenuArchiveSearch_Click" />
                 <Separator />
+                <MenuItem Header="마루마루 링크 복사"
+                          x:Name="ctlMenuCopyUri"
+                          Click="ctlMenuCopyUri_Click" />
+                <Separator />
                 <MenuItem Header="다시 검색 (새로운 것만)"
                           x:Name="ctlMenuSearchNew"
                           Click="ctlMenuSearchNew_Click" />

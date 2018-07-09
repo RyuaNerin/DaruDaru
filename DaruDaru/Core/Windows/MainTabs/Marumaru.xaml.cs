@@ -67,6 +67,19 @@ namespace DaruDaru.Core.Windows.MainTabs
                 Utility.StartProcess(item);
         }
 
+        private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlViewer.SelectedItems.Count == 0)
+                return;
+
+            var items = this.ctlViewer.SelectedItems.Cast<MarumaruEntry>()
+                                                    .Select(le => le.Uri.AbsoluteUri)
+                                                    .Distinct()
+                                                    .ToArray();
+
+            Clipboard.SetText(string.Join("\n", items));
+        }
+
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var entry = ((ListViewItem)sender).Content as MarumaruEntry;

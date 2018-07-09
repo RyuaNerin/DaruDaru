@@ -201,6 +201,19 @@ namespace DaruDaru.Core.Windows.MainTabs
             }
         }
 
+        private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlViewer.SelectedItems.Count == 0)
+                return;
+
+            var items = this.ctlViewer.SelectedItems.Cast<Comic>()
+                                                    .Select(le => le.Uri.AbsoluteUri)
+                                                    .Distinct()
+                                                    .ToArray();
+
+            Clipboard.SetText(string.Join("\n", items));
+        }
+
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var content = ((ListViewItem)sender).Content;

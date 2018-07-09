@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -78,6 +79,34 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             foreach (var item in items)
                 Utility.StartProcess(item);
+        }
+
+        private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlViewer.SelectedItems.Count == 0)
+                return;
+
+            var items = this.ctlViewer.SelectedItems.Cast<ArchiveEntry>()
+                                                    .Select(le => le.Uri.AbsoluteUri)
+                                                    .Distinct()
+                                                    .ToArray();
+
+            Clipboard.SetText(string.Join("\n", items));
+        }
+
+        private void ctlMenuCopyFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ctlViewer.SelectedItems.Count == 0)
+                return;
+
+            var items = this.ctlViewer.SelectedItems.Cast<ArchiveEntry>()
+                                                    .Select(le => le.ZipPath)
+                                                    .Distinct()
+                                                    .ToArray();
+            var files = new StringCollection();
+            files.AddRange(items);
+
+            Clipboard.SetFileDropList(files);
         }
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)

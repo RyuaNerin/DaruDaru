@@ -36,6 +36,13 @@
                 <MenuItem Header="웹에서 보기"
                           x:Name="ctlMenuOpenWeb"
                           Click="ctlMenuOpenWeb_Click" />
+                <Separator />
+                <MenuItem Header="주소 복사"
+                          x:Name="ctlMenuCopyUri"
+                          Click="ctlMenuCopyUri_Click" />
+                <MenuItem Header="파일 복사"
+                          x:Name="ctlMenuCopyFile"
+                          Click="ctlMenuCopyFile_Click" />
             </ContextMenu>
         </ctrs:Viewer.ListContextMenu>
         
