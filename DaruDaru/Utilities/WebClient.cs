@@ -4,7 +4,7 @@ using DaruDaru.Core.Windows;
 
 namespace DaruDaru.Utilities
 {
-    [System.ComponentModel.DesignerCategory("DOCE")]
+    [System.ComponentModel.DesignerCategory("CODE")]
     internal class WebClientEx : WebClient
     {
         public WebClientEx() : base()

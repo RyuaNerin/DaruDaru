@@ -1,13 +1,8 @@
 using System;
 using System.ComponentModel;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Threading;
 using DaruDaru.Config;
-using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 
 namespace DaruDaru.Marumaru.ComicInfo
