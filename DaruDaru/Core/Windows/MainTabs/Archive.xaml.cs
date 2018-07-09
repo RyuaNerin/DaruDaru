@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -85,7 +86,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             var items = this.Get<ArchiveEntry>().GetUri();
             if (items.Length == 0) return;
 
-            Clipboard.SetText(string.Join("\n", items));
+            Clipboard.SetText(string.Join(Environment.NewLine, items));
         }
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)

@@ -168,7 +168,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             var items = this.Get<Comic>().GetUri();
             if (items.Length == 0) return;
 
-            Clipboard.SetText(string.Join("\n", items));
+            Clipboard.SetText(string.Join(Environment.NewLine, items));
         }
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
