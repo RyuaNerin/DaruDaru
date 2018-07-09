@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using DaruDaru.Config;
 using DaruDaru.Marumaru;
 using DaruDaru.Utilities;
@@ -340,13 +341,14 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
             var diff = this.m_listViewPoint - e.GetPosition(null);
 
-            Console.WriteLine($"{diff.X} / {diff.Y}");
-
             if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                 Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
             {
                 var listView = sender as ListView;
 
+                if (!CheckAncestor<ListViewItem>((DependencyObject)e.OriginalSource))
+                    return;
+                
                 var arg = new DragDropStartedEventArgs(new ArrayList(listView.SelectedItems));
                 this.DragDropStarted.Invoke(sender, arg);
 
@@ -357,6 +359,20 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                     DragDrop.DoDragDrop(listView, dataObject, arg.AllowedEffects);
                 }
             }
+        }
+        private static bool CheckAncestor<T>(DependencyObject tem)
+            where T : DependencyObject
+        {
+            do
+            {
+                if (tem is T)
+                    return true;
+
+                tem = VisualTreeHelper.GetParent(tem);
+            }
+            while (tem != null);
+
+            return false;
         }
 
         private void ListView_PreviewMouseUp(object sender, MouseButtonEventArgs e)
