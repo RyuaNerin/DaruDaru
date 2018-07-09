@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 using MahApps.Metro.Controls;
+using Microsoft.Win32;
 
 namespace DaruDaru.Core.Windows
 {
@@ -189,6 +190,26 @@ namespace DaruDaru.Core.Windows
             {
                 [PreserveSig]
                 int QueryService([In] ref Guid guidService, [In] ref Guid riid, [MarshalAs(UnmanagedType.IDispatch)] out object ppvObject);
+            }
+        }
+
+        private static void EnsureBrowserEmulationEnabled(bool uninstall)
+        {
+            try
+            {
+                using (var rk = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true))
+                {
+                    if (!uninstall)
+                    {
+                        if (rk.GetValue(App.AppPath, null) == null)
+                            rk.SetValue(App.AppPath, (uint)11001, RegistryValueKind.DWord);
+                    }
+                    else
+                        rk.DeleteValue(App.AppPath);
+                }
+            }
+            catch
+            {
             }
         }
     }

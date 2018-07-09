@@ -92,7 +92,10 @@ namespace DaruDaru.Core.Windows.MainTabs
             var uriStr = await MainWindow.Instance.ShowInput("보호된 만화 링크를 입력해주세요\n(로그인을 위해서 필요해요)", set);
 
             if (uriStr == null)
+            {
+                this.ctlConfigDownloadProtected.IsChecked = false;
                 return;
+            }
 
             if (string.IsNullOrWhiteSpace(uriStr) ||
                 Utility.TryCreateUri(uriStr, out Uri uri) ||

@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Cache;
 using System.Windows;
 using DaruDaru.Config;
-using Microsoft.Win32;
 
 namespace DaruDaru.Core
 {
@@ -30,26 +29,6 @@ namespace DaruDaru.Core
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             ConfigManager.Save();
-        }
-
-        private static void EnsureBrowserEmulationEnabled(string exename, bool uninstall = false)
-        {
-            try
-            {
-                using (var rk = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true))
-                {
-                    if (!uninstall)
-                    {
-                        if (rk.GetValue(exename, null) == null)
-                            rk.SetValue(exename, (uint)11001, RegistryValueKind.DWord);
-                    }
-                    else
-                        rk.DeleteValue(exename);
-                }
-            }
-            catch
-            {
-            }
         }
     }
 }
