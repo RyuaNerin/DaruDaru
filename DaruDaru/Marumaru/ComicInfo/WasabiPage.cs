@@ -89,7 +89,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                                 lst.Add(new ImageInfomation
                                 {
                                     Index    = lst.Count + 1,
-                                    ImageUri = Uri,
+                                    ImageUri = imgUri,
                                     TempPath = Path.GetTempFileName()
                                 });
                             }
