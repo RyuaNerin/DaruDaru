@@ -18,7 +18,7 @@
     <ctrs:BaseControl.Resources>
         <ResourceDictionary>
             <Style TargetType="{x:Type ListViewItem}"
-                    BasedOn="{StaticResource MetroListViewItem}">
+                   BasedOn="{StaticResource MetroListViewItem}">
                 <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
             </Style>
 
@@ -35,30 +35,30 @@
     <ctrs:BaseControl.ListContextMenu>
         <ContextMenu Opened="ctlMenu_Opened">
             <MenuItem Header="꿀뷰로 열기"
-                        x:Name="ctlMenuOpenFile"
-                        Click="ctlMenuOpenFile_Click" />
+                      x:Name="ctlMenuOpenFile"
+                      Click="ctlMenuOpenFile_Click" />
             <MenuItem Header="폴더 열기"
-                        x:Name="ctlMenuOpenDir"
-                        Click="ctlMenuOpenDir_Click" />
+                      x:Name="ctlMenuOpenDir"
+                      Click="ctlMenuOpenDir_Click" />
             <MenuItem Header="홈페이지 열기"
-                        x:Name="ctlMenuOpenWeb"
-                        Click="ctlMenuOpenWeb_Click" />
+                      x:Name="ctlMenuOpenWeb"
+                      Click="ctlMenuOpenWeb_Click" />
             <Separator />
             <MenuItem Header="주소 복사"
-                        x:Name="ctlMenuCopyUri"
-                        Click="ctlMenuCopyUri_Click" />
+                      x:Name="ctlMenuCopyUri"
+                      Click="ctlMenuCopyUri_Click" />
             <Separator />
             <MenuItem Header="다시 시도"
-                        x:Name="ctlMenuRetry"
-                        Click="ctlMenuRetry_Click" />
+                      x:Name="ctlMenuRetry"
+                      Click="ctlMenuRetry_Click" />
             <Separator />
             <MenuItem Header="선택 항목 목록에서 제거"
-                        x:Name="ctlMenuRemoveItem"
-                        Click="ctlMenuRemoveItem_Click" />
+                      x:Name="ctlMenuRemoveItem"
+                      Click="ctlMenuRemoveItem_Click" />
             <MenuItem Header="완료된 항목 제거"
-                        Click="ctlMenuRemoveCompleted_Click" />
+                      Click="ctlMenuRemoveCompleted_Click" />
             <MenuItem Header="모두 제거"
-                        Click="ctlMenuRemoveAll_Click" />
+                      Click="ctlMenuRemoveAll_Click" />
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>
         
@@ -82,12 +82,12 @@
                                                     Maximum="{Binding ProgressMaximum, Mode=OneWay}" />
 
                             <TextBlock HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center"
-                                        TextAlignment="Center"
-                                        TextWrapping="NoWrap"
-                                        LineStackingStrategy="BlockLineHeight"
-                                        Text="{Binding StateText, Mode=OneWay}"
-                                        Tag="{Binding}" />
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       TextWrapping="NoWrap"
+                                       LineStackingStrategy="BlockLineHeight"
+                                       Text="{Binding StateText, Mode=OneWay}"
+                                       Tag="{Binding}" />
                         </Grid>
                     </DataTemplate>
                 </GridViewColumn.CellTemplate>
@@ -98,8 +98,8 @@
                 <GridViewColumn.CellTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding SpeedOrFileSize, Mode=OneWay}"
-                                    TextAlignment="Right"
-                                    HorizontalAlignment="Stretch" />
+                                   TextAlignment="Right"
+                                   HorizontalAlignment="Stretch" />
                     </DataTemplate>
                 </GridViewColumn.CellTemplate>
             </GridViewColumn>

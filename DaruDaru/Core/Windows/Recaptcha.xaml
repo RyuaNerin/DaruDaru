@@ -11,12 +11,12 @@
                    WindowTransitionsEnabled="False">
     <Grid>
         <WebBrowser x:Name="ctlBrowser"
-                            Visibility="Collapsed"
-                            MaxHeight="450"
-                            OverridesDefaultStyle="False"
-                            Navigating="ctlBrowser_Navigating"
-                            Navigated="ctlBrowser_Navigated"
-                            LoadCompleted="ctlBrowser_LoadCompleted" />
+                    Visibility="Collapsed"
+                    MaxHeight="450"
+                    OverridesDefaultStyle="False"
+                    Navigating="ctlBrowser_Navigating"
+                    Navigated="ctlBrowser_Navigated"
+                    LoadCompleted="ctlBrowser_LoadCompleted" />
 
         <metro:ProgressRing x:Name="ctlProgress"
                             IsActive="True" />

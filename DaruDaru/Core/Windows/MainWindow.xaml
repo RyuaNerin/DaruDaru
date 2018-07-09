@@ -79,6 +79,7 @@
                     </Canvas>
                 </Viewbox>
             </TabItem.Header>
+            
             <ctr:Config />
         </TabItem>
     </TabControl>

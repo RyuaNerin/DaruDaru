@@ -87,7 +87,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.OnApplyTemplate();
         }
 
-        public readonly ICommand m_textBoxCommand;
+        private readonly ICommand m_textBoxCommand;
 
         public override void OnApplyTemplate()
         {

@@ -41,10 +41,6 @@ namespace DaruDaru.Config.Entries
             }
         }
 
-        [JsonIgnore]
-        public string FileSizeStr
-            => Utilities.Utility.ToEICFormat(this.FileSize);
-
         public int CompareTo(ArchiveEntry other)
             => this.TitleWithNo.CompareTo(other.TitleWithNo);
 
