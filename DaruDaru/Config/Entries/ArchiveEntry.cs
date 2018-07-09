@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Config.Entries
 {
-    internal class ArchiveEntry : INotifyPropertyChanged, IComparable<ArchiveEntry>, IEntry
+    internal class ArchiveEntry : INotifyPropertyChanged, IEntry
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
@@ -40,9 +40,6 @@ namespace DaruDaru.Config.Entries
                 this.InvokePropertyChanged();
             }
         }
-
-        public int CompareTo(ArchiveEntry other)
-            => this.TitleWithNo.CompareTo(other.TitleWithNo);
 
         [JsonIgnore] string IEntry.Code => this.ArchiveCode;
         [JsonIgnore] string IEntry.Text => this.TitleWithNo;

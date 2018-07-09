@@ -28,7 +28,6 @@ namespace DaruDaru.Config.Entries
 
         public string Title { get; set; }
 
-        [JsonProperty(Required = Required.Default)]
         public string[] ArchiveCodes { get; set; }
 
         private DateTime m_lastUpdated;
