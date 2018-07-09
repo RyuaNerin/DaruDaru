@@ -38,7 +38,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlConfigDownloadPathOpen_Click(object sender, RoutedEventArgs e)
         {
-            Utility.OpenDir(ConfigManager.Instance.SavePath);
+            Explorer.Open(ConfigManager.Instance.SavePath);
         }
 
         private void ctlConfigDownloadPathDefault_Click(object sender, RoutedEventArgs e)
@@ -55,7 +55,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlConfigLinkPathOpen_Click(object sender, RoutedEventArgs e)
         {
-            Utility.OpenDir(ConfigManager.Instance.UrlLinkPath);
+            Explorer.Open(ConfigManager.Instance.UrlLinkPath);
         }
 
         private void ctlConfigLinkPathDefault_Click(object sender, RoutedEventArgs e)

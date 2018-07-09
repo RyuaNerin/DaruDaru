@@ -25,5 +25,7 @@ namespace DaruDaru.Core.Windows
         Task<string> ShowInput(string message, MetroDialogSettings settings = null);
         Task<MessageDialogResult> ShowMessageBox(string message, MessageDialogStyle style = MessageDialogStyle.Affirmative, MetroDialogSettings settings = null);
         void ShowMessageBox(string message, int timeOut);
+
+        Task<bool> ShowMassageBoxTooMany();
     }
 }

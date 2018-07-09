@@ -51,20 +51,22 @@ namespace DaruDaru.Core.Windows.MainTabs
             MainWindow.Instance.DownloadUri(addNewOnly, items, e => e.Uri, e => e.Title);
         }
 
-        private void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
+        private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
             if (this.ctlViewer.SelectedItems.Count == 0)
                 return;
-
-            // 다섯개까지만 연다
+            
             var items = this.ctlViewer.SelectedItems.Cast<MarumaruEntry>()
                                                     .Select(le => le.Uri.AbsoluteUri)
                                                     .Distinct()
-                                                    .Take(App.MaxItems)
                                                     .ToArray();
 
+            if (items.Length > App.WarningItems &&
+                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                return;
+
             foreach (var item in items)
-                Utility.StartProcess(item);
+                Explorer.OpenUri(item);
         }
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)

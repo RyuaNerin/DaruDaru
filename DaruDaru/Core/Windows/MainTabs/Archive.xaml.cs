@@ -28,45 +28,48 @@ namespace DaruDaru.Core.Windows.MainTabs
             this.ctlViewer.SelectedItems.Count >= 0;
         }
 
-        private void ctlMenuOpen_Click(object sender, RoutedEventArgs e)
+        private async void ctlMenuOpen_Click(object sender, RoutedEventArgs e)
         {
             if (this.ctlViewer.SelectedItems.Count == 0)
                 return;
 
-            var hv = Utility.GetHoneyView();
-            if (hv != null)
+            if (HoneyViwer.TryCreate(out HoneyViwer hv))
             {
                 // 다섯개까지만 연다
-                var files = this.ctlViewer.SelectedItems.Cast<ArchiveEntry>()
-                                                        .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath) && File.Exists(le.ZipPath))
+                var items = this.ctlViewer.SelectedItems.Cast<ArchiveEntry>()
+                                                        .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
                                                         .Select(le => le.ZipPath)
                                                         .Distinct()
-                                                        .Take(App.MaxItems)
                                                         .ToArray();
 
-                foreach (var file in files)
-                    Utility.StartProcess(hv, $"\"{file}\"");
+                if (items.Length > App.WarningItems &&
+                    !await MainWindow.Instance.ShowMassageBoxTooMany())
+                    return;
+
+                foreach (var file in items)
+                    hv.Open(file);
             }
         }
 
-        private void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
+        private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
             if (this.ctlViewer.SelectedItems.Count == 0)
                 return;
             
-            var files = this.ctlViewer.SelectedItems.Cast<ArchiveEntry>()
-                                                     .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
-                                                     .Select(le => Path.GetDirectoryName(le.ZipPath))
-                                                     .Where(le => Directory.Exists(le))
-                                                     .Distinct()
-                                                     .Take(App.MaxItems)
-                                                     .ToArray();
+            var items = this.ctlViewer.SelectedItems.Cast<ArchiveEntry>()
+                                                    .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
+                                                    .Select(le => le.ZipPath)
+                                                    .Distinct()
+                                                    .ToArray();
 
-            foreach (var file in files)
-                Utility.OpenDir(file);
+                if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
+                    !await MainWindow.Instance.ShowMassageBoxTooMany())
+                    return;
+
+            Explorer.OpenAndSelect(items);
         }
 
-        private void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
+        private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
             if (this.ctlViewer.SelectedItems.Count == 0)
                 return;
@@ -74,11 +77,14 @@ namespace DaruDaru.Core.Windows.MainTabs
             var items = this.ctlViewer.SelectedItems.Cast<ArchiveEntry>()
                                                     .Select(le => le.Uri.AbsoluteUri)
                                                     .Distinct()
-                                                    .Take(App.MaxItems)
                                                     .ToArray();
 
+            if (items.Length > App.WarningItems &&
+                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                return;
+
             foreach (var item in items)
-                Utility.StartProcess(item);
+                Explorer.OpenUri(item);
         }
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
@@ -103,6 +109,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                                                     .Select(le => le.ZipPath)
                                                     .Distinct()
                                                     .ToArray();
+
             var files = new StringCollection();
             files.AddRange(items);
 
@@ -111,13 +118,12 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var hv = Utility.GetHoneyView();
-            if (hv != null)
+            if (HoneyViwer.TryCreate(out var hv))
             {
                 var item = ((ListViewItem)sender).Content as ArchiveEntry;
 
                 if (File.Exists(item.ZipPath))
-                    Utility.StartProcess(hv, $"\"{item.ZipPath}\"");
+                    hv.Open(item.ZipPath);
             }
         }
 

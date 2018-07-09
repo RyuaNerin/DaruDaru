@@ -70,63 +70,62 @@ namespace DaruDaru.Core.Windows.MainTabs
             }
         }
 
-        private void ctlMenuOpenFile_Click(object sender, RoutedEventArgs e)
+        private async void ctlMenuOpenFile_Click(object sender, RoutedEventArgs e)
         {
             if (this.ctlViewer.SelectedItems.Count == 0)
                 return;
 
-            var hv = Utility.GetHoneyView();
-            if (hv != null)
+            if (HoneyViwer.TryCreate(out var hv))
             {
-                var files = this.ctlViewer.SelectedItems.Cast<Comic>()
-                                                        .Where(le => le is WasabiPage)
-                                                        .Cast<WasabiPage>()
+                var items = this.ctlViewer.SelectedItems.OfType<WasabiPage>()
                                                         .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
                                                         .Select(le => le.ZipPath)
-                                                        .Where(le => !string.IsNullOrWhiteSpace(le) && File.Exists(le))
                                                         .Distinct()
-                                                        .Take(App.MaxItems)
                                                         .ToArray();
 
-                foreach (var file in files)
-                    Utility.StartProcess(hv, $"\"{file}\"");
+                if (items.Length > App.WarningItems &&
+                    !await MainWindow.Instance.ShowMassageBoxTooMany())
+                    return;
+
+                foreach (var file in items)
+                    hv.Open(file);
             }
         }
 
-        private void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
+        private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
             if (this.ctlViewer.SelectedItems.Count == 0)
                 return;
             
-            var dirs = this.ctlViewer.SelectedItems.Cast<Comic>()
-                                                   .Where(le => le is WasabiPage)
-                                                   .Cast<WasabiPage>()
-                                                   .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
-                                                   .Select(le => Path.GetDirectoryName(le.ZipPath))
-                                                   .Where(le => !string.IsNullOrWhiteSpace(le) && Directory.Exists(le))
-                                                   .Distinct()
-                                                   .Take(App.MaxItems)
-                                                   .ToArray();
+            var items = this.ctlViewer.SelectedItems.OfType<WasabiPage>()
+                                                    .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
+                                                    .Select(le => le.ZipPath)
+                                                    .ToArray();
 
-            foreach (var dir in dirs)
-                Utility.OpenDir(dir);
+            if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
+                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                return;
+
+            Explorer.OpenAndSelect(items);
         }
 
-        private void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
+        private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
             if (this.ctlViewer.SelectedItems.Count == 0)
                 return;
+            
+            var items = this.ctlViewer.SelectedItems.Cast<Comic>()
+                                                    .Where(le => le.Uri != null)
+                                                    .Select(le => le.Uri.AbsoluteUri)
+                                                    .Distinct()
+                                                    .ToArray();
 
-            // 다섯개까지만 연다
-            var uris = this.ctlViewer.SelectedItems.Cast<Comic>()
-                                                   .Where(le => le.Uri != null)
-                                                   .Select(le => le.Uri.AbsoluteUri)
-                                                   .Distinct()
-                                                   .Take(App.MaxItems)
-                                                   .ToArray();
+            if (items.Length > App.WarningItems &&
+                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                return;
 
-            foreach (var uri in uris)
-                Utility.StartProcess(uri);
+            foreach (var uri in items)
+                Explorer.OpenUri(uri);
         }
 
         private void ctlMenuRetry_Click(object sender, RoutedEventArgs e)
@@ -219,16 +218,12 @@ namespace DaruDaru.Core.Windows.MainTabs
             var content = ((ListViewItem)sender).Content;
 
             if (content is MaruPage maruPage)
-                Utility.OpenDir(maruPage.Uri.AbsoluteUri);
+                Explorer.OpenUri(maruPage.Uri.AbsoluteUri);
 
             else if (content is WasabiPage wasabiPage)
             {
-                if (!string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && File.Exists(wasabiPage.ZipPath))
-                {
-                    var hv = Utility.GetHoneyView();
-                    if (hv != null)
-                        Utility.StartProcess(hv, $"\"{wasabiPage.ZipPath}\"");
-                }
+                if (!string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && HoneyViwer.TryCreate(out var hv))
+                        hv.Open(wasabiPage.ZipPath);
             }
         }
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -48,7 +47,7 @@ namespace DaruDaru.Core.Windows
             var obj = await Task.Factory.StartNew(LastRelease.CheckNewVersion);
             if (obj != null)
             {
-                Process.Start(new ProcessStartInfo { FileName = obj.HtmlUrl, UseShellExecute = true });
+                Explorer.OpenUri(obj.HtmlUrl);
                 Application.Current.Shutdown();
                 this.Close();
                 return;
@@ -107,6 +106,18 @@ namespace DaruDaru.Core.Windows
                 if (!dialog.IsCompleted && !dialog.IsCanceled)
                     ct.Cancel();
             }
+        }
+
+        public Task<bool> ShowMassageBoxTooMany()
+        {
+            var settings = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "계속",
+                NegativeButtonText = "취소",
+                DefaultButtonFocus = MessageDialogResult.Negative
+            };
+
+            return DialogManager.ShowMessageAsync(this, null, "이 작업은 컴퓨터가 느려질 수도 있어요!", MessageDialogStyle.AffirmativeAndNegative, settings).ContinueWith(e => e.Result == MessageDialogResult.Affirmative);
         }
 
         public void SearchArchiveByCodes(string[] codes, string text)

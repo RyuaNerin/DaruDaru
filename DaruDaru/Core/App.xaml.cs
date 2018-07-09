@@ -9,7 +9,7 @@ namespace DaruDaru.Core
 {
     internal partial class App : Application
     {
-        public const int MaxItems = 5;
+        public const int WarningItems = 5;
 
         public static readonly string AppPath;
         public static readonly string AppDir;

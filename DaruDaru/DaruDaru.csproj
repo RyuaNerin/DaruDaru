@@ -108,6 +108,8 @@
     </Compile>
     <Compile Include="Marumaru\ComicInfo\UnknownPage.cs" />
     <Compile Include="Marumaru\DaruUriParser.cs" />
+    <Compile Include="Utilities\Explorer.cs" />
+    <Compile Include="Utilities\HoneyViwer.cs" />
     <Compile Include="Utilities\Utility.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
     <Compile Include="Utilities\GridViewSort.cs" />
