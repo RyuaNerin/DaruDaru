@@ -91,6 +91,7 @@
     <Compile Include="Config\ConfigManager.cs" />
     <Compile Include="Config\ConfigCur.cs" />
     <Compile Include="Config\Entries\ArchiveEntry.cs" />
+    <Compile Include="Utilities\CollectionHelper.cs" />
     <Compile Include="Config\Entries\MarumaruEntry.cs" />
     <Compile Include="Config\IEntry.cs" />
     <Compile Include="Core\Windows\MainTabs\Controls\Viewer.cs" />
@@ -177,9 +178,7 @@
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="WinForms\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.3.0.4\build\Fody.targets" Condition="Exists('..\packages\Fody.3.0.4\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -223,6 +224,9 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
         public object SelectedItem => this.m_listView?.SelectedItem;
         public IList SelectedItems => this.m_listView?.SelectedItems;
+
+        public T[] Get<T>()
+            => this.m_listView?.SelectedItems.OfType<T>().ToArray() ?? new T[0];
 
         private ICollectionView m_collectionView;
         private ICollectionView ICollectionView

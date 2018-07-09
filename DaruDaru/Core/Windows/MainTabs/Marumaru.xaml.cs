@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,8 +18,11 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuContextMenu_Opened(object sender, RoutedEventArgs e)
         {
+            this.ctlMenuArchiveSearch.IsEnabled =
             this.ctlMenuSearch.IsEnabled =
+            this.ctlMenuSearchNew.IsEnabled =
             this.ctlMenuOpenWeb.IsEnabled =
+            this.ctlMenuCopyUri.IsEnabled =
             this.ctlViewer.SelectedItems.Count >= 0;
         }
 
@@ -42,24 +44,16 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void AddRecentSelectedItems(bool addNewOnly)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
-
-            var items = this.ctlViewer.SelectedItems.Cast<MarumaruEntry>()
-                                                    .ToArray();
+            var items = this.ctlViewer.Get<MarumaruEntry>();
+            if (items.Length == 0) return;
 
             MainWindow.Instance.DownloadUri(addNewOnly, items, e => e.Uri, e => e.Title);
         }
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
-            
-            var items = this.ctlViewer.SelectedItems.Cast<MarumaruEntry>()
-                                                    .Select(le => le.Uri.AbsoluteUri)
-                                                    .Distinct()
-                                                    .ToArray();
+            var items = this.ctlViewer.Get<MarumaruEntry>().GetUri();
+            if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
                 !await MainWindow.Instance.ShowMassageBoxTooMany())
@@ -71,13 +65,8 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
-
-            var items = this.ctlViewer.SelectedItems.Cast<MarumaruEntry>()
-                                                    .Select(le => le.Uri.AbsoluteUri)
-                                                    .Distinct()
-                                                    .ToArray();
+            var items = this.ctlViewer.Get<MarumaruEntry>().GetUri();
+            if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join("\n", items));
         }

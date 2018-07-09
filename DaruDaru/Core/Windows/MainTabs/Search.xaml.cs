@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -50,57 +49,32 @@ namespace DaruDaru.Core.Windows.MainTabs
         
         private void ctlMenu_Opened(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-            {
-                this.ctlMenuOpenDir.IsEnabled = false;
-                this.ctlMenuOpenFile.IsEnabled = false;
-                this.ctlMenuOpenWeb.IsEnabled = false;
-
-                this.ctlMenuRetry.IsEnabled = false;
-
-                this.ctlMenuRemoveItem.IsEnabled = false;
-            }
-            else
-            {
-                this.ctlMenuOpenFile.IsEnabled = true;
-                this.ctlMenuOpenDir.IsEnabled = true;
-                this.ctlMenuRetry.IsEnabled = true;
-                this.ctlMenuOpenWeb.IsEnabled = true;
-                this.ctlMenuRemoveItem.IsEnabled = true;
-            }
+            this.ctlMenuOpenDir.IsEnabled =
+            this.ctlMenuOpenFile.IsEnabled =
+            this.ctlMenuOpenWeb.IsEnabled =
+            this.ctlMenuRetry.IsEnabled =
+            this.ctlMenuRemoveItem.IsEnabled =
+            this.ctlViewer.SelectedItems.Count > 0;
         }
 
         private async void ctlMenuOpenFile_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
+            var items = this.ctlViewer.Get<WasabiPage>().GetPath();
+            if (items.Length == 0) return;
+
+            if (items.Length > App.WarningItems &&
+                !await MainWindow.Instance.ShowMassageBoxTooMany())
                 return;
 
             if (HoneyViwer.TryCreate(out var hv))
-            {
-                var items = this.ctlViewer.SelectedItems.OfType<WasabiPage>()
-                                                        .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
-                                                        .Select(le => le.ZipPath)
-                                                        .Distinct()
-                                                        .ToArray();
-
-                if (items.Length > App.WarningItems &&
-                    !await MainWindow.Instance.ShowMassageBoxTooMany())
-                    return;
-
                 foreach (var file in items)
                     hv.Open(file);
-            }
         }
 
         private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
-            
-            var items = this.ctlViewer.SelectedItems.OfType<WasabiPage>()
-                                                    .Where(le => !string.IsNullOrWhiteSpace(le.ZipPath))
-                                                    .Select(le => le.ZipPath)
-                                                    .ToArray();
+            var items = this.ctlViewer.Get<WasabiPage>().GetPath();
+            if (items.Length == 0) return;
 
             if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
                 !await MainWindow.Instance.ShowMassageBoxTooMany())
@@ -111,15 +85,9 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
+            var items = this.ctlViewer.Get<Comic>().GetUri();
+            if (items.Length == 0) return;
             
-            var items = this.ctlViewer.SelectedItems.Cast<Comic>()
-                                                    .Where(le => le.Uri != null)
-                                                    .Select(le => le.Uri.AbsoluteUri)
-                                                    .Distinct()
-                                                    .ToArray();
-
             if (items.Length > App.WarningItems &&
                 !await MainWindow.Instance.ShowMassageBoxTooMany())
                 return;
@@ -130,11 +98,8 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuRetry_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
-
-            var items = this.ctlViewer.SelectedItems.Cast<Comic>()
-                                                    .ToArray();
+            var items = this.ctlViewer.Get<Comic>();
+            if (items.Length == 0) return;
 
             foreach (var item in items)
                 item.Restart();
@@ -144,11 +109,8 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuRemoveItem_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
-
-            var items = this.ctlViewer.SelectedItems.Cast<Comic>()
-                                                    .ToArray();
+            var items = this.ctlViewer.Get<Comic>();
+            if (items.Length == 0) return;
 
             lock (this.Queue)
                 foreach (var item in items)
@@ -202,13 +164,8 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItems.Count == 0)
-                return;
-
-            var items = this.ctlViewer.SelectedItems.Cast<Comic>()
-                                                    .Select(le => le.Uri.AbsoluteUri)
-                                                    .Distinct()
-                                                    .ToArray();
+            var items = this.ctlViewer.Get<Comic>().GetUri();
+            if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join("\n", items));
         }
@@ -223,7 +180,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             else if (content is WasabiPage wasabiPage)
             {
                 if (!string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && HoneyViwer.TryCreate(out var hv))
-                        hv.Open(wasabiPage.ZipPath);
+                    hv.Open(wasabiPage.ZipPath);
             }
         }
 
