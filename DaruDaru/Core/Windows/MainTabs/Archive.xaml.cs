@@ -11,13 +11,13 @@ using DaruDaru.Utilities;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
-    internal partial class Archive : ContentControl
+    internal partial class Archive : BaseControl
     {
         public Archive()
         {
             InitializeComponent();
 
-            this.ctlViewer.ListItemSource = ArchiveManager.Archives;
+            this.ListItemSource = ArchiveManager.Archives;
         }
 
         private void ctlMenuContextMenu_Opened(object sender, RoutedEventArgs e)
@@ -27,12 +27,12 @@ namespace DaruDaru.Core.Windows.MainTabs
             this.ctlMenuOpenWeb.IsEnabled =
             this.ctlMenuCopyFile.IsEnabled = 
             this.ctlMenuCopyUri.IsEnabled =
-            this.ctlViewer.SelectedItems.Count >= 0;
+            this.SelectedItems.Count >= 0;
         }
 
         private async void ctlMenuOpen_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<ArchiveEntry>().GetUri();
+            var items = this.Get<ArchiveEntry>().GetUri();
             if (items.Length == 0) return;
 
             if (items.Count() > App.WarningItems &&
@@ -46,7 +46,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<ArchiveEntry>().GetPath();
+            var items = this.Get<ArchiveEntry>().GetPath();
             if (items.Length == 0) return;
 
             if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
@@ -58,7 +58,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<ArchiveEntry>().GetUri();
+            var items = this.Get<ArchiveEntry>().GetUri();
             if (items.Length == 0) return;
 
             if (items.Count() > App.WarningItems &&
@@ -71,7 +71,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyFile_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<ArchiveEntry>().GetPath();
+            var items = this.Get<ArchiveEntry>().GetPath();
             if (items.Length == 0) return;
 
             var files = new StringCollection();
@@ -82,7 +82,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<ArchiveEntry>().GetUri();
+            var items = this.Get<ArchiveEntry>().GetUri();
             if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join("\n", items));
@@ -98,9 +98,6 @@ namespace DaruDaru.Core.Windows.MainTabs
                     hv.Open(item.ZipPath);
             }
         }
-
-        public void SearchArchiveByCodes(string[] codes, string text)
-            => this.ctlViewer.FilterByCode(codes, text);
 
         private void ctlViewer_DragDropStarted(object sender, DragDropStartedEventArgs e)
         {

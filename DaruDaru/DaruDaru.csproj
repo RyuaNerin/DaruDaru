@@ -94,7 +94,7 @@
     <Compile Include="Utilities\CollectionHelper.cs" />
     <Compile Include="Config\Entries\MarumaruEntry.cs" />
     <Compile Include="Config\IEntry.cs" />
-    <Compile Include="Core\Windows\MainTabs\Controls\Viewer.cs" />
+    <Compile Include="Core\Windows\MainTabs\Controls\BaseControl.cs" />
     <Compile Include="Core\Windows\MainTabs\Config.xaml.cs">
       <DependentUpon>Config.xaml</DependentUpon>
     </Compile>

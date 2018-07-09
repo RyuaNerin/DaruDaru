@@ -1,70 +1,69 @@
-<ContentControl x:Class="DaruDaru.Core.Windows.MainTabs.Marumaru"
-                x:ClassModifier="internal"
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
-                xmlns:util="clr-namespace:DaruDaru.Utilities"
-                xmlns:mr="clr-namespace:DaruDaru.Marumaru"
-                mc:Ignorable="d"
-                d:DesignHeight="250"
-                d:DesignWidth="400">
-    <ctrs:Viewer x:Name="ctlViewer"
-                 TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
-                 ButtonContent="검색"
-                 DaruUriParser="{x:Static mr:DaruUriParser.Marumaru}">
-        <ctrs:Viewer.Resources>
-            <ResourceDictionary>
-                <Style TargetType="{x:Type ListViewItem}"
-                       BasedOn="{StaticResource MetroListViewItem}">
-                    <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
-                </Style>
-            </ResourceDictionary>
-        </ctrs:Viewer.Resources>
+<ctrs:BaseControl x:Class="DaruDaru.Core.Windows.MainTabs.Marumaru"
+                  x:ClassModifier="internal"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
+                  xmlns:util="clr-namespace:DaruDaru.Utilities"
+                  xmlns:mr="clr-namespace:DaruDaru.Marumaru"
+                  TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
+                  ButtonContent="검색"
+                  DaruUriParser="{x:Static mr:DaruUriParser.Marumaru}"
+                  Template="{StaticResource ViewerTemplate}"
+                  mc:Ignorable="d"
+                  d:DesignHeight="250"
+                  d:DesignWidth="400">
+    <ctrs:BaseControl.Resources>
+        <ResourceDictionary>
+            <Style TargetType="{x:Type ListViewItem}"
+                    BasedOn="{StaticResource MetroListViewItem}">
+                <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
+            </Style>
+        </ResourceDictionary>
+    </ctrs:BaseControl.Resources>
         
-        <ctrs:Viewer.ListContextMenu>
-            <ContextMenu Opened="ctlMenuContextMenu_Opened">
-                <MenuItem Header="다운로드 기록 검색"
-                          x:Name="ctlMenuArchiveSearch"
-                          Click="ctlMenuArchiveSearch_Click" />
-                <Separator />
-                <MenuItem Header="다시 검색 (새로운 것만)"
-                          x:Name="ctlMenuSearchNew"
-                          Click="ctlMenuSearchNew_Click" />
-                <MenuItem Header="다시 검색"
-                          x:Name="ctlMenuSearch"
-                          Click="ctlMenuSearch_Click" />
-                <Separator />
-                <MenuItem Header="마루마루 페이지 열기"
-                          x:Name="ctlMenuOpenWeb"
-                          Click="ctlMenuOpenWeb_Click" />
-                <Separator />
-                <MenuItem Header="마루마루 링크 복사"
-                          x:Name="ctlMenuCopyUri"
-                          Click="ctlMenuCopyUri_Click" />
-            </ContextMenu>
-        </ctrs:Viewer.ListContextMenu>
+    <ctrs:BaseControl.ListContextMenu>
+        <ContextMenu Opened="ctlMenuContextMenu_Opened">
+            <MenuItem Header="다운로드 기록 검색"
+                        x:Name="ctlMenuArchiveSearch"
+                        Click="ctlMenuArchiveSearch_Click" />
+            <Separator />
+            <MenuItem Header="다시 검색 (새로운 것만)"
+                        x:Name="ctlMenuSearchNew"
+                        Click="ctlMenuSearchNew_Click" />
+            <MenuItem Header="다시 검색"
+                        x:Name="ctlMenuSearch"
+                        Click="ctlMenuSearch_Click" />
+            <Separator />
+            <MenuItem Header="마루마루 페이지 열기"
+                        x:Name="ctlMenuOpenWeb"
+                        Click="ctlMenuOpenWeb_Click" />
+            <Separator />
+            <MenuItem Header="마루마루 링크 복사"
+                        x:Name="ctlMenuCopyUri"
+                        Click="ctlMenuCopyUri_Click" />
+        </ContextMenu>
+    </ctrs:BaseControl.ListContextMenu>
         
-        <ctrs:Viewer.ListView>
-            <GridView>
-                <GridViewColumn Header="제목"
-                                Width="220"
-                                util:GridViewSort.PropertyName="Title"
-                                DisplayMemberBinding="{Binding Title, Mode=OneWay}" />
+    <ctrs:BaseControl.ListView>
+        <GridView>
+            <GridViewColumn Header="제목"
+                            Width="220"
+                            util:GridViewSort.PropertyName="Title"
+                            DisplayMemberBinding="{Binding Title, Mode=OneWay}" />
 
-                <GridViewColumn Header="마지막 검색"
-                                Width="130"
-                                util:GridViewSort.PropertyName="LastUpdated">
-                    <GridViewColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding LastUpdated, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                       TextAlignment="Center"
-                                       HorizontalAlignment="Stretch" />
-                        </DataTemplate>
-                    </GridViewColumn.CellTemplate>
-                </GridViewColumn>
-            </GridView>
-        </ctrs:Viewer.ListView>
-    </ctrs:Viewer>
-</ContentControl>
+            <GridViewColumn Header="마지막 검색"
+                            Width="130"
+                            util:GridViewSort.PropertyName="LastUpdated">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding LastUpdated, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
+                                    TextAlignment="Center"
+                                    HorizontalAlignment="Stretch" />
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+        </GridView>
+    </ctrs:BaseControl.ListView>
+</ctrs:BaseControl>

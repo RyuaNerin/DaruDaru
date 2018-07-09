@@ -4,7 +4,7 @@
                      xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                      xmlns:util="clr-namespace:DaruDaru.Utilities">
     <ControlTemplate x:Key="ViewerTemplate"
-                     TargetType="{x:Type local:Viewer}">
+                     TargetType="{x:Type local:BaseControl}">
         <ControlTemplate.Resources>
             <Style TargetType="{x:Type GridViewColumnHeader}"
                    BasedOn="{StaticResource MetroGridViewColumnHeader}">
@@ -45,10 +45,10 @@
                      Grid.Column="0"
                      VerticalContentAlignment="Center"
                      AllowDrop="False"
-                     Text="{Binding Text, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Viewer}}}"
+                     Text="{Binding Text, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
                      metro:TextBoxHelper.AutoWatermark="True"
-                     metro:TextBoxHelper.Watermark="{Binding TextWatermark, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Viewer}}}"
-                     metro:TextBoxHelper.ButtonCommand="{Binding TextBoxClearCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Viewer}}}"
+                     metro:TextBoxHelper.Watermark="{Binding TextWatermark, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
+                     metro:TextBoxHelper.ButtonCommand="{Binding TextBoxClearCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
                      metro:TextBoxHelper.ClearTextButton="True"
                      metro:TextBoxHelper.SelectAllOnFocus="True" />
 
@@ -58,7 +58,7 @@
                     Margin="5 0 0 0"
                     Padding="5 0 5 0"
                     MinWidth="70"
-                    Content="{Binding ButtonContent, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Viewer}}}" />
+                    Content="{Binding ButtonContent, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}" />
 
             <ListView x:Name="PART_ListView"
                       Grid.Row="1"
@@ -67,14 +67,9 @@
                       BorderBrush="{DynamicResource AccentColorBrush}"
                       BorderThickness="1"
                       util:GridViewSort.AutoSort="True"
-                      View="{Binding ListView, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Viewer}}}"
-                      ContextMenu="{Binding ListContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Viewer}}}"
-                      ItemsSource="{Binding ListItemSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Viewer}}}" />
+                      View="{Binding ListView, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
+                      ContextMenu="{Binding ListContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
+                      ItemsSource="{Binding ListItemSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}" />
         </Grid>
     </ControlTemplate>
-
-    <Style TargetType="{x:Type local:Viewer}">
-        <Setter Property="Template" Value="{StaticResource ViewerTemplate}" />
-    </Style>
-
 </ResourceDictionary>

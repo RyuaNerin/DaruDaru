@@ -6,13 +6,14 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Marumaru.ComicInfo;
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls.Dialogs;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
-    internal partial class Search : ContentControl
+    internal partial class Search : BaseControl
     {
         public ObservableCollection<Comic> Queue { get; } = new ObservableCollection<Comic>();
 
@@ -20,7 +21,7 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             InitializeComponent();
 
-            this.ctlViewer.ListItemSource = this.Queue;
+            this.ListItemSource = this.Queue;
 
             this.Queue.CollectionChanged += (ls, le) =>
             {
@@ -54,12 +55,12 @@ namespace DaruDaru.Core.Windows.MainTabs
             this.ctlMenuOpenWeb.IsEnabled =
             this.ctlMenuRetry.IsEnabled =
             this.ctlMenuRemoveItem.IsEnabled =
-            this.ctlViewer.SelectedItems.Count > 0;
+            this.SelectedItems.Count > 0;
         }
 
         private async void ctlMenuOpenFile_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<WasabiPage>().GetPath();
+            var items = this.Get<WasabiPage>().GetPath();
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
@@ -73,7 +74,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<WasabiPage>().GetPath();
+            var items = this.Get<WasabiPage>().GetPath();
             if (items.Length == 0) return;
 
             if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
@@ -85,7 +86,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<Comic>().GetUri();
+            var items = this.Get<Comic>().GetUri();
             if (items.Length == 0) return;
             
             if (items.Length > App.WarningItems &&
@@ -98,7 +99,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuRetry_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<Comic>();
+            var items = this.Get<Comic>();
             if (items.Length == 0) return;
 
             foreach (var item in items)
@@ -109,7 +110,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuRemoveItem_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<Comic>();
+            var items = this.Get<Comic>();
             if (items.Length == 0) return;
 
             lock (this.Queue)
@@ -164,7 +165,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<Comic>().GetUri();
+            var items = this.Get<Comic>().GetUri();
             if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join("\n", items));
@@ -186,18 +187,18 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void Viewer_ButtonClick(object sender, RoutedEventArgs e)
         {
-            var uriString = this.ctlViewer.Text.Trim();
+            var uriString = this.Text.Trim();
 
             if (!Utility.TryCreateUri(uriString, out Uri uri))
             {
-                this.ctlViewer.FocusTextBox();
+                this.FocusTextBox();
                 return;
             }
 
             this.DownloadUri(false, uri, null);
 
-            this.ctlViewer.Text = null;
-            this.ctlViewer.FocusTextBox();
+            this.Text = null;
+            this.FocusTextBox();
         }
 
         public void DownloadUri(bool addNewOnly, Uri uri, string comicName)

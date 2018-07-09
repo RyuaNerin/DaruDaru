@@ -1,109 +1,108 @@
-<ContentControl x:Class="DaruDaru.Core.Windows.MainTabs.Search"
-                x:ClassModifier="internal"
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-                xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
-                xmlns:cvt="clr-namespace:DaruDaru.Core.Converters"
-                mc:Ignorable="d"
-                d:DesignHeight="250"
-                d:DesignWidth="400">
-    <ctrs:Viewer x:Name="ctlViewer"
-                 TextWatermark="만화 주소 입력 혹은 링크 드래그"
-                 ButtonContent="다운로드"
-                 UseSearch="False"
-                 ButtonClick="Viewer_ButtonClick">
-        <ctrs:Viewer.Resources>
-            <ResourceDictionary>
-                <Style TargetType="{x:Type ListViewItem}"
-                       BasedOn="{StaticResource MetroListViewItem}">
-                    <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
-                </Style>
+<ctrs:BaseControl x:Class="DaruDaru.Core.Windows.MainTabs.Search"
+                  x:ClassModifier="internal"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                  xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
+                  xmlns:cvt="clr-namespace:DaruDaru.Core.Converters"
+                  TextWatermark="만화 주소 입력 혹은 링크 드래그"
+                  ButtonContent="다운로드"
+                  UseSearch="False"
+                  ButtonClick="Viewer_ButtonClick"
+                  Template="{StaticResource ViewerTemplate}"
+                  mc:Ignorable="d"
+                  d:DesignHeight="250"
+                  d:DesignWidth="400">
+    <ctrs:BaseControl.Resources>
+        <ResourceDictionary>
+            <Style TargetType="{x:Type ListViewItem}"
+                    BasedOn="{StaticResource MetroListViewItem}">
+                <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
+            </Style>
 
-                <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
-                                            BrushNormal    ="#FFB6D2DE"
-                                            BrushCompete   ="#FFB3CEB3"
-                                            BrushDownloaded="#FFB3D5D5"
-                                            BrushNoNew     ="#FFD4DAB3"
-                                            BrushError     ="#FFE1B7B3"
-                                            BrushProtected ="#FFE4CADC" />
-            </ResourceDictionary>
-        </ctrs:Viewer.Resources>
+            <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
+                                        BrushNormal    ="#FFB6D2DE"
+                                        BrushCompete   ="#FFB3CEB3"
+                                        BrushDownloaded="#FFB3D5D5"
+                                        BrushNoNew     ="#FFD4DAB3"
+                                        BrushError     ="#FFE1B7B3"
+                                        BrushProtected ="#FFE4CADC" />
+        </ResourceDictionary>
+    </ctrs:BaseControl.Resources>
         
-        <ctrs:Viewer.ListContextMenu>
-            <ContextMenu Opened="ctlMenu_Opened">
-                <MenuItem Header="꿀뷰로 열기"
-                          x:Name="ctlMenuOpenFile"
-                          Click="ctlMenuOpenFile_Click" />
-                <MenuItem Header="폴더 열기"
-                          x:Name="ctlMenuOpenDir"
-                          Click="ctlMenuOpenDir_Click" />
-                <MenuItem Header="홈페이지 열기"
-                          x:Name="ctlMenuOpenWeb"
-                          Click="ctlMenuOpenWeb_Click" />
-                <Separator />
-                <MenuItem Header="주소 복사"
-                          x:Name="ctlMenuCopyUri"
-                          Click="ctlMenuCopyUri_Click" />
-                <Separator />
-                <MenuItem Header="다시 시도"
-                          x:Name="ctlMenuRetry"
-                          Click="ctlMenuRetry_Click" />
-                <Separator />
-                <MenuItem Header="선택 항목 목록에서 제거"
-                          x:Name="ctlMenuRemoveItem"
-                          Click="ctlMenuRemoveItem_Click" />
-                <MenuItem Header="완료된 항목 제거"
-                          Click="ctlMenuRemoveCompleted_Click" />
-                <MenuItem Header="모두 제거"
-                          Click="ctlMenuRemoveAll_Click" />
-            </ContextMenu>
-        </ctrs:Viewer.ListContextMenu>
+    <ctrs:BaseControl.ListContextMenu>
+        <ContextMenu Opened="ctlMenu_Opened">
+            <MenuItem Header="꿀뷰로 열기"
+                        x:Name="ctlMenuOpenFile"
+                        Click="ctlMenuOpenFile_Click" />
+            <MenuItem Header="폴더 열기"
+                        x:Name="ctlMenuOpenDir"
+                        Click="ctlMenuOpenDir_Click" />
+            <MenuItem Header="홈페이지 열기"
+                        x:Name="ctlMenuOpenWeb"
+                        Click="ctlMenuOpenWeb_Click" />
+            <Separator />
+            <MenuItem Header="주소 복사"
+                        x:Name="ctlMenuCopyUri"
+                        Click="ctlMenuCopyUri_Click" />
+            <Separator />
+            <MenuItem Header="다시 시도"
+                        x:Name="ctlMenuRetry"
+                        Click="ctlMenuRetry_Click" />
+            <Separator />
+            <MenuItem Header="선택 항목 목록에서 제거"
+                        x:Name="ctlMenuRemoveItem"
+                        Click="ctlMenuRemoveItem_Click" />
+            <MenuItem Header="완료된 항목 제거"
+                        Click="ctlMenuRemoveCompleted_Click" />
+            <MenuItem Header="모두 제거"
+                        Click="ctlMenuRemoveAll_Click" />
+        </ContextMenu>
+    </ctrs:BaseControl.ListContextMenu>
         
-        <ctrs:Viewer.ListView>
-            <GridView>
-                <GridViewColumn Header="제목"
-                                Width="190"
-                                DisplayMemberBinding="{Binding DisplayName, Mode=OneWay}" />
+    <ctrs:BaseControl.ListView>
+        <GridView>
+            <GridViewColumn Header="제목"
+                            Width="190"
+                            DisplayMemberBinding="{Binding DisplayName, Mode=OneWay}" />
 
-                <GridViewColumn Header="상태"
-                                Width="90">
-                    <GridViewColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid HorizontalAlignment="Stretch">
-                                <metro:MetroProgressBar HorizontalAlignment="Stretch"
-                                                        VerticalContentAlignment="Stretch"
-                                                        Background="{DynamicResource GrayBrush8}"
-                                                        Foreground="{Binding State, Mode=OneWay, Converter={StaticResource ProgressColorConverter}}"
-                                                        Minimum="0"
-                                                        Value="{Binding ProgressValue, Mode=OneWay}"
-                                                        Maximum="{Binding ProgressMaximum, Mode=OneWay}" />
+            <GridViewColumn Header="상태"
+                            Width="90">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <Grid HorizontalAlignment="Stretch">
+                            <metro:MetroProgressBar HorizontalAlignment="Stretch"
+                                                    VerticalContentAlignment="Stretch"
+                                                    Background="{DynamicResource GrayBrush8}"
+                                                    Foreground="{Binding State, Mode=OneWay, Converter={StaticResource ProgressColorConverter}}"
+                                                    Minimum="0"
+                                                    Value="{Binding ProgressValue, Mode=OneWay}"
+                                                    Maximum="{Binding ProgressMaximum, Mode=OneWay}" />
 
-                                <TextBlock HorizontalAlignment="Stretch"
-                                           VerticalAlignment="Center"
-                                           TextAlignment="Center"
-                                           TextWrapping="NoWrap"
-                                           LineStackingStrategy="BlockLineHeight"
-                                           Text="{Binding StateText, Mode=OneWay}"
-                                           Tag="{Binding}" />
-                            </Grid>
-                        </DataTemplate>
-                    </GridViewColumn.CellTemplate>
-                </GridViewColumn>
+                            <TextBlock HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center"
+                                        TextAlignment="Center"
+                                        TextWrapping="NoWrap"
+                                        LineStackingStrategy="BlockLineHeight"
+                                        Text="{Binding StateText, Mode=OneWay}"
+                                        Tag="{Binding}" />
+                        </Grid>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
 
-                <GridViewColumn Header="속도 / 용량"
-                                Width="90">
-                    <GridViewColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding SpeedOrFileSize, Mode=OneWay}"
-                                       TextAlignment="Right"
-                                       HorizontalAlignment="Stretch" />
-                        </DataTemplate>
-                    </GridViewColumn.CellTemplate>
-                </GridViewColumn>
-            </GridView>
-        </ctrs:Viewer.ListView>
-    </ctrs:Viewer>
-</ContentControl>
+            <GridViewColumn Header="속도 / 용량"
+                            Width="90">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding SpeedOrFileSize, Mode=OneWay}"
+                                    TextAlignment="Right"
+                                    HorizontalAlignment="Stretch" />
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+        </GridView>
+    </ctrs:BaseControl.ListView>
+</ctrs:BaseControl>

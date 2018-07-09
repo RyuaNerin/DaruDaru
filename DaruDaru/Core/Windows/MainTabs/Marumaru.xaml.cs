@@ -3,17 +3,18 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using DaruDaru.Config;
 using DaruDaru.Config.Entries;
+using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Utilities;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
-    internal partial class Marumaru : ContentControl
+    internal partial class Marumaru : BaseControl
     {
         public Marumaru()
         {
             InitializeComponent();
 
-            this.ctlViewer.ListItemSource = ArchiveManager.MarumaruLinks;
+            this.ListItemSource = ArchiveManager.MarumaruLinks;
         }
 
         private void ctlMenuContextMenu_Opened(object sender, RoutedEventArgs e)
@@ -23,12 +24,12 @@ namespace DaruDaru.Core.Windows.MainTabs
             this.ctlMenuSearchNew.IsEnabled =
             this.ctlMenuOpenWeb.IsEnabled =
             this.ctlMenuCopyUri.IsEnabled =
-            this.ctlViewer.SelectedItems.Count >= 0;
+            this.SelectedItems.Count >= 0;
         }
 
         private void ctlMenuArchiveSearch_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ctlViewer.SelectedItem is MarumaruEntry entry)
+            if (this.SelectedItem is MarumaruEntry entry)
                 MainWindow.Instance.SearchArchiveByCodes(entry.ArchiveCodes, entry.Title);
         }
 
@@ -44,7 +45,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void AddRecentSelectedItems(bool addNewOnly)
         {
-            var items = this.ctlViewer.Get<MarumaruEntry>();
+            var items = this.Get<MarumaruEntry>();
             if (items.Length == 0) return;
 
             MainWindow.Instance.DownloadUri(addNewOnly, items, e => e.Uri, e => e.Title);
@@ -52,7 +53,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<MarumaruEntry>().GetUri();
+            var items = this.Get<MarumaruEntry>().GetUri();
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
@@ -65,7 +66,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.ctlViewer.Get<MarumaruEntry>().GetUri();
+            var items = this.Get<MarumaruEntry>().GetUri();
             if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join("\n", items));

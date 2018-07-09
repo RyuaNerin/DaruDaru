@@ -27,7 +27,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
     internal delegate void DragDropStartedEventHandler(object sender, DragDropStartedEventArgs e);
 
-    internal class Viewer : Control
+    internal class BaseControl : Control
     {
         private const string TextBoxName  = "PART_TextBox";
         private const string ButtonName   = "PART_Button";
@@ -65,12 +65,12 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                 => this.m_execute(parameter);
         }
 
-        static Viewer()
+        static BaseControl()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(Viewer), new FrameworkPropertyMetadata(typeof(Viewer)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(BaseControl), new FrameworkPropertyMetadata(typeof(BaseControl)));
         }
 
-        public Viewer()
+        public BaseControl()
         {
             this.TextBoxClearCommand = new SimpleCommand(e =>
             {
@@ -86,7 +86,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.OnApplyTemplate();
         }
 
-        public ICommand TextBoxClearCommand { get; }
+        protected internal ICommand TextBoxClearCommand { get; }
 
         public override void OnApplyTemplate()
         {
@@ -98,7 +98,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         }
 
         private TextBox m_textBox;
-        public TextBox TextBoxControl
+        private TextBox TextBoxControl
         {
             get => this.m_textBox;
             set
@@ -117,7 +117,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         }
 
         private Button m_button;
-        public Button ButtonControl
+        private Button ButtonControl
         {
             get => this.m_button;
             set
@@ -136,7 +136,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         }
 
         private ListView m_listView;
-        public ListView ListViewControl
+        private ListView ListViewControl
         {
             get => this.m_listView;
             set
@@ -163,43 +163,43 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             }
         }
 
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(Viewer), new PropertyMetadata(null));
-        public string Text
+        protected internal static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(BaseControl), new PropertyMetadata(null));
+        protected internal string Text
         {
             get => (string)this.GetValue(TextProperty);
             set => this.SetValue(TextProperty, value);
         }
 
-        public static readonly DependencyProperty TextWatermarkProperty = DependencyProperty.Register("TextWatermark", typeof(string), typeof(Viewer), new PropertyMetadata(null));
-        public string TextWatermark
+        protected internal static readonly DependencyProperty TextWatermarkProperty = DependencyProperty.Register("TextWatermark", typeof(string), typeof(BaseControl), new PropertyMetadata(null));
+        protected internal string TextWatermark
         {
             get => (string)this.GetValue(TextWatermarkProperty);
             set => this.SetValue(TextWatermarkProperty, value);
         }
 
-        public static readonly DependencyProperty ButtonContentProperty = DependencyProperty.Register("ButtonContent", typeof(object), typeof(Viewer), new PropertyMetadata(null));
-        public object ButtonContent
+        protected internal static readonly DependencyProperty ButtonContentProperty = DependencyProperty.Register("ButtonContent", typeof(object), typeof(BaseControl), new PropertyMetadata(null));
+        protected internal object ButtonContent
         {
             get => this.GetValue(ButtonContentProperty);
             set => this.SetValue(ButtonContentProperty, value);
         }
 
-        public static readonly DependencyProperty ListItemSourceProperty = DependencyProperty.Register("ListItemSource", typeof(IList), typeof(Viewer), new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((Viewer)d).m_collectionView = null)));
-        public IList ListItemSource
+        protected internal static readonly DependencyProperty ListItemSourceProperty = DependencyProperty.Register("ListItemSource", typeof(IList), typeof(BaseControl), new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BaseControl)d).m_collectionView = null)));
+        protected internal IList ListItemSource
         {
             get => (IList)this.GetValue(ListItemSourceProperty);
             set => this.SetValue(ListItemSourceProperty, value);
         }
 
-        public static readonly DependencyProperty ListContextMenuProperty = DependencyProperty.Register("ListContextMenu", typeof(ContextMenu), typeof(Viewer), new PropertyMetadata(null));
-        public ContextMenu ListContextMenu
+        protected internal static readonly DependencyProperty ListContextMenuProperty = DependencyProperty.Register("ListContextMenu", typeof(ContextMenu), typeof(BaseControl), new PropertyMetadata(null));
+        protected internal ContextMenu ListContextMenu
         {
             get => (ContextMenu)this.GetValue(ListContextMenuProperty);
             set => this.SetValue(ListContextMenuProperty, value);
         }
 
-        public static readonly DependencyProperty ListViewProperty = DependencyProperty.Register("ListView", typeof(ViewBase), typeof(Viewer), new PropertyMetadata(null));
-        public ViewBase ListView
+        protected internal static readonly DependencyProperty ListViewProperty = DependencyProperty.Register("ListView", typeof(ViewBase), typeof(BaseControl), new PropertyMetadata(null));
+        protected internal ViewBase ListView
         {
             get => (ViewBase)this.GetValue(ListViewProperty);
             set => this.SetValue(ListViewProperty, value);
@@ -210,7 +210,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         public event DragDropStartedEventHandler DragDropStarted;
 
         private bool m_useSearch = true;
-        public bool UseSearch
+        protected internal bool UseSearch
         {
             get => this.m_useSearch;
             set
@@ -220,12 +220,12 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             }
         }
 
-        public event RoutedEventHandler ButtonClick;
+        protected internal event RoutedEventHandler ButtonClick;
 
-        public object SelectedItem => this.m_listView?.SelectedItem;
-        public IList SelectedItems => this.m_listView?.SelectedItems;
+        protected internal object SelectedItem => this.m_listView?.SelectedItem;
+        protected internal IList SelectedItems => this.m_listView?.SelectedItems;
 
-        public T[] Get<T>()
+        protected internal T[] Get<T>()
             => this.m_listView?.SelectedItems.OfType<T>().ToArray() ?? new T[0];
 
         private ICollectionView m_collectionView;
@@ -264,7 +264,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             return true;
         }
 
-        public void FilterByCode(string[] codes, string text)
+        public void SearchArchiveByCodes(string[] codes, string text)
         {
             this.Text = text;
 
@@ -272,8 +272,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.m_FilterCodes = codes;
             this.ICollectionView?.Refresh();
         }
-
-
+        
         private void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
