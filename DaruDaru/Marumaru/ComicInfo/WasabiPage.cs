@@ -172,7 +172,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     this.State = MaruComicState.Working_4_Compressing;
                     Compress();
-                    this.SpeedOrFileSize = ToEICFormat(new FileInfo(this.ZipPath).Length);
+                    this.SpeedOrFileSize = Utility.ToEICFormat(new FileInfo(this.ZipPath).Length);
 
                     this.State = MaruComicState.Complete_1_Downloaded;
 
@@ -289,7 +289,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     befSpeed = (befSpeed + Interlocked.Read(ref downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
 
-                    this.SpeedOrFileSize = ToEICFormat(befSpeed, "/s");
+                    this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
                 }
 
                 if (downloadErrorTokenSource.IsCancellationRequested)
@@ -331,14 +331,6 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 zipFile.Flush();
             }
-        }
-
-        private static string ToEICFormat(double spd, string footer = null)
-        {
-            if (spd == 0)          return "";
-            if (spd > 1000 * 1024) return (spd / 1024 / 1024).ToString("##0.0 \" MiB\"") + footer;
-            if (spd > 1000       ) return (spd / 1024       ).ToString("##0.0 \" KiB\"") + footer;
-                                   return (spd              ).ToString("##0.0 \" B\""  ) + footer;
         }
 
         private class Assets

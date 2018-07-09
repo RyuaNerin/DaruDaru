@@ -11,6 +11,14 @@ namespace DaruDaru.Utilities
 {
     internal static class Utility
     {
+        public static string ToEICFormat(double size, string footer = null)
+        {
+            if (size == 0)          return "";
+            if (size > 1000 * 1024) return (size / 1024 / 1024).ToString("##0.0 \" MiB\"") + footer;
+            if (size > 1000       ) return (size / 1024       ).ToString("##0.0 \" KiB\"") + footer;
+                                    return (size              ).ToString("##0.0 \" B\""  ) + footer;
+        }
+
         private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
         public static string ReplaceInvalid(string s) => InvalidRegex.Replace(s, "_");
 
