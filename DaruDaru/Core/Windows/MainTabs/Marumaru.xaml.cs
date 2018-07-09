@@ -5,6 +5,7 @@ using DaruDaru.Config;
 using DaruDaru.Config.Entries;
 using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Utilities;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
@@ -77,6 +78,39 @@ namespace DaruDaru.Core.Windows.MainTabs
             var entry = ((ListViewItem)sender).Content as MarumaruEntry;
             if (entry != null)
                 MainWindow.Instance.SearchArchiveByCodes(entry.ArchiveCodes, entry.Title);
+        }
+
+        private void ctlMenuRemoveOnly_Click(object sender, RoutedEventArgs e)
+        {
+            this.RemoveArchive(false);
+        }
+
+        private void ctlMenuRemoveAndDelete_Click(object sender, RoutedEventArgs e)
+        {
+            this.RemoveArchive(true);
+        }
+
+        private async void RemoveArchive(bool removeFile)
+        {
+            var items = this.Get<MarumaruEntry>().GetCodes();
+            if (items.Length == 0) return;
+
+            var settings = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "계속",
+                NegativeButtonText    = "취소",
+                DefaultButtonFocus    = MessageDialogResult.Negative
+            };
+
+            var message = removeFile ?
+                "마루마루 기록에서 삭제합니다" :
+                "마루마루 기록과 모든 파일을 삭제합니다";
+
+            if (await MainWindow.Instance.ShowMessageBox(message, MessageDialogStyle.AffirmativeAndNegative, settings)
+                == MessageDialogResult.Negative)
+                return;
+
+            ArchiveManager.RemoveArchives(items, removeFile);
         }
     }
 }

@@ -43,6 +43,14 @@
             <MenuItem Header="웹 주소 복사"
                         x:Name="ctlMenuCopyUri"
                         Click="ctlMenuCopyUri_Click" />
+            <Separator />
+            <MenuItem Header="삭제"
+                      x:Name="ctlMenuRemove">
+                <MenuItem Header="기록 삭제"
+                          Click="ctlMenuRemoveOnly_Click" />
+                <MenuItem Header="기록과 파일 삭제"
+                          Click="ctlMenuRemoveAndDelete_Click" />
+            </MenuItem>
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>
         
@@ -53,7 +61,7 @@
                             util:GridViewSort.PropertyName="TitleWithNo"
                             DisplayMemberBinding="{Binding TitleWithNo, Mode=OneWay}" />
 
-            <GridViewColumn Header="저장된 날자"
+            <GridViewColumn Header="저장한 날"
                             Width="130"
                             util:GridViewSort.PropertyName="Archived">
                 <GridViewColumn.CellTemplate>

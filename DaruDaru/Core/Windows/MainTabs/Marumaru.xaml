@@ -43,6 +43,15 @@
             <MenuItem Header="마루마루 링크 복사"
                         x:Name="ctlMenuCopyUri"
                         Click="ctlMenuCopyUri_Click" />
+            <Separator />
+            <MenuItem Header="삭제"
+                      x:Name="ctlMenuRemove">
+                <MenuItem Header="링크 삭제"
+                          Click="ctlMenuRemoveOnly_Click" />
+                <MenuItem Header="링크와 관련 파일 모두 삭제"
+                          Click="ctlMenuRemoveAndDelete_Click" />
+
+            </MenuItem>
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>
         

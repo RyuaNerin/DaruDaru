@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using DaruDaru.Config.Entries;
@@ -22,17 +23,23 @@ namespace DaruDaru.Config
 
         private static void Archives_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            var newItem = e.NewItems.Cast<ArchiveEntry>();
-
             if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                var newItem = e.NewItems.Cast<ArchiveEntry>();
+
                 lock (ArchiveHash)
                     foreach (var item in newItem)
                         ArchiveHash.Add(item.ArchiveCode);
+            }
 
             else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                var newItem = e.OldItems.Cast<ArchiveEntry>();
+
                 lock (ArchiveHash)
                     foreach (var item in newItem)
                         ArchiveHash.Remove(item.ArchiveCode);
+            }
 
             else if (e.Action == NotifyCollectionChangedAction.Reset)
                 lock (ArchiveHash)
@@ -141,6 +148,46 @@ namespace DaruDaru.Config
                         lst.Add(data);
 
             return lst;
+        }
+
+        public static void RemoveMarumaru(string[] codes, bool removeFile)
+        {
+            lock (MarumaruLinks)
+            {
+                int i = 0;
+                while (i < MarumaruLinks.Count)
+                {
+                    if (Array.IndexOf(codes, MarumaruLinks[i].MaruCode) >= 0)
+                    {
+                        if (removeFile)
+                            RemoveArchives(MarumaruLinks[i].ArchiveCodes, true);
+
+                        MarumaruLinks.RemoveAt(i);
+                    }
+                    else
+                        ++i;
+                }
+            }
+        }
+
+        public static void RemoveArchives(string[] codes, bool removeFile)
+        {
+            lock (Archives)
+            {
+                int i = 0;
+                while (i < Archives.Count)
+                {
+                    if (Array.IndexOf(codes, Archives[i].ArchiveCode) >= 0)
+                    {
+                        if (removeFile)
+                            File.Delete(Archives[i].ZipPath);
+
+                        Archives.RemoveAt(i);
+                    }
+                    else
+                        ++i;
+                }
+            }
         }
     }
 }

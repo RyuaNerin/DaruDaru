@@ -13,6 +13,11 @@ namespace DaruDaru.Utilities
                    .Distinct()
                    .ToArray();
 
+        public static string[] GetCodes(this IEnumerable<MarumaruEntry> coll)
+            => coll.Select(e => e.MaruCode)
+                   .Distinct()
+                   .ToArray();
+
         public static string[] GetPath(this IEnumerable<ArchiveEntry> coll)
             => coll.Select(e => e.ZipPath)
                    .Distinct()
@@ -21,6 +26,11 @@ namespace DaruDaru.Utilities
 
         public static string[] GetUri(this IEnumerable<ArchiveEntry> coll)
             => coll.Select(e => e.Uri.AbsoluteUri)
+                   .Distinct()
+                   .ToArray();
+
+        public static string[] GetCodes(this IEnumerable<ArchiveEntry> coll)
+            => coll.Select(e => e.ArchiveCode)
                    .Distinct()
                    .ToArray();
 
