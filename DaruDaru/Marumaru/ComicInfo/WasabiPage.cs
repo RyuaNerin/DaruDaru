@@ -68,7 +68,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     var innerTitle = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
 
                     if (string.IsNullOrWhiteSpace(this.Title))
-                        this.Title = this.m_innerTitle;
+                        this.Title = innerTitle;
 
                     // 제목이 바뀌는 경우가 있어서
                     // 제목은 그대로 사용하고, xx화 는 새로 가져온다.
