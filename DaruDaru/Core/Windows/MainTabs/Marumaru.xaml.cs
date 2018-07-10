@@ -110,7 +110,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 == MessageDialogResult.Negative)
                 return;
 
-            ArchiveManager.RemoveArchives(items, removeFile);
+            ArchiveManager.RemoveMarumaru(items, removeFile);
         }
     }
 }
