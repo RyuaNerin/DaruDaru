@@ -64,13 +64,16 @@ namespace DaruDaru.Marumaru.ComicInfo
                     doc.LoadHtml(body);
 
                     // 타이틀은 항상 마루마루 기준으로 맞춤.
-                    if (this.Title == null)
-                        this.Title = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
+                    // 2018-07-10 파일 이름은 Archive 기준으로 맞춤: https://marumaru.in/b/manga/208070
+                    var innerTitle = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
+
+                    if (string.IsNullOrWhiteSpace(this.Title))
+                        this.Title = this.m_innerTitle;
 
                     // 제목이 바뀌는 경우가 있어서
                     // 제목은 그대로 사용하고, xx화 는 새로 가져온다.
                     var titleNo = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
-                    this.TitleWithNo = $"{this.Title} {titleNo}";
+                    this.TitleWithNo = $"{innerTitle} {titleNo}";
 
                     // 암호걸린 파일
                     if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
