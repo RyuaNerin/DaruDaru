@@ -153,9 +153,7 @@
     <Compile Include="Core\LastRelease.cs" />
     <Compile Include="Core\CrashReport.cs" />
     <Compile Include="Marumaru\ComicInfo\Comic.cs" />
-    <Compile Include="Utilities\WebClient.cs">
-      <SubType>DOCE</SubType>
-    </Compile>
+    <Compile Include="Utilities\WebClient.cs" />
     <Compile Include="Core\Windows\IMainWindow.cs" />
     <Compile Include="Core\Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
