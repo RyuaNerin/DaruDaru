@@ -98,7 +98,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             }
 
             if (string.IsNullOrWhiteSpace(uriStr) ||
-                Utility.TryCreateUri(uriStr, out Uri uri) ||
+                !Utility.TryCreateUri(uriStr, out Uri uri) ||
                 !DaruUriParser.Archive.CheckUri(uri))
             {
                 MainWindow.Instance.ShowMessageBox("주소를 확인해주세요", 5000);
