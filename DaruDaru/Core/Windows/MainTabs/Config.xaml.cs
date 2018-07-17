@@ -106,7 +106,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 return;
             }
 
-            var wnd = new Recaptcha(uriStr)
+            var wnd = new Recaptcha(uri)
             {
                 Owner = MainWindow.Instance.Window
             };

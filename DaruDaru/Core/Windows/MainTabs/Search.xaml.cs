@@ -104,8 +104,6 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             foreach (var item in items)
                 item.Restart();
-
-            MainWindow.Instance.WakeQueue(items.Length);
         }
 
         private void ctlMenuRemoveItem_Click(object sender, RoutedEventArgs e)
@@ -180,7 +178,10 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             else if (content is WasabiPage wasabiPage)
             {
-                if (!string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && HoneyViwer.TryCreate(out var hv))
+                if (wasabiPage.State == MaruComicState.Error_4_Captcha)
+                    InputCaptcha(wasabiPage);
+
+                else if (wasabiPage.IsComplete && !string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && HoneyViwer.TryCreate(out var hv))
                     hv.Open(wasabiPage.ZipPath);
             }
         }
@@ -199,6 +200,21 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             this.Text = null;
             this.FocusTextBox();
+        }
+
+        private void InputCaptcha(WasabiPage page)
+        {
+            var wnd = new Recaptcha(page.Uri)
+            {
+                Owner = MainWindow.Instance.Window
+            };
+
+            wnd.ShowDialog();
+
+            if (wnd.RecaptchaResult == Recaptcha.Result.Success)
+            {
+                page.Restart();
+            }
         }
 
         public void DownloadUri(bool addNewOnly, Uri uri, string comicName)

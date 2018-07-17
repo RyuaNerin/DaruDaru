@@ -26,6 +26,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         Error_1_Error           = Error    + 1,
         Error_2_Protected       = Error    + 2,
         Error_3_NotSupport      = Error    + 3,
+        Error_4_Captcha         = Error    + 4,
     }
 
     internal abstract class Comic : INotifyPropertyChanged
@@ -165,6 +166,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Error_1_Error:           return "오류";
                     case MaruComicState.Error_2_Protected:       return "보호됨";
                     case MaruComicState.Error_3_NotSupport:      return "지원하지 않음";
+                    case MaruComicState.Error_4_Captcha:         return "Captcha";
                 }
 
                 return null;
@@ -186,6 +188,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 this.ProgressValue = 0;
                 this.State = MaruComicState.Wait;
+
+                MainWindow.Instance.WakeQueue(1);
                 return true;
             }
 

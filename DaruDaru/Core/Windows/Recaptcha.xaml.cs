@@ -25,12 +25,19 @@ namespace DaruDaru.Core.Windows
         public static string Cookie { get; private set; }
 
         public Result RecaptchaResult { get; private set; } = Result.Canceled;
-        
-        public Recaptcha(string url)
+
+        private static bool NeedToClear = true;
+        public Recaptcha(Uri uri)
         {
+            if (NeedToClear)
+            {
+                NativeMethods.ClearCookies(uri);
+                NeedToClear = false;
+            }
+
             InitializeComponent();
 
-            this.ctlBrowser.Navigate(url);
+            this.ctlBrowser.Navigate(uri);
         }
 
         private void ctlBrowser_Navigating(object sender, NavigatingCancelEventArgs e)
@@ -169,25 +176,42 @@ namespace DaruDaru.Core.Windows
         static class NativeMethods
         {
             [DllImport("wininet.dll", CharSet = CharSet.Unicode)]
-            private static extern bool InternetGetCookieEx(string url, string cookieName, StringBuilder cookieData, ref int size, int dwFlags, IntPtr lpReserved);
+            private static extern bool InternetGetCookieEx(string lpszUrl, string lpszCookieName, StringBuilder lpszCookieData, ref int lpdwSize, int dwFlags, IntPtr lpReserved);
+
+            [DllImport("wininet.dll", CharSet = CharSet.Unicode)]
+            private static extern bool InternetSetCookie(string lpszUrl, string lpszCookieName, string lpszCookieData);
 
             private const int InternetCookieHttponly = 0x2000;
 
-            public static string GetCookies(Uri uri)
+            private static CookieContainer GetCookieContainer(Uri uri)
             {
-                int size = 0;
+                var size = 0;
                 InternetGetCookieEx(uri.AbsoluteUri, null, null, ref size, InternetCookieHttponly, IntPtr.Zero);
 
                 var sb = new StringBuilder(size);
                 if (InternetGetCookieEx(uri.AbsoluteUri, null, sb, ref size, InternetCookieHttponly, IntPtr.Zero))
                 {
-                    var cookies = new CookieContainer();
-                    cookies.SetCookies(uri, sb.ToString().Replace(';', ','));
+                    var cc = new CookieContainer();
+                    cc.SetCookies(uri, sb.ToString().Replace(';', ','));
 
-                    return cookies.GetCookieHeader(uri);
+                    return cc;
                 }
 
                 return null;
+            }
+
+            public static string GetCookies(Uri uri)
+            {
+                return GetCookieContainer(uri)?.GetCookieHeader(uri);
+            }
+
+            public static void ClearCookies(Uri uri)
+            {
+                /*
+                var cc = GetCookieContainer(uri);
+                foreach (Cookie cookie in cc.GetCookies(uri))
+                    InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
+                */
             }
 
 

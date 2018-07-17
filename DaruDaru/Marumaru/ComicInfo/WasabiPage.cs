@@ -75,10 +75,21 @@ namespace DaruDaru.Marumaru.ComicInfo
                     var titleNo = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
                     this.TitleWithNo = $"{innerTitle} {titleNo}";
 
-                    // 암호걸린 파일
+                    // 잠긴 파일
                     if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
                     {
-                        lst.Add(null);
+                        if (doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
+                        {
+                            // Captcha 걸린 파일
+                            lst.Add(null);
+                            lst.Add(null);
+                        }
+                        else
+                        {
+                            // 실제로 암호걸린 파일
+                            lst.Add(null);
+                        }
+
                         return true;
                     }
 
@@ -140,6 +151,12 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (lst.Count == 1 && lst[0] == null)
                 {
                     this.State = MaruComicState.Error_2_Protected;
+                    return true;
+                }
+
+                if (lst.Count == 2 && lst[0] == null)
+                {
+                    this.State = MaruComicState.Error_4_Captcha;
                     return true;
                 }
             }
