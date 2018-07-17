@@ -50,10 +50,7 @@ namespace DaruDaru.Core.Windows
         {
             try
             {
-                var name = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.txt");
-
                 var doc = (HTMLDocumentClass)this.ctlBrowser.Document;
-                System.IO.File.WriteAllText(name, doc.documentElement.innerHTML);
 
                 //기본 작업
                 var pass_box = doc.getElementByClassName("pass-box");
