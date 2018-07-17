@@ -156,6 +156,7 @@
     <Compile Include="Core\LastRelease.cs" />
     <Compile Include="Core\CrashReport.cs" />
     <Compile Include="Marumaru\ComicInfo\Comic.cs" />
+    <Compile Include="Utilities\WebBrowserInterfaces.cs" />
     <Compile Include="Utilities\WebClient.cs" />
     <Compile Include="Core\Windows\IMainWindow.cs" />
     <Compile Include="Core\Windows\MainWindow.xaml.cs">

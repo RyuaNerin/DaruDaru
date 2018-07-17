@@ -8,7 +8,8 @@
                    ShowInTaskbar="False"
                    Width="400"
                    Height="550"
-                   WindowTransitionsEnabled="False">
+                   WindowTransitionsEnabled="False"
+                   Closed="MetroWindow_Closed">
     <Grid>
         <WebBrowser x:Name="ctlBrowser"
                     Visibility="Collapsed"

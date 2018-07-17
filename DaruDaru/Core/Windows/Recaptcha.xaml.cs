@@ -1,11 +1,10 @@
 using System;
 using System.Net;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Navigation;
+using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using mshtml;
@@ -40,6 +39,16 @@ namespace DaruDaru.Core.Windows
             this.Owner = owner;
 
             this.ctlBrowser.Navigate(uri);
+
+            this.m_webBrowser = this.ctlBrowser.GetIWebBrowser();
+            this.m_webBrowser.Resizable = false;
+            this.m_webBrowser.Silent = false;
+            this.m_webBrowser.StatusBar = false;
+            this.m_webBrowser.TheaterMode = false;
+            this.m_webBrowser.Offline = false;
+            this.m_webBrowser.MenuBar = false;
+            this.m_webBrowser.RegisterAsBrowser = false;
+            this.m_webBrowser.RegisterAsDropTarget = false;
         }
 
         ~Recaptcha()
@@ -65,8 +74,17 @@ namespace DaruDaru.Core.Windows
             }
         }
 
+        private readonly WebBrowsers.IWebBrowser2 m_webBrowser;
+
+        private void MetroWindow_Closed(object sender, EventArgs e)
+        {
+            this.m_webBrowser.Quit();
+        }
+
         private void ctlBrowser_Navigating(object sender, NavigatingCancelEventArgs e)
         {
+            Console.WriteLine($"Navigating : {e.Uri.AbsoluteUri}");
+
             this.ctlProgress.IsActive = true;
             this.ctlProgress.Visibility = Visibility.Visible;
             this.ctlBrowser.Visibility = Visibility.Collapsed;
@@ -74,12 +92,14 @@ namespace DaruDaru.Core.Windows
 
         private void ctlBrowser_Navigated(object sender, NavigationEventArgs e)
         {
-            SetHidden(this.ctlBrowser);
+            Console.WriteLine($"Navigated : {e.Uri.AbsoluteUri}");
         }
 
         private bool m_isProtected = false;
         private void ctlBrowser_LoadCompleted(object sender, NavigationEventArgs e)
         {
+            Console.WriteLine($"LoadCompleted : {e.Uri.AbsoluteUri}");
+
             try
             {
                 var doc = (HTMLDocumentClass)this.ctlBrowser.Document;
@@ -177,27 +197,6 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        public static void SetHidden(WebBrowser browser)
-        {
-            if (browser.Document is NativeMethods.IOleServiceProvider provider)
-            {
-                var IID_IWebBrowserApp = new Guid("0002DF05-0000-0000-C000-000000000046");
-                var IID_IWebBrowser2   = new Guid("D30C1661-CDAF-11d0-8A3E-00C04FC9E26E");
-
-                provider.QueryService(ref IID_IWebBrowserApp, ref IID_IWebBrowser2, out object webBrowser);
-                if (webBrowser != null)
-                {
-                    var type = webBrowser.GetType();
-                    
-                    var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.PutDispProperty;
-                    type.InvokeMember("Silent",    flags, null, webBrowser, new object[] { true  });
-                    type.InvokeMember("ToolBar",   flags, null, webBrowser, new object[] { false });
-                    type.InvokeMember("StatusBar", flags, null, webBrowser, new object[] { false });
-                    type.InvokeMember("MenuBar",   flags, null, webBrowser, new object[] { false });
-                }
-            }
-        }
-
         static class NativeMethods
         {
             [DllImport("wininet.dll", CharSet = CharSet.Unicode)]
@@ -237,14 +236,6 @@ namespace DaruDaru.Core.Windows
                 foreach (Cookie cookie in cc.GetCookies(uri))
                     InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
                 */
-            }
-
-
-            [ComImport, Guid("6D5140C1-7436-11CE-8034-00AA006009FA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-            public interface IOleServiceProvider
-            {
-                [PreserveSig]
-                int QueryService([In] ref Guid guidService, [In] ref Guid riid, [MarshalAs(UnmanagedType.IDispatch)] out object ppvObject);
             }
         }
 
