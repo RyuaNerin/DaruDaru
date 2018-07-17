@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
+using mshtml;
 
 namespace DaruDaru.Core.Windows
 {
@@ -49,17 +50,19 @@ namespace DaruDaru.Core.Windows
         {
             try
             {
-                dynamic doc = this.ctlBrowser.Document;
+                var name = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.txt");
+
+                var doc = (HTMLDocumentClass)this.ctlBrowser.Document;
+                System.IO.File.WriteAllText(name, doc.documentElement.innerHTML);
 
                 //기본 작업
-                dynamic pass_box = doc.getElementsByClassName("pass-box");
-                if ((int)pass_box.length == 0)
+                var pass_box = doc.getElementByClassName("pass-box");
+                if (pass_box == null)
                 {
-                    var b = this.m_isProtected;
-                    if (!b)
+                    if (!this.m_isProtected)
                     {
-                        dynamic template = doc.getElementsByClassName("gallery-template");
-                        if (template == null || template.length == 0)
+                        var template = doc.getElementByClassName("gallery-template");
+                        if (template == null)
                         {
                             this.RecaptchaResult = Result.NonProtected;
                             this.Close();
@@ -75,51 +78,59 @@ namespace DaruDaru.Core.Windows
                 else
                     this.m_isProtected = true;
 
+                doc.RemoveElementByClass("logo-top");
+                doc.RemoveElementById   ("header-anchor");
+                doc.RemoveElementById   ("footer-anchor");
+                doc.RemoveElementByClass("footer-terms");
+                doc.RemoveElementByClass("page-control");
+
+                doc.RemoveElementByClass("top-nav viewer-hidden");
+                doc.RemoveElementByClass("bottom-nav viewer-hidden");
+
+                doc.RemoveElementByClass("top-group");
+                doc.RemoveElementByClass("bottom-group");
+
                 doc.body.style.overflow = "hidden";
-                doc.body.Scroll = "no";
-
-                RemoveElement(doc.getElementsByClassName("logo-top")[0]);
-                RemoveElement(doc.getElementById("header-anchor"));
-                RemoveElement(doc.getElementById("footer-anchor"));
-                RemoveElement(doc.getElementsByClassName("footer-terms")[0]);
-                RemoveElement(doc.getElementsByClassName("page-control")[0]);
-
-                RemoveElement(doc.getElementsByClassName("top-nav viewer-hidden")[0]);
-                RemoveElement(doc.getElementsByClassName("bottom-nav viewer-hidden")[0]);
-
-                RemoveElement(doc.getElementsByClassName("top-group")[0]);
-                RemoveElement(doc.getElementsByClassName("bottom-group")[0]);
-
                 doc.body.style.backgroundColor = "#FFF";
                 doc.body.style.padding = "0px";
-
+                
                 var root = doc.getElementById("root");
-                root.style.margin = "0px";
-                root.style.padding = "0px";
-                root.style.backgroundColor = "transparent";
-                root.style.boxShadow = "none";
-                root.style.height = "100%";
-                root.style.maxWidth = null;
+                if (root != null)
+                {
+                    root.style.margin = "0px";
+                    root.style.padding = "0px";
+                    root.style.backgroundColor = "transparent";
+                    root.style.border = "none";
+                    root.style.height = "100%";
+                }
 
                 var main = doc.getElementById("main");
-                root.style.backgroundColor = "transparent";
-                main.style.padding = "0px";
-                main.style.margin = "0px";
-                main.style.height = "100%";
-
-                var section = doc.getElementsByClassName("gallery-section")[0];
-                section.style.height = "100%";
-                section.style.padding = "0px";
-                section.style.margin = "0px";
-
-                var article = doc.getElementsByClassName("article-gallery")[0];
-                article.style.height = "100%";
-                article.style.padding = "0px";
-                article.style.margin = "0px";
-
-                if (pass_box.length != 0)
+                if (main != null)
                 {
-                    pass_box = pass_box[0];
+                    main.style.backgroundColor = "transparent";
+                    main.style.padding = "0px";
+                    main.style.margin = "0px";
+                    main.style.height = "100%";
+                }
+
+                var section = doc.getElementByClassName("gallery-section");
+                if (section != null)
+                {
+                    section.style.height = "100%";
+                    section.style.padding = "0px";
+                    section.style.margin = "0px";
+                }
+
+                var article = doc.getElementByClassName("article-gallery");
+                if (article != null)
+                {
+                    article.style.height = "100%";
+                    article.style.padding = "0px";
+                    article.style.margin = "0px";
+                }
+
+                if (pass_box != null)
+                {
                     pass_box.style.padding = "0px";
                     pass_box.style.display = "inline-block";
                     pass_box.style.margin = "auto";
@@ -129,15 +140,13 @@ namespace DaruDaru.Core.Windows
                 this.ctlProgress.Visibility = Visibility.Collapsed;
                 this.ctlBrowser.Visibility = Visibility.Visible;
             }
-            catch
-            {
+            catch (Exception ex)
+            {   
+                CrashReport.Error(ex);
                 this.RecaptchaResult = Result.UnknownError;
                 this.Close();
             }
         }
-
-        private static void RemoveElement(dynamic element)
-            => element?.parentNode.removeChild(element);
 
         public static void SetHidden(WebBrowser browser)
         {
@@ -207,6 +216,47 @@ namespace DaruDaru.Core.Windows
                     else
                         rk.DeleteValue(App.AppPath);
                 }
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    internal static class HtmlExtension
+    {
+        public static IHTMLElement getElementByClassName(this HTMLDocument element, string className)
+            => ((IHTMLElementCollection)((dynamic)element)?.getElementsByClassName(className)).At(0);
+
+        public static IHTMLElement At(this IHTMLElementCollection collection, int index)
+            => collection != null && index < collection.length ? (IHTMLElement)collection.item(index: index) : null;
+
+        public static void RemoveElementById(this HTMLDocument doc, string value)
+        {
+            try
+            {
+                doc.getElementById(value).RemoveElement();
+            }
+            catch
+            {
+            }
+        }
+        public static void RemoveElementByClass(this HTMLDocument doc, string value)
+        {
+            try
+            {
+                doc.getElementByClassName(value).RemoveElement();
+            }
+            catch
+            {
+            }
+        }
+
+        public static void RemoveElement(this IHTMLElement element)
+        {
+            try
+            {
+                ((dynamic)element).parentNode.removeChild(element);
             }
             catch
             {
