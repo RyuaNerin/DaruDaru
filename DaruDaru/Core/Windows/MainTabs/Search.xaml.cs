@@ -204,16 +204,12 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void InputCaptcha(WasabiPage page)
         {
-            var wnd = new Recaptcha(page.Uri)
+            using (var wnd = new Recaptcha(MainWindow.Instance.Window, page.Uri))
             {
-                Owner = MainWindow.Instance.Window
-            };
+                wnd.ShowDialog();
 
-            wnd.ShowDialog();
-
-            if (wnd.RecaptchaResult == Recaptcha.Result.Success)
-            {
-                page.Restart();
+                if (wnd.RecaptchaResult == Recaptcha.Result.Success)
+                    page.Restart();
             }
         }
 

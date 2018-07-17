@@ -12,7 +12,7 @@ using mshtml;
 
 namespace DaruDaru.Core.Windows
 {
-    internal partial class Recaptcha : MetroWindow
+    internal partial class Recaptcha : MetroWindow, IDisposable
     {
         public enum Result
         {
@@ -27,7 +27,7 @@ namespace DaruDaru.Core.Windows
         public Result RecaptchaResult { get; private set; } = Result.Canceled;
 
         private static bool NeedToClear = true;
-        public Recaptcha(Uri uri)
+        public Recaptcha(Window owner, Uri uri)
         {
             if (NeedToClear)
             {
@@ -37,7 +37,32 @@ namespace DaruDaru.Core.Windows
 
             InitializeComponent();
 
+            this.Owner = owner;
+
             this.ctlBrowser.Navigate(uri);
+        }
+
+        ~Recaptcha()
+        {
+            this.Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(false);
+            GC.SuppressFinalize(this);
+        }
+
+        private bool m_disposed;
+        private void Dispose(bool disposing)
+        {
+            if (this.m_disposed) return;
+            this.m_disposed = true;
+
+            if (disposing)
+            {
+                this.ctlBrowser.Dispose();
+            }
         }
 
         private void ctlBrowser_Navigating(object sender, NavigatingCancelEventArgs e)

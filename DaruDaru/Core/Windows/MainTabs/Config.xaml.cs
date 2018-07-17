@@ -106,31 +106,29 @@ namespace DaruDaru.Core.Windows.MainTabs
                 return;
             }
 
-            var wnd = new Recaptcha(uri)
+            using (var wnd = new Recaptcha(MainWindow.Instance.Window, uri))
             {
-                Owner = MainWindow.Instance.Window
-            };
+                wnd.ShowDialog();
 
-            wnd.ShowDialog();
+                if (wnd.RecaptchaResult == Recaptcha.Result.Canceled)
+                {
+                    this.ctlConfigDownloadProtected.IsChecked = false;
+                    return;
+                }
 
-            if (wnd.RecaptchaResult == Recaptcha.Result.Canceled)
-            {
-                this.ctlConfigDownloadProtected.IsChecked = false;
-                return;
-            }
+                if (wnd.RecaptchaResult == Recaptcha.Result.NonProtected)
+                {
+                    MainWindow.Instance.ShowMessageBox("보호된 만화 링크를 입력해주세요", 5000);
+                    this.ctlConfigDownloadProtected.IsChecked = false;
+                    return;
+                }
 
-            if (wnd.RecaptchaResult == Recaptcha.Result.NonProtected)
-            {
-                MainWindow.Instance.ShowMessageBox("보호된 만화 링크를 입력해주세요", 5000);
-                this.ctlConfigDownloadProtected.IsChecked = false;
-                return;
-            }
-
-            if (wnd.RecaptchaResult == Recaptcha.Result.UnknownError)
-            {
-                MainWindow.Instance.ShowMessageBox("알 수 없는 오류가 발생하였습니다.", 5000);
-                this.ctlConfigDownloadProtected.IsChecked = false;
-                return;
+                if (wnd.RecaptchaResult == Recaptcha.Result.UnknownError)
+                {
+                    MainWindow.Instance.ShowMessageBox("알 수 없는 오류가 발생하였습니다.", 5000);
+                    this.ctlConfigDownloadProtected.IsChecked = false;
+                    return;
+                }
             }
 
             ConfigManager.Instance.ProtectedUri = uriStr;
