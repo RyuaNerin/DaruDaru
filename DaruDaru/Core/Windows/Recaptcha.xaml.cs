@@ -39,16 +39,6 @@ namespace DaruDaru.Core.Windows
             this.Owner = owner;
 
             this.ctlBrowser.Navigate(uri);
-
-            this.m_webBrowser = this.ctlBrowser.GetIWebBrowser();
-            this.m_webBrowser.Resizable = false;
-            this.m_webBrowser.Silent = false;
-            this.m_webBrowser.StatusBar = false;
-            this.m_webBrowser.TheaterMode = false;
-            this.m_webBrowser.Offline = false;
-            this.m_webBrowser.MenuBar = false;
-            this.m_webBrowser.RegisterAsBrowser = false;
-            this.m_webBrowser.RegisterAsDropTarget = false;
         }
 
         ~Recaptcha()
@@ -74,32 +64,41 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        private readonly WebBrowsers.IWebBrowser2 m_webBrowser;
+        private WebBrowsers.IWebBrowser2 m_webBrowser;
+
+        private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.m_webBrowser = this.ctlBrowser.GetIWebBrowser();
+
+            if (this.m_webBrowser != null)
+            {
+                this.m_webBrowser.Resizable = false;
+                this.m_webBrowser.Silent = false;
+                this.m_webBrowser.StatusBar = false;
+                this.m_webBrowser.TheaterMode = false;
+                this.m_webBrowser.Offline = false;
+                this.m_webBrowser.MenuBar = false;
+                this.m_webBrowser.RegisterAsBrowser = false;
+                this.m_webBrowser.RegisterAsDropTarget = false;
+            }
+        }
 
         private void MetroWindow_Closed(object sender, EventArgs e)
         {
-            this.m_webBrowser.Quit();
+            this.m_webBrowser?.Stop();
+            this.m_webBrowser?.Quit();
         }
 
         private void ctlBrowser_Navigating(object sender, NavigatingCancelEventArgs e)
         {
-            Console.WriteLine($"Navigating : {e.Uri.AbsoluteUri}");
-
             this.ctlProgress.IsActive = true;
             this.ctlProgress.Visibility = Visibility.Visible;
             this.ctlBrowser.Visibility = Visibility.Collapsed;
         }
 
-        private void ctlBrowser_Navigated(object sender, NavigationEventArgs e)
-        {
-            Console.WriteLine($"Navigated : {e.Uri.AbsoluteUri}");
-        }
-
         private bool m_isProtected = false;
         private void ctlBrowser_LoadCompleted(object sender, NavigationEventArgs e)
         {
-            Console.WriteLine($"LoadCompleted : {e.Uri.AbsoluteUri}");
-
             try
             {
                 var doc = (HTMLDocumentClass)this.ctlBrowser.Document;

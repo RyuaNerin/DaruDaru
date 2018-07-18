@@ -9,6 +9,7 @@
                    Width="400"
                    Height="550"
                    WindowTransitionsEnabled="False"
+                   Loaded="MetroWindow_Loaded"
                    Closed="MetroWindow_Closed">
     <Grid>
         <WebBrowser x:Name="ctlBrowser"
@@ -16,7 +17,6 @@
                     MaxHeight="450"
                     OverridesDefaultStyle="False"
                     Navigating="ctlBrowser_Navigating"
-                    Navigated="ctlBrowser_Navigated"
                     LoadCompleted="ctlBrowser_LoadCompleted" />
 
         <metro:ProgressRing x:Name="ctlProgress"
