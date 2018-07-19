@@ -244,8 +244,7 @@ namespace DaruDaru.Core.Windows
                 var cc = GetCookieContainer(uri);
                 if (cc != null)
                     foreach (Cookie cookie in cc.GetCookies(uri))
-                        Console.WriteLine(InternetSetCookie(uri.AbsoluteUri, null, cookie.Name + "=_;expires=Sat,01-Jan-1970 00:00:00 GMT"));
-                    //InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
+                        InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
             }
         }
 
