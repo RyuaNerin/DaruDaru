@@ -3,11 +3,13 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Navigation;
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using mshtml;
+using static DaruDaru.Utilities.WebBrowsers;
 
 namespace DaruDaru.Core.Windows
 {
@@ -60,11 +62,19 @@ namespace DaruDaru.Core.Windows
 
             if (disposing)
             {
+                try
+                {
+                    this.m_webBrowser?.Quit();
+                }
+                catch
+                {
+                }
+
                 this.ctlBrowser.Dispose();
             }
         }
 
-        private WebBrowsers.IWebBrowser2 m_webBrowser;
+        private IWebBrowser2 m_webBrowser;
 
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -86,7 +96,6 @@ namespace DaruDaru.Core.Windows
         private void MetroWindow_Closed(object sender, EventArgs e)
         {
             this.m_webBrowser?.Stop();
-            this.m_webBrowser?.Quit();
         }
 
         private void ctlBrowser_Navigating(object sender, NavigatingCancelEventArgs e)
@@ -184,6 +193,8 @@ namespace DaruDaru.Core.Windows
                     pass_box.style.margin = "auto";
                 }
 
+                System.IO.File.WriteAllText(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss\".htm\""), doc.documentElement.innerHTML);
+
                 this.ctlProgress.IsActive = false;
                 this.ctlProgress.Visibility = Visibility.Collapsed;
                 this.ctlBrowser.Visibility = Visibility.Visible;
@@ -230,11 +241,11 @@ namespace DaruDaru.Core.Windows
 
             public static void ClearCookies(Uri uri)
             {
-                /*
                 var cc = GetCookieContainer(uri);
-                foreach (Cookie cookie in cc.GetCookies(uri))
-                    InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
-                */
+                if (cc != null)
+                    foreach (Cookie cookie in cc.GetCookies(uri))
+                        Console.WriteLine(InternetSetCookie(uri.AbsoluteUri, null, cookie.Name + "=_;expires=Sat,01-Jan-1970 00:00:00 GMT"));
+                    //InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
             }
         }
 
