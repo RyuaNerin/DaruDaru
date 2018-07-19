@@ -207,7 +207,27 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        static class NativeMethods
+        private static void EnsureBrowserEmulationEnabled(bool uninstall)
+        {
+            try
+            {
+                using (var rk = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true))
+                {
+                    if (!uninstall)
+                    {
+                        if (rk.GetValue(App.AppPath, null) == null)
+                            rk.SetValue(App.AppPath, (uint)11001, RegistryValueKind.DWord);
+                    }
+                    else
+                        rk.DeleteValue(App.AppPath);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private static class NativeMethods
         {
             [DllImport("wininet.dll", CharSet = CharSet.Unicode)]
             private static extern bool InternetGetCookieEx(string lpszUrl, string lpszCookieName, StringBuilder lpszCookieData, ref int lpdwSize, int dwFlags, IntPtr lpReserved);
@@ -245,26 +265,6 @@ namespace DaruDaru.Core.Windows
                 if (cc != null)
                     foreach (Cookie cookie in cc.GetCookies(uri))
                         InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
-            }
-        }
-
-        private static void EnsureBrowserEmulationEnabled(bool uninstall)
-        {
-            try
-            {
-                using (var rk = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true))
-                {
-                    if (!uninstall)
-                    {
-                        if (rk.GetValue(App.AppPath, null) == null)
-                            rk.SetValue(App.AppPath, (uint)11001, RegistryValueKind.DWord);
-                    }
-                    else
-                        rk.DeleteValue(App.AppPath);
-                }
-            }
-            catch
-            {
             }
         }
     }
