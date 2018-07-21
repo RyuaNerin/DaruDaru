@@ -193,8 +193,6 @@ namespace DaruDaru.Core.Windows
                     pass_box.style.margin = "auto";
                 }
 
-                System.IO.File.WriteAllText(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss\".htm\""), doc.documentElement.innerHTML);
-
                 this.ctlProgress.IsActive = false;
                 this.ctlProgress.Visibility = Visibility.Collapsed;
                 this.ctlBrowser.Visibility = Visibility.Visible;
