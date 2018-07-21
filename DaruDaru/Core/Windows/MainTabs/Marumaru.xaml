@@ -4,6 +4,7 @@
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs"
                   xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                   xmlns:util="clr-namespace:DaruDaru.Utilities"
                   xmlns:mr="clr-namespace:DaruDaru.Marumaru"
@@ -22,35 +23,32 @@
             </Style>
         </ResourceDictionary>
     </ctrs:BaseControl.Resources>
+
+    <ctrs:BaseControl.CommandBindings>
+        <CommandBinding Command="local:Marumaru.ShowArchive"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuArchiveSearch_Click" />
+        <CommandBinding Command="local:Marumaru.SearchNew"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearchNew_Click" />
+        <CommandBinding Command="local:Marumaru.Search"          CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearch_Click" />
+        <CommandBinding Command="local:Marumaru.OpenUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
+        <CommandBinding Command="local:Marumaru.CopyUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
+        <CommandBinding Command="local:Marumaru.Remove"          CanExecute="CommandBinding_CanExecute" />
+        <CommandBinding Command="local:Marumaru.RemoveOnly"      CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
+        <CommandBinding Command="local:Marumaru.RemoveAndDelete" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
+    </ctrs:BaseControl.CommandBindings>
         
     <ctrs:BaseControl.ListContextMenu>
-        <ContextMenu Opened="ctlMenuContextMenu_Opened">
-            <MenuItem Header="다운로드 기록 검색"
-                        x:Name="ctlMenuArchiveSearch"
-                        Click="ctlMenuArchiveSearch_Click" />
+        <ContextMenu>
+            <MenuItem Command="local:Marumaru.ShowArchive" />
             <Separator />
-            <MenuItem Header="다시 검색 (새로운 것만)"
-                        x:Name="ctlMenuSearchNew"
-                        Click="ctlMenuSearchNew_Click" />
-            <MenuItem Header="다시 검색"
-                        x:Name="ctlMenuSearch"
-                        Click="ctlMenuSearch_Click" />
+            <MenuItem Command="local:Marumaru.SearchNew" />
+            <MenuItem Command="local:Marumaru.Search" />
             <Separator />
-            <MenuItem Header="마루마루 페이지 열기"
-                        x:Name="ctlMenuOpenWeb"
-                        Click="ctlMenuOpenWeb_Click" />
+            <MenuItem Command="local:Marumaru.OpenUri" />
             <Separator />
-            <MenuItem Header="마루마루 링크 복사"
-                        x:Name="ctlMenuCopyUri"
-                        Click="ctlMenuCopyUri_Click" />
+            <MenuItem Command="local:Marumaru.CopyUri" />
             <Separator />
-            <MenuItem Header="삭제"
-                      x:Name="ctlMenuRemove">
-                <MenuItem Header="링크 삭제"
-                          Click="ctlMenuRemoveOnly_Click" />
-                <MenuItem Header="링크와 관련 파일 모두 삭제"
-                          Click="ctlMenuRemoveAndDelete_Click" />
-
+            <MenuItem Command="local:Marumaru.Remove">
+                <MenuItem Command="local:Marumaru.RemoveOnly" />
+                <MenuItem Command="local:Marumaru.RemoveAndDelete" />
             </MenuItem>
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>

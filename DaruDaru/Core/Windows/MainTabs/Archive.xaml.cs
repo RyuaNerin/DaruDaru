@@ -15,6 +15,15 @@ namespace DaruDaru.Core.Windows.MainTabs
 {
     internal partial class Archive : BaseControl
     {
+        public static ICommand OpenZip         = Create("꿀뷰로 열기",      "OpenZip",         typeof(Archive), Key.H, ModifierKeys.Control);
+        public static ICommand OpenDir         = Create("폴더 열기",        "OpenDir",         typeof(Archive), Key.D, ModifierKeys.Control);
+        public static ICommand OpenWeb         = Create("웹에서 보기",      "OpenWeb",         typeof(Archive), Key.W, ModifierKeys.Control);
+        public static ICommand OpenCopyZip     = Create("파일 복사",        "OpenCopyZip",     typeof(Archive), Key.C, ModifierKeys.Control | ModifierKeys.Shift);
+        public static ICommand OpenCopyWeb     = Create("웹 주소 복사",     "OpenCopyWeb",     typeof(Archive), Key.C, ModifierKeys.Control);
+        public static ICommand Remove          = Create("삭제",             "Remove",          typeof(Marumaru));
+        public static ICommand RemoveOnly      = Create("기록 삭제",        "RemoveOnly",      typeof(Marumaru));
+        public static ICommand RemoveAndDelete = Create("기록과 파일 삭제", "RemoveAndDelete", typeof(Marumaru));
+
         public Archive()
         {
             InitializeComponent();
@@ -22,20 +31,14 @@ namespace DaruDaru.Core.Windows.MainTabs
             this.ListItemSource = ArchiveManager.Archives;
         }
 
-        private void ctlMenuContextMenu_Opened(object sender, RoutedEventArgs e)
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            this.ctlMenuOpen.IsEnabled =
-            this.ctlMenuOpenDir.IsEnabled =
-            this.ctlMenuOpenWeb.IsEnabled =
-            this.ctlMenuCopyFile.IsEnabled =
-            this.ctlMenuCopyUri.IsEnabled =
-            this.ctlMenuRemove.IsEnabled =
-            this.SelectedItems.Count >= 0;
+            e.CanExecute = this.SelectedItems.Count > 0;
         }
 
         private async void ctlMenuOpen_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<ArchiveEntry>().GetUri();
+            var items = this.Get<ArchiveEntry>().GetPath();
             if (items.Length == 0) return;
 
             if (items.Count() > App.WarningItems &&

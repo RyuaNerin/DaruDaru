@@ -4,6 +4,7 @@
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs"
                   xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                   xmlns:util="clr-namespace:DaruDaru.Utilities"
                   xmlns:mr="clr-namespace:DaruDaru.Marumaru"                 
@@ -23,33 +24,31 @@
             </Style>
         </ResourceDictionary>
     </ctrs:BaseControl.Resources>
-        
+
+    <ctrs:BaseControl.CommandBindings>
+        <CommandBinding Command="local:Archive.OpenZip"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpen_Click" />
+        <CommandBinding Command="local:Archive.OpenDir"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
+        <CommandBinding Command="local:Archive.OpenWeb"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
+        <CommandBinding Command="local:Archive.OpenCopyZip"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyFile_Click" />
+        <CommandBinding Command="local:Archive.OpenCopyWeb"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
+        <CommandBinding Command="local:Archive.Remove"          CanExecute="CommandBinding_CanExecute" />
+        <CommandBinding Command="local:Archive.RemoveOnly"      CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
+        <CommandBinding Command="local:Archive.RemoveAndDelete" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
+    </ctrs:BaseControl.CommandBindings>
+
     <ctrs:BaseControl.ListContextMenu>
-        <ContextMenu Opened="ctlMenuContextMenu_Opened">
-            <MenuItem Header="꿀뷰로 열기"
-                      x:Name="ctlMenuOpen"
-                      Click="ctlMenuOpen_Click" />
-            <MenuItem Header="폴더 열기"
-                      x:Name="ctlMenuOpenDir"
-                      Click="ctlMenuOpenDir_Click" />
+        <ContextMenu>
+            <MenuItem Command="local:Archive.OpenZip" />
+            <MenuItem Command="local:Archive.OpenDir" />
             <Separator />
-            <MenuItem Header="웹에서 보기"
-                      x:Name="ctlMenuOpenWeb"
-                      Click="ctlMenuOpenWeb_Click" />
+            <MenuItem Command="local:Archive.OpenWeb" />
             <Separator />
-            <MenuItem Header="파일 복사"
-                      x:Name="ctlMenuCopyFile"
-                      Click="ctlMenuCopyFile_Click" />
-            <MenuItem Header="웹 주소 복사"
-                      x:Name="ctlMenuCopyUri"
-                      Click="ctlMenuCopyUri_Click" />
+            <MenuItem Command="local:Archive.OpenCopyZip" />
+            <MenuItem Command="local:Archive.OpenCopyWeb" />
             <Separator />
-            <MenuItem Header="삭제"
-                      x:Name="ctlMenuRemove">
-                <MenuItem Header="기록 삭제"
-                          Click="ctlMenuRemoveOnly_Click" />
-                <MenuItem Header="기록과 파일 삭제"
-                          Click="ctlMenuRemoveAndDelete_Click" />
+            <MenuItem Command="local:Archive.Remove">
+                <MenuItem Command="local:Archive.RemoveOnly" />
+                <MenuItem Command="local:Archive.RemoveAndDelete" />
             </MenuItem>
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>

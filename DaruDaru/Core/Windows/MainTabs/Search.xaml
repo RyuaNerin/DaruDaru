@@ -5,6 +5,7 @@
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                   xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                  xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs"
                   xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                   xmlns:cvt="clr-namespace:DaruDaru.Core.Converters"
                   TextWatermark="만화 주소 입력 혹은 링크 드래그"
@@ -31,34 +32,31 @@
                                         BrushProtected ="#FFE4CADC" />
         </ResourceDictionary>
     </ctrs:BaseControl.Resources>
+
+    <ctrs:BaseControl.CommandBindings>
+        <CommandBinding Command="local:Search.OpenFile"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenFile_Click" />
+        <CommandBinding Command="local:Search.OpenDir"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
+        <CommandBinding Command="local:Search.OpenWeb"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
+        <CommandBinding Command="local:Search.CopyUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
+        <CommandBinding Command="local:Search.Retry"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRetry_Click" />
+        <CommandBinding Command="local:Search.RemoveSelected"  CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveItem_Click" />
+        <CommandBinding Command="local:Search.RemoveCompleted" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveCompleted_Click" />
+        <CommandBinding Command="local:Search.RemoveAll"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAll_Click" />
+    </ctrs:BaseControl.CommandBindings>
         
     <ctrs:BaseControl.ListContextMenu>
-        <ContextMenu Opened="ctlMenu_Opened">
-            <MenuItem Header="꿀뷰로 열기"
-                      x:Name="ctlMenuOpenFile"
-                      Click="ctlMenuOpenFile_Click" />
-            <MenuItem Header="폴더 열기"
-                      x:Name="ctlMenuOpenDir"
-                      Click="ctlMenuOpenDir_Click" />
-            <MenuItem Header="홈페이지 열기"
-                      x:Name="ctlMenuOpenWeb"
-                      Click="ctlMenuOpenWeb_Click" />
+        <ContextMenu>
+            <MenuItem Command="local:Search.OpenFile" />
+            <MenuItem Command="local:Search.OpenDir" />
+            <MenuItem Command="local:Search.OpenWeb" />
             <Separator />
-            <MenuItem Header="주소 복사"
-                      x:Name="ctlMenuCopyUri"
-                      Click="ctlMenuCopyUri_Click" />
+            <MenuItem Command="local:Search.CopyUri" />
             <Separator />
-            <MenuItem Header="다시 시도"
-                      x:Name="ctlMenuRetry"
-                      Click="ctlMenuRetry_Click" />
+            <MenuItem Command="local:Search.Retry" />
             <Separator />
-            <MenuItem Header="선택 항목 목록에서 제거"
-                      x:Name="ctlMenuRemoveItem"
-                      Click="ctlMenuRemoveItem_Click" />
-            <MenuItem Header="완료된 항목 제거"
-                      Click="ctlMenuRemoveCompleted_Click" />
-            <MenuItem Header="모두 제거"
-                      Click="ctlMenuRemoveAll_Click" />
+            <MenuItem Command="local:Search.RemoveSelected" />
+            <MenuItem Command="local:Search.RemoveCompleted" />
+            <MenuItem Command="local:Search.RemoveAll" />
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>
         
@@ -86,8 +84,7 @@
                                        TextAlignment="Center"
                                        TextWrapping="NoWrap"
                                        LineStackingStrategy="BlockLineHeight"
-                                       Text="{Binding StateText, Mode=OneWay}"
-                                       Tag="{Binding}" />
+                                       Text="{Binding StateText, Mode=OneWay}" />
                         </Grid>
                     </DataTemplate>
                 </GridViewColumn.CellTemplate>
