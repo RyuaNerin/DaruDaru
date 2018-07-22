@@ -13,7 +13,7 @@ namespace DaruDaru.Core.Windows.MainTabs
     {
         public static ICommand ShowArchive     = Create("다운로드한 파일 검색",       "ShowArchive",     typeof(Marumaru), Key.H, ModifierKeys.Control);
         public static ICommand SearchNew       = Create("다시 검색 (새로운 것만)",    "SearchNew",       typeof(Marumaru), Key.R, ModifierKeys.Control);
-        public static ICommand Search          = Create("웹에서 보기",                "Search",          typeof(Marumaru), Key.R, ModifierKeys.Control | ModifierKeys.Shift);
+        public static ICommand Search          = Create("다시 검색",                  "Search",          typeof(Marumaru), Key.R, ModifierKeys.Control | ModifierKeys.Shift);
         public static ICommand OpenUri         = Create("웹 페이지 열기",             "OpenUri",         typeof(Marumaru), Key.W, ModifierKeys.Control);
         public static ICommand CopyUri         = Create("링크 복사",                  "CopyUri",         typeof(Marumaru), Key.C, ModifierKeys.Control);
         public static ICommand Remove          = Create("삭제",                       "Remove",          typeof(Marumaru));
