@@ -27,6 +27,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             var lstArchives = new List<WasabisyrupLinks>();
             Uri newUri = null;
+            string title = null;
 
             using (var wc = new WebClientEx())
             {
@@ -38,12 +39,20 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     newUri = wc.ResponseUri ?? this.Uri;
 
-                    this.Title = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
+                    var rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
+                    var vcontent = rcontent.SelectSingleNode(".//div[@id='vContent']");
 
+                    title = Utility.ReplcaeHtmlTag(rcontent.SelectSingleNode(".//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
+
+                    var isMangaup = false;
                     string titleNo;
-                    foreach (var a in doc.DocumentNode.SelectSingleNode("//div[@class='content']").SelectNodes(".//a[@href]"))
+                    foreach (var a in vcontent.SelectNodes(".//a[@href]"))
                     {
-                        if (Utility.TryCreateUri(newUri, a.Attributes["href"].Value, out Uri a_uri))
+                        var href = a.Attributes["href"].Value;
+                        if (href == "#")
+                            continue;
+
+                        if (Utility.TryCreateUri(newUri, href, out Uri a_uri))
                         {
                             if (DaruUriParser.Archive.CheckUri(a_uri))
                             {
@@ -56,11 +65,27 @@ namespace DaruDaru.Marumaru.ComicInfo
                                         TitleNo = Utility.ReplcaeHtmlTag(a.InnerText)
                                     });
                             }
+                            else if (DaruUriParser.Marumaru.CheckUri(a_uri) && Utility.ReplcaeHtmlTag(a.InnerText).IndexOf("전편 보러가기") >= 0)
+                            {
+                                isMangaup = true;
+                                newUri = a_uri;
+                            }
                         }
+                    }
+
+                    if (isMangaup)
+                    {
+                        doc.LoadHtml(wc.DownloadString(newUri));
+
+                        rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
+
+                        title = Utility.ReplcaeHtmlTag(rcontent.SelectSingleNode(".//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
                     }
 
                     return true;
                 });
+
+                this.Title = title;
 
                 if (!success || lstArchives.Count == 0)
                 {

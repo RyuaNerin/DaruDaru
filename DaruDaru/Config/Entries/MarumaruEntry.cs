@@ -26,7 +26,16 @@ namespace DaruDaru.Config.Entries
         [JsonIgnore]
         public Uri Uri { get; private set; }
 
-        public string Title { get; set; }
+        private string m_title;
+        public string Title
+        {
+            get => this.m_title;
+            set
+            {
+                this.m_title = value;
+                this.InvokePropertyChanged();
+            }
+        }
 
         public string[] ArchiveCodes { get; set; }
 
