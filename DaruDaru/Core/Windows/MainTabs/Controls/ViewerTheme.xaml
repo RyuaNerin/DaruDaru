@@ -27,6 +27,11 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
         </ControlTemplate.Resources>
 
         <Grid>
