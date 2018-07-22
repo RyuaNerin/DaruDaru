@@ -101,13 +101,13 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                 <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_ListViewItemDoubleClick" />
             </Style>
             */
-            var style = new Style(typeof(ListViewItem), this.FindResource("MetroListViewItem") as Style);
-            style.Setters.Add(new EventSetter(ListViewItem.MouseDoubleClickEvent, new MouseButtonEventHandler(this.ListViewItem_ListViewItemDoubleClick)));            
-            this.Resources.Add(typeof(ListViewItem), style);
+            this.m_listViewItemStyle = new Style(typeof(ListViewItem), this.FindResource("MetroListViewItem") as Style);
+            this.m_listViewItemStyle.Setters.Add(new EventSetter(ListViewItem.MouseDoubleClickEvent, new MouseButtonEventHandler(this.ListViewItem_ListViewItemDoubleClick)));
 
             this.OnApplyTemplate();
         }
 
+        private readonly Style m_listViewItemStyle;
         private readonly ICommand m_textBoxCommand;
 
         public override void OnApplyTemplate()
@@ -117,6 +117,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             this.TextBoxControl  = GetTemplateChild(TextBoxName ) as TextBox;
             this.ButtonControl   = GetTemplateChild(ButtonName  ) as Button;
             this.ListViewControl = GetTemplateChild(ListName    ) as ListView;
+
+            this.Resources[typeof(ListViewItem)] = this.m_listViewItemStyle;
         }
 
         private TextBox m_textBox;
