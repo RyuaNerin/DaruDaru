@@ -6,7 +6,6 @@
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                 xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                 mc:Ignorable="d"
-                d:DesignHeight="250"
                 d:DesignWidth="400">
     <ScrollViewer VerticalScrollBarVisibility="Visible"
                   Padding="0 5 0 5">
