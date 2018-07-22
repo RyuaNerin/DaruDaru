@@ -325,7 +325,10 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             var padLength = Math.Min(3, this.m_images.Length.ToString().Length);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(this.ZipPath));
+            var dir = Path.GetDirectoryName(this.ZipPath);
+            dir = Directory.CreateDirectory(dir).FullName;
+
+            this.ZipPath = Path.Combine(dir, Path.GetFileName(this.ZipPath));
 
             using (var zipFile = new FileStream(this.ZipPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var zipStream = new ZipOutputStream(zipFile))
