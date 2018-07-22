@@ -14,16 +14,8 @@
                   Template="{StaticResource ViewerTemplate}"
                   mc:Ignorable="d"
                   d:DesignHeight="250"
-                  d:DesignWidth="400">
-    <ctrs:BaseControl.Resources>
-        <ResourceDictionary>
-            <Style TargetType="{x:Type ListViewItem}"
-                    BasedOn="{StaticResource MetroListViewItem}">
-                <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
-            </Style>
-        </ResourceDictionary>
-    </ctrs:BaseControl.Resources>
-
+                  d:DesignWidth="400"
+                  ListViewItemDoubleClick="Viewer_ListViewItemDoubleClick">
     <ctrs:BaseControl.CommandBindings>
         <CommandBinding Command="local:Marumaru.ShowArchive"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuArchiveSearch_Click" />
         <CommandBinding Command="local:Marumaru.SearchNew"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearchNew_Click" />

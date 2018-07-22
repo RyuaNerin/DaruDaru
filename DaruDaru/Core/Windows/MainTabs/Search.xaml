@@ -15,14 +15,10 @@
                   Template="{StaticResource ViewerTemplate}"
                   mc:Ignorable="d"
                   d:DesignHeight="250"
-                  d:DesignWidth="400">
+                  d:DesignWidth="400"
+                  ListViewItemDoubleClick="Viewer_ListViewItemDoubleClick">
     <ctrs:BaseControl.Resources>
         <ResourceDictionary>
-            <Style TargetType="{x:Type ListViewItem}"
-                   BasedOn="{StaticResource MetroListViewItem}">
-                <EventSetter Event="MouseDoubleClick" Handler="Viewer_ListViewItemDoubleClick" />
-            </Style>
-
             <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
                                         BrushNormal    ="#FFB6D2DE"
                                         BrushCompete   ="#FFB3CEB3"

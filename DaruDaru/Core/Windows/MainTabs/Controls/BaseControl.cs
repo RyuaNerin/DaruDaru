@@ -95,6 +95,16 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                 }
             });
 
+            /*
+            <Style TargetType="{x:Type ListViewItem}"
+                   BasedOn="{StaticResource MetroListViewItem}">
+                <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_ListViewItemDoubleClick" />
+            </Style>
+            */
+            var style = new Style(typeof(ListViewItem), this.FindResource("MetroListViewItem") as Style);
+            style.Setters.Add(new EventSetter(ListViewItem.MouseDoubleClickEvent, new MouseButtonEventHandler(this.ListViewItem_ListViewItemDoubleClick)));            
+            this.Resources.Add(typeof(ListViewItem), style);
+
             this.OnApplyTemplate();
         }
 
@@ -228,6 +238,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         public DaruUriParser DaruUriParser { get; set; }
 
         public event DragDropStartedEventHandler DragDropStarted;
+
+        public event MouseButtonEventHandler ListViewItemDoubleClick;
 
         private bool m_useSearch = true;
         protected internal bool UseSearch
@@ -394,6 +406,11 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         {
             this.TextBoxControl?.SelectAll();
             this.TextBoxControl?.Focus();
+        }
+
+        private void ListViewItem_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            this.ListViewItemDoubleClick?.Invoke(sender, e);
         }
     }
 }
