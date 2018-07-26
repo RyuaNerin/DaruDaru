@@ -34,10 +34,13 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         protected static RoutedUICommand Create(string text, string name, Type type)
             => new RoutedUICommand(text, name, typeof(Archive));
 
-        protected static RoutedUICommand Create(string text, string name, Type type, Key key, ModifierKeys mkey)
+        protected static RoutedUICommand Create(string text, string name, Type type, params (Key key, ModifierKeys mkey)[] commands)
         {
             var command = Create(text, name, type);
-            command.InputGestures.Add(new KeyGesture(key, mkey));
+
+            foreach (var (key, mkey) in commands)
+                command.InputGestures.Add(new KeyGesture(key, mkey));
+
             return command;
         }
 
