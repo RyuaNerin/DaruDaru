@@ -30,6 +30,7 @@
     </ctrs:BaseControl.Resources>
 
     <ctrs:BaseControl.CommandBindings>
+        <CommandBinding Command="local:Search.EnterCommand"    CanExecute="CommandBinding_CanExecute" Executed="Viewer_EnterCommand" />
         <CommandBinding Command="local:Search.OpenFile"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenFile_Click" />
         <CommandBinding Command="local:Search.OpenDir"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
         <CommandBinding Command="local:Search.OpenWeb"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />

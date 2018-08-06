@@ -15,7 +15,8 @@ namespace DaruDaru.Core.Windows.MainTabs
 {
     internal partial class Search : BaseControl
     {
-        public static ICommand OpenFile        = Create("꿀뷰로 열기",             "OpenFile",        typeof(Search), (Key.H, ModifierKeys.Control), (Key.Enter, ModifierKeys.None));
+        public static ICommand EnterCommand    = Create("-",                       "EnterCommand",    typeof(Search), (Key.Enter, ModifierKeys.None));
+        public static ICommand OpenFile        = Create("꿀뷰로 열기",             "OpenFile",        typeof(Search), (Key.H, ModifierKeys.Control));
         public static ICommand OpenDir         = Create("폴더 열기",               "OpenDir",         typeof(Search), (Key.D, ModifierKeys.Control));
         public static ICommand OpenWeb         = Create("홈페이지 열기",           "OpenWeb",         typeof(Search), (Key.W, ModifierKeys.Control));
         public static ICommand CopyUri         = Create("주소 복사",               "CopyUri",         typeof(Search), (Key.C, ModifierKeys.Control));
@@ -57,7 +58,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 return val / max;
             }
         }
-        
+
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = this.SelectedItems.Count > 0;
@@ -93,7 +94,7 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             var items = this.Get<Comic>().GetUri();
             if (items.Length == 0) return;
-            
+
             if (items.Length > App.WarningItems &&
                 !await MainWindow.Instance.ShowMassageBoxTooMany())
                 return;
@@ -142,7 +143,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 if (this.Queue.Count == 0)
                     return;
 
-                var setting = new MetroDialogSettings
+            var setting = new MetroDialogSettings
             {
                 AffirmativeButtonText = "삭제",
                 NegativeButtonText = "취소",
@@ -176,12 +177,19 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var content = ((ListViewItem)sender).Content;
+            this.ListViewDefaultCommand(((ListViewItem)sender).Content as Comic);
+        }
+        private void Viewer_EnterCommand(object sender, RoutedEventArgs e)
+        {
+            this.ListViewDefaultCommand(this.SelectedItem as Comic);
+        }
 
-            if (content is MaruPage maruPage)
+        private void ListViewDefaultCommand(Comic comic)
+        {
+            if (comic is MaruPage maruPage)
                 Explorer.OpenUri(maruPage.Uri.AbsoluteUri);
 
-            else if (content is WasabiPage wasabiPage)
+            else if (comic is WasabiPage wasabiPage)
             {
                 if (wasabiPage.State == MaruComicState.Error_4_Captcha)
                     InputCaptcha(wasabiPage);
