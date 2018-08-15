@@ -201,7 +201,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void Viewer_ButtonClick(object sender, RoutedEventArgs e)
         {
-            var uriString = this.Text.Trim();
+            var uriString = this.Text?.Trim();
 
             if (!Utility.TryCreateUri(uriString, out Uri uri))
             {
