@@ -184,6 +184,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                     this.m_listView.PreviewMouseDown -= this.ListView_PreviewMouseDown;
                     this.m_listView.MouseMove        -= this.ListView_MouseMove;
                     this.m_listView.PreviewMouseUp   -= this.ListView_PreviewMouseUp;
+
+                    this.m_listView.CommandBindings.Clear();
                 }
 
                 this.m_listView = value;
@@ -194,6 +196,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
                     this.m_listView.PreviewMouseDown += this.ListView_PreviewMouseDown;
                     this.m_listView.MouseMove        += this.ListView_MouseMove;
                     this.m_listView.PreviewMouseUp   += this.ListView_PreviewMouseUp;
+
+                    this.m_listView.CommandBindings.AddRange(this.ListCommandBindings);
                 }
             }
         }
@@ -239,6 +243,8 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             get => (ViewBase)this.GetValue(ListViewProperty);
             set => this.SetValue(ListViewProperty, value);
         }
+
+        protected internal CommandBindingCollection ListCommandBindings { get; } = new CommandBindingCollection();
 
         public DaruUriParser DaruUriParser { get; set; }
 

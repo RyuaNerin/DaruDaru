@@ -17,7 +17,7 @@
                   d:DesignHeight="250"
                   d:DesignWidth="400"
                   ListViewItemDoubleClick="Viewer_ListViewItemDoubleClick">
-    <ctrs:BaseControl.CommandBindings>
+    <ctrs:BaseControl.ListCommandBindings>
         <CommandBinding Command="local:Archive.OpenZip"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpen_Click" />
         <CommandBinding Command="local:Archive.OpenDir"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
         <CommandBinding Command="local:Archive.OpenWeb"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
@@ -26,7 +26,7 @@
         <CommandBinding Command="local:Archive.Remove"          CanExecute="CommandBinding_CanExecute" />
         <CommandBinding Command="local:Archive.RemoveOnly"      CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
         <CommandBinding Command="local:Archive.RemoveAndDelete" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
-    </ctrs:BaseControl.CommandBindings>
+    </ctrs:BaseControl.ListCommandBindings>
 
     <ctrs:BaseControl.ListContextMenu>
         <ContextMenu>

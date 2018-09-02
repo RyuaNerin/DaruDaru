@@ -16,7 +16,7 @@
                   d:DesignHeight="250"
                   d:DesignWidth="400"
                   ListViewItemDoubleClick="Viewer_ListViewItemDoubleClick">
-    <ctrs:BaseControl.CommandBindings>
+    <ctrs:BaseControl.ListCommandBindings>
         <CommandBinding Command="local:Marumaru.ShowArchive"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuArchiveSearch_Click" />
         <CommandBinding Command="local:Marumaru.SearchNew"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearchNew_Click" />
         <CommandBinding Command="local:Marumaru.Search"          CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearch_Click" />
@@ -25,7 +25,7 @@
         <CommandBinding Command="local:Marumaru.Remove"          CanExecute="CommandBinding_CanExecute" />
         <CommandBinding Command="local:Marumaru.RemoveOnly"      CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
         <CommandBinding Command="local:Marumaru.RemoveAndDelete" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
-    </ctrs:BaseControl.CommandBindings>
+    </ctrs:BaseControl.ListCommandBindings>
         
     <ctrs:BaseControl.ListContextMenu>
         <ContextMenu>

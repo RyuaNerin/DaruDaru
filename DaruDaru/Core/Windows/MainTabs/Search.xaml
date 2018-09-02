@@ -29,7 +29,7 @@
         </ResourceDictionary>
     </ctrs:BaseControl.Resources>
 
-    <ctrs:BaseControl.CommandBindings>
+    <ctrs:BaseControl.ListCommandBindings>
         <CommandBinding Command="local:Search.EnterCommand"    CanExecute="CommandBinding_CanExecute" Executed="Viewer_EnterCommand" />
         <CommandBinding Command="local:Search.OpenFile"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenFile_Click" />
         <CommandBinding Command="local:Search.OpenDir"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
@@ -39,7 +39,7 @@
         <CommandBinding Command="local:Search.RemoveSelected"  CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveItem_Click" />
         <CommandBinding Command="local:Search.RemoveCompleted" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveCompleted_Click" />
         <CommandBinding Command="local:Search.RemoveAll"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAll_Click" />
-    </ctrs:BaseControl.CommandBindings>
+    </ctrs:BaseControl.ListCommandBindings>
         
     <ctrs:BaseControl.ListContextMenu>
         <ContextMenu>
