@@ -137,7 +137,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 DefaultButtonFocus    = MessageDialogResult.Negative
             };
 
-            var message = removeFile ?
+            var message = !removeFile ?
                 "다운로드 기록에서 삭제합니다" :
                 "다운로드 기록과 파일을 삭제합니다";
 
