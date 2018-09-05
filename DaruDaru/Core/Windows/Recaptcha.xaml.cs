@@ -1,15 +1,14 @@
 using System;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
-using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Navigation;
-using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using mshtml;
-using static DaruDaru.Utilities.WebBrowsers;
 
 namespace DaruDaru.Core.Windows
 {
@@ -22,6 +21,8 @@ namespace DaruDaru.Core.Windows
             UnknownError,
             Success,
         }
+
+        public static string LastPostData { get; private set; }
 
         public static string Cookie { get; private set; }
 
@@ -64,7 +65,15 @@ namespace DaruDaru.Core.Windows
             {
                 try
                 {
-                    this.m_webBrowser?.Quit();
+                    this.m_iWebBrowser?.Quit();
+                }
+                catch
+                {
+                }
+                
+                try
+                {
+                    Marshal.ReleaseComObject(this.m_iWebBrowser);
                 }
                 catch
                 {
@@ -74,34 +83,58 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        private IWebBrowser2 m_webBrowser;
+        private SHDocVw.WebBrowser m_iWebBrowser;
 
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            this.m_webBrowser = this.ctlBrowser.GetIWebBrowser();
+            this.m_iWebBrowser = (SHDocVw.WebBrowser)this.ctlBrowser.GetType().InvokeMember(
+                "ActiveXInstance",
+                BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                this.ctlBrowser,
+                new object[] { });
 
-            if (this.m_webBrowser != null)
-            {
-                this.m_webBrowser.Resizable = false;
-                this.m_webBrowser.Silent = false;
-                this.m_webBrowser.StatusBar = false;
-                this.m_webBrowser.TheaterMode = false;
-                this.m_webBrowser.Offline = false;
-                this.m_webBrowser.MenuBar = false;
-                this.m_webBrowser.RegisterAsBrowser = false;
-                this.m_webBrowser.RegisterAsDropTarget = false;
-            }
+            this.m_iWebBrowser.Resizable            = false;
+            this.m_iWebBrowser.Silent               = true;
+            this.m_iWebBrowser.StatusBar            = false;
+            this.m_iWebBrowser.TheaterMode          = false;
+            this.m_iWebBrowser.Offline              = false;
+            this.m_iWebBrowser.MenuBar              = false;
+            this.m_iWebBrowser.RegisterAsBrowser    = false;
+            this.m_iWebBrowser.RegisterAsDropTarget = false;
+            this.m_iWebBrowser.AddressBar           = false;
+
+            this.m_iWebBrowser.BeforeNavigate2      += this.iWebBrowser_BeforeNavigate2;
         }
 
         private void MetroWindow_Closed(object sender, EventArgs e)
         {
-            this.m_webBrowser?.Stop();
+            this.m_iWebBrowser?.Stop();
+        }
+
+        private void iWebBrowser_BeforeNavigate2(object pDisp, ref object URL, ref object Flags, ref object TargetFrameName, ref object PostData, ref object Headers, ref bool Cancel)
+        {            
+            if (PostData != null && PostData is byte[] postDataBytes)
+            {
+                try
+                {
+                    var len = postDataBytes.Length;
+                    if (postDataBytes[len - 1] == 0)
+                        len--;
+
+                    var postStr = Encoding.UTF8.GetString(postDataBytes, 0, len);
+
+                    if (postStr.StartsWith("captcha2="))
+                        LastPostData = postStr;
+                }
+                catch
+                {
+                }
+            }
         }
 
         private void ctlBrowser_Navigating(object sender, NavigatingCancelEventArgs e)
         {
-            this.ctlProgress.IsActive = true;
-            this.ctlProgress.Visibility = Visibility.Visible;
             this.ctlBrowser.Visibility = Visibility.Collapsed;
         }
 
@@ -127,13 +160,15 @@ namespace DaruDaru.Core.Windows
                         }
                     }
 
-                    Cookie = NativeMethods.GetCookies(e.Uri);
+                    Cookie = doc.cookie;
                     this.RecaptchaResult = Result.Success;
                     this.Close();
                     return;
                 }
                 else
                     this.m_isProtected = true;
+
+                this.ctlBrowser.InvokeScript("eval", "$(document).contextmenu(function(){return false;});");
 
                 doc.RemoveElementByClass("logo-top");
                 doc.RemoveElementById   ("header-anchor");
@@ -193,8 +228,6 @@ namespace DaruDaru.Core.Windows
                     pass_box.style.margin = "auto";
                 }
 
-                this.ctlProgress.IsActive = false;
-                this.ctlProgress.Visibility = Visibility.Collapsed;
                 this.ctlBrowser.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
@@ -203,6 +236,12 @@ namespace DaruDaru.Core.Windows
                 this.RecaptchaResult = Result.UnknownError;
                 this.Close();
             }
+        }
+
+        private void ctlBrowser_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F5)
+                e.Handled = true;
         }
 
         private static void EnsureBrowserEmulationEnabled(bool uninstall)
@@ -262,7 +301,7 @@ namespace DaruDaru.Core.Windows
                 var cc = GetCookieContainer(uri);
                 if (cc != null)
                     foreach (Cookie cookie in cc.GetCookies(uri))
-                        InternetSetCookie(uri.AbsoluteUri, cookie.Name, "_;expires=Sat,01-Jan-1970 00:00:00 GMT");
+                        InternetSetCookie(uri.AbsoluteUri, cookie.Name, "=_;expires=Sat, 01-Jan-1970 00:00:00 GMT");
             }
         }
     }

@@ -81,8 +81,23 @@ namespace DaruDaru.Marumaru.ComicInfo
                         if (doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
                         {
                             // Captcha 걸린 파일
-                            lst.Add(null);
-                            lst.Add(null);
+                            if (Recaptcha.LastPostData != null)
+                            {
+                                body = wc.UploadString(newUri, "POST", Recaptcha.LastPostData);
+                                doc.LoadHtml(body);
+
+                                if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null ||
+                                    doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
+                                {
+                                    lst.Add(null);
+                                    lst.Add(null);
+                                }
+                            }
+                            else
+                            {
+                                lst.Add(null);
+                                lst.Add(null);
+                            }                            
                         }
                         else
                         {

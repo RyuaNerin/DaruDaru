@@ -3,6 +3,7 @@
                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                    xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                   xmlns:converter="clr-namespace:DaruDaru.Core.Converters"
                    WindowStartupLocation="CenterOwner"
                    ResizeMode="NoResize"
                    ShowInTaskbar="False"
@@ -11,15 +12,27 @@
                    WindowTransitionsEnabled="False"
                    Loaded="MetroWindow_Loaded"
                    Closed="MetroWindow_Closed">
+    <metro:MetroWindow.Resources>
+        <ResourceDictionary>
+            <converter:InvertVisibilityConverter x:Key="InvertVisibilityConverter" />
+        </ResourceDictionary>
+    </metro:MetroWindow.Resources>
+    
     <Grid>
         <WebBrowser x:Name="ctlBrowser"
                     Visibility="Collapsed"
                     MaxHeight="450"
                     OverridesDefaultStyle="False"
+                    PreviewKeyDown="ctlBrowser_PreviewKeyDown"
                     Navigating="ctlBrowser_Navigating"
-                    LoadCompleted="ctlBrowser_LoadCompleted" />
+                    LoadCompleted="ctlBrowser_LoadCompleted"/>
 
-        <metro:ProgressRing x:Name="ctlProgress"
-                            IsActive="True" />
+        <metro:ProgressRing IsActive="True"
+                            Visibility="{Binding ElementName=ctlBrowser, Path=Visibility, Converter={StaticResource InvertVisibilityConverter}}"/>
+
+        <ProgressBar x:Name="ctlProgressBar"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Bottom"
+                     Visibility="{Binding ElementName=ctlBrowser, Path=Visibility, Converter={StaticResource InvertVisibilityConverter}}"/>
     </Grid>
 </metro:MetroWindow>

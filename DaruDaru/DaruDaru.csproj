@@ -38,6 +38,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
@@ -94,6 +96,7 @@
     <Compile Include="Config\ConfigManager.cs" />
     <Compile Include="Config\ConfigCur.cs" />
     <Compile Include="Config\Entries\ArchiveEntry.cs" />
+    <Compile Include="Core\Converters\InvertVisibility.cs" />
     <Compile Include="Utilities\CollectionHelper.cs" />
     <Compile Include="Config\Entries\MarumaruEntry.cs" />
     <Compile Include="Config\IEntry.cs" />
@@ -156,7 +159,6 @@
     <Compile Include="Core\LastRelease.cs" />
     <Compile Include="Core\CrashReport.cs" />
     <Compile Include="Marumaru\ComicInfo\Comic.cs" />
-    <Compile Include="Utilities\WebBrowsers.cs" />
     <Compile Include="Utilities\WebClient.cs" />
     <Compile Include="Core\Windows\IMainWindow.cs" />
     <Compile Include="Core\Windows\MainWindow.xaml.cs">
@@ -180,7 +182,17 @@
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <COMReference Include="SHDocVw">
+      <Guid>{EAB22AC0-30C1-11CF-A7EB-0000C05BAE0B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>1</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.3.0.4\build\Fody.targets" Condition="Exists('..\packages\Fody.3.0.4\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -191,11 +191,25 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             else if (comic is WasabiPage wasabiPage)
             {
-                if (wasabiPage.State == MaruComicState.Error_4_Captcha)
-                    InputCaptcha(wasabiPage);
+                switch (wasabiPage.State)
+                {
+                    case MaruComicState.Error_2_Protected:
+                    case MaruComicState.Error_4_Captcha:
+                        BypassProtectedArchive(wasabiPage);
+                        break;
 
-                else if (wasabiPage.IsComplete && !string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && HoneyViwer.TryCreate(out var hv))
-                    hv.Open(wasabiPage.ZipPath);
+                    case MaruComicState.Error_1_Error:
+                    case MaruComicState.Error_3_NotSupport:
+                        comic.Restart();
+                        break;
+
+                    case MaruComicState.Complete_1_Downloaded:
+                    case MaruComicState.Complete_2_Archived:
+                        if (wasabiPage.IsComplete && !string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && HoneyViwer.TryCreate(out var hv))
+                            hv.Open(wasabiPage.ZipPath);
+                        break;
+
+                }
             }
         }
 
@@ -215,7 +229,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             this.FocusTextBox();
         }
 
-        private void InputCaptcha(WasabiPage page)
+        private void BypassProtectedArchive(WasabiPage page)
         {
             using (var wnd = new Recaptcha(MainWindow.Instance.Window, page.Uri))
             {
