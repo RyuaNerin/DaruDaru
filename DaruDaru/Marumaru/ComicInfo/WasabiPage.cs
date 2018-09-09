@@ -83,6 +83,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                             // Captcha 걸린 파일
                             if (Recaptcha.LastPostData != null)
                             {
+                                wc.Headers.Set(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
                                 body = wc.UploadString(newUri, "POST", Recaptcha.LastPostData);
                                 doc.LoadHtml(body);
 
