@@ -29,10 +29,5 @@
 
         <metro:ProgressRing IsActive="True"
                             Visibility="{Binding ElementName=ctlBrowser, Path=Visibility, Converter={StaticResource InvertVisibilityConverter}}"/>
-
-        <ProgressBar x:Name="ctlProgressBar"
-                     HorizontalAlignment="Stretch"
-                     VerticalAlignment="Bottom"
-                     Visibility="{Binding ElementName=ctlBrowser, Path=Visibility, Converter={StaticResource InvertVisibilityConverter}}"/>
     </Grid>
 </metro:MetroWindow>
