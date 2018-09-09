@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using DaruDaru.Core.Windows;
 using DaruDaru.Utilities;
 
@@ -17,19 +16,9 @@ namespace DaruDaru.Marumaru.ComicInfo
             // Short uri 검증용 페이지
             Uri newUri = null;
 
-            var succ = Utility.Retry(() =>
-            {
-                var req = WebRequest.CreateHttp(this.Uri);
-                WebClientEx.AddHeader(req);
-                req.AllowAutoRedirect = true;
+            var succ = Utility.Retry(() => Utility.ResolvUri(this.Uri, out newUri));
 
-                using (var res = req.GetResponse() as HttpWebResponse)
-                    newUri = res.ResponseUri;
-
-                return true;
-            });
-
-            if (succ)
+            if (succ && newUri != null)
             {
                 Comic comic = null;
 

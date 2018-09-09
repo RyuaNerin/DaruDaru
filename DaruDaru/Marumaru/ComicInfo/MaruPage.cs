@@ -54,6 +54,11 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         if (Utility.TryCreateUri(newUri, href, out Uri a_uri))
                         {
+                            if (!DaruUriParser.Archive.CheckUri(a_uri) &&
+                                !DaruUriParser.Marumaru.CheckUri(a_uri) &&
+                                !Utility.ResolvUri(a_uri, out a_uri))
+                                continue;
+
                             if (DaruUriParser.Archive.CheckUri(a_uri))
                             {
                                 titleNo = a.InnerText;

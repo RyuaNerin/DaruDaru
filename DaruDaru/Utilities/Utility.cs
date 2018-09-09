@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -57,6 +58,29 @@ namespace DaruDaru.Utilities
             return false;
         }
 
+        public static bool ResolvUri(Uri uri, out Uri newUri)
+        {
+            newUri = null;
+
+            try
+            {
+                var req = WebRequest.Create(uri) as HttpWebRequest;
+                req.Method = "GET";
+                WebClientEx.AddHeader(req);
+
+                using (var res = req.GetResponse())
+                {
+                    newUri = res.ResponseUri;
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
         public static Uri CreateUri(string uriString)
             => ReplaceHost(new Uri(uriString));
 
@@ -87,6 +111,7 @@ namespace DaruDaru.Utilities
         }
 
 
+        private static readonly IdnMapping IdnMapping = new IdnMapping();
         private static Uri ReplaceHost(Uri uri)
         {
             var ub = new UriBuilder(uri);
@@ -128,7 +153,8 @@ namespace DaruDaru.Utilities
                     sb.Append(c);
             }
 
-            ub.Host = sb.ToString();
+            // 퓨니코드 대응
+            ub.Host = IdnMapping.GetAscii(sb.ToString());
 
             return ub.Uri;
         }
