@@ -76,6 +76,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                     var titleNo = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
                     this.TitleWithNo = $"{innerTitle} {titleNo}";
 
+                    // 제목이 설정되어 있지 않은 경우가 있음. 이럴땐 에러로 처리.
+                    if (string.IsNullOrWhiteSpace(this.TitleWithNo.Trim()))
+                        return false;
+
                     // 잠긴 파일
                     if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
                     {
