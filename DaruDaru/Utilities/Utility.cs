@@ -41,8 +41,13 @@ namespace DaruDaru.Utilities
                     if (action())
                         return true;
                 }
-                catch (WebException)
+                catch (WebException ex)
                 {
+                    if (ex.Response is HttpWebResponse hres)
+                    {
+                        if ((int)hres.StatusCode == 429)
+                            Thread.Sleep(30 * 1000);
+                    }
                 }
                 catch (SocketException)
                 {
