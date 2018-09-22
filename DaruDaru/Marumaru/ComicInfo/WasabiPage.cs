@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -200,14 +201,14 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 if (!File.Exists(this.ZipPath))
                 {
-                    if (!Download())
+                    if (!this.Download())
                     {
                         this.State = MaruComicState.Error_1_Error;
                         return;
                     }
 
                     this.State = MaruComicState.Working_4_Compressing;
-                    Compress();
+                    this.Compress();
                     this.SpeedOrFileSize = Utility.ToEICFormat(new FileInfo(this.ZipPath).Length);
 
                     this.State = MaruComicState.Complete_1_Downloaded;
@@ -249,92 +250,70 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
 
         private bool Download()
-        {            
-            using (var downloadErrorTokenSource = new CancellationTokenSource())
+        {
+            var startTime = DateTime.Now;
+            long downloaded = 0;
+
+            var taskDownload = Task.Factory.StartNew(() =>
             {
-                var startTime = DateTime.Now;
-                long downloaded = 0;
-
-                var taskDownload = Task.Factory.StartNew(() =>
-                {
-                    var po = new ParallelOptions
+                return Parallel.ForEach(
+                    this.m_images,
+                    (e, state) =>
                     {
-                        CancellationToken = downloadErrorTokenSource.Token
-                    };
-
-                    Parallel.ForEach(
-                        this.m_images,
-                        po,
-                        e =>
+                        var succ = Utility.Retry(() =>
                         {
-                            var succ = Utility.Retry(() =>
+                            var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri));
+                            if (req is HttpWebRequest hreq)
                             {
-                                var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri));
-                                if (req is HttpWebRequest hreq)
-                                {
-                                    hreq.Referer = this.Uri.AbsoluteUri;
-                                    hreq.AllowWriteStreamBuffering = false;
-                                    hreq.AllowReadStreamBuffering = false;
-                                }
+                                hreq.Referer = this.Uri.AbsoluteUri;
+                                hreq.AllowWriteStreamBuffering = false;
+                                hreq.AllowReadStreamBuffering = false;
+                            }
 
-                                using (var res = req.GetResponse() as HttpWebResponse)
-                                using (var resBody = res.GetResponseStream())
+                            using (var res = req.GetResponse() as HttpWebResponse)
+                            using (var resBody = res.GetResponseStream())
+                            {
+                                using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                                 {
-                                    if (res.ContentType.Contains("text/"))
+                                    var buff = new byte[4096];
+                                    int read;
+
+                                    while ((read = resBody.Read(buff, 0, 4096)) > 0)
                                     {
-                                        // 파일이 없는 경우
-                                        e.Extension = null;
-                                        return true;
+                                        Interlocked.Add(ref downloaded, read);
+                                        fileStream.Write(buff, 0, read);
                                     }
 
-                                    using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                                    {
-                                        var buff = new byte[4096];
-                                        int read;
+                                    fileStream.Flush();
 
-                                        while ((read = resBody.Read(buff, 0, 4096)) > 0)
-                                        {
-                                            Interlocked.Add(ref downloaded, read);
-                                            fileStream.Write(buff, 0, read);
-                                        }
-
-                                        fileStream.Flush();
-
-                                        fileStream.Position = 0;
-                                        e.Extension = Signatures.GetExtension(fileStream);
-                                    }
+                                    fileStream.Position = 0;
+                                    e.Extension = Signatures.GetExtension(fileStream);
                                 }
+                            }
 
-                                if (e.Extension != null)
-                                    this.IncrementProgress();
-
-                                return e.Extension != null;
-                            });
-
-                            if (!succ)
-                                downloadErrorTokenSource.Cancel();
+                            this.IncrementProgress();
+                            return true;
                         });
 
-                    return downloadErrorTokenSource.IsCancellationRequested;
-                });
+                        if (!succ)
+                            state.Stop();
+                    }).IsCompleted;
+            });
 
-                double befSpeed = 0;
-                while (!taskDownload.Wait(0))
-                {
-                    Thread.Sleep(500);
+            double befSpeed = 0;
+            while (!taskDownload.Wait(0))
+            {
+                Thread.Sleep(500);
 
-                    befSpeed = (befSpeed + Interlocked.Read(ref downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
+                befSpeed = (befSpeed + Interlocked.Read(ref downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
 
-                    this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
-                }
-
-                if (downloadErrorTokenSource.IsCancellationRequested)
-                    return false;
+                this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
             }
 
             this.SpeedOrFileSize = null;
 
-            return true;
+            // 최소한 하나 이상의 이미지가 포함되어 있어야 함
+            return this.m_images.Any(e => e.Extension != null);
         }
 
         private void Compress()
