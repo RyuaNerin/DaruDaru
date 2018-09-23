@@ -12,7 +12,7 @@ namespace DaruDaru.Marumaru
             );
 
         public static DaruUriParser Archive { get; } = new DaruUriParser(
-                @"^https?:\/\/(?:[^\.]*\.)?(?:mangaumaru\.com|shencomics\.com|yuncomics\.com|wasabisyrup\.com)\/archives\/([^\?""']+)",
+                @"^https?:\/\/(?:[^\.]*\.)?(?:mangaumaru\.com|shencomics\.com|(?:blog\.)?yuncomics\.com|wasabisyrup\.com)\/archives\/([^\?""']+)",
                 code => new Uri("http://wasabisyrup.com/archives/" + code)
             );
 
