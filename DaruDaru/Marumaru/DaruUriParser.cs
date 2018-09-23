@@ -31,6 +31,9 @@ namespace DaruDaru.Marumaru
         public Uri GetUri(string code)
             => this.m_toUri(code);
 
+        public Uri FixUri(Uri uri)
+            => this.GetUri(this.GetCode(uri));
+
         public string GetCode(Uri uri)
         {
             if (uri == null) return null;

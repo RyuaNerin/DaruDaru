@@ -18,7 +18,7 @@ namespace DaruDaru.Marumaru.ComicInfo
     internal class WasabiPage : Comic
     {
         public WasabiPage(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
-            : base(addNewOnly, uri, title)
+            : base(addNewOnly, DaruUriParser.Archive.FixUri(uri), title)
         {
             this.TitleWithNo = tempTitleWithNo;
 
