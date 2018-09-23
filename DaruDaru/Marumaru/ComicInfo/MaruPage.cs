@@ -12,9 +12,11 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class MaruPage : Comic
     {
-        public MaruPage(bool addNewOnly, Uri uri, string comicName)
+        public MaruPage(bool addNewOnly, Uri uri, string comicName, bool skip)
             : base(addNewOnly, uri, comicName)
         {
+            if (skip)
+                this.State = MaruComicState.Complete_4_Skip;
         }
 
         struct WasabisyrupLinks
@@ -27,7 +29,9 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             var lstArchives = new List<WasabisyrupLinks>();
             Uri newUri = null;
+            string maruCode = null;
             string title = null;
+            var finished = false;
 
             using (var wc = new WebClientEx())
             {
@@ -38,6 +42,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     doc.LoadHtml(wc.DownloadString(this.Uri));
 
                     newUri = wc.ResponseUri ?? this.Uri;
+                    maruCode = DaruUriParser.Marumaru.GetCode(newUri);
 
                     var rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
                     var vcontent = rcontent.SelectSingleNode(".//div[@id='vContent']");
@@ -70,10 +75,23 @@ namespace DaruDaru.Marumaru.ComicInfo
                                         TitleNo = Utility.ReplcaeHtmlTag(a.InnerText)
                                     });
                             }
-                            else if (DaruUriParser.Marumaru.CheckUri(a_uri) && Utility.ReplcaeHtmlTag(a.InnerText).IndexOf("전편 보러가기") >= 0)
+                            else if (DaruUriParser.Marumaru.CheckUri(a_uri))
                             {
-                                isMangaup = true;
-                                newUri = a_uri;
+                                if (Utility.ReplcaeHtmlTag(a.InnerText).IndexOf("전편 보러가기") >= 0)
+                                {
+                                    isMangaup = true;
+                                    newUri = a_uri;
+                                }
+                                else
+                                {
+                                    if (DaruUriParser.Marumaru.GetCode(a_uri) == maruCode)
+                                    {
+                                        var innerText = Utility.ReplcaeHtmlTag(a.InnerText);
+
+                                        if (innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]"))
+                                            finished = true;
+                                    }
+                                }
                             }
                         }
                     }
@@ -103,7 +121,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             try
             {
-                ArchiveManager.UpdateMarumaru(DaruUriParser.Marumaru.GetCode(this.Uri), this.Title, lstArchives.Select(e => DaruUriParser.Archive.GetCode(e.Uri)).ToArray());
+                ArchiveManager.UpdateMarumaru(maruCode, this.Title, lstArchives.Select(e => DaruUriParser.Archive.GetCode(e.Uri)).ToArray(), finished);
 
                 IEnumerable<WasabisyrupLinks> items = lstArchives;
 

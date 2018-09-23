@@ -13,6 +13,7 @@ namespace DaruDaru.Core.Converters
         public Brush BrushCompete    { get; set; }
         public Brush BrushDownloaded { get; set; }
         public Brush BrushNoNew      { get; set; }
+        public Brush BrushSkip       { get; set; }
 
         public Brush BrushProtected  { get; set; }
         public Brush BrushError      { get; set; }
@@ -24,6 +25,7 @@ namespace DaruDaru.Core.Converters
                 case MaruComicState.Complete_1_Downloaded:  return this.BrushCompete;
                 case MaruComicState.Complete_2_Archived:    return this.BrushDownloaded;
                 case MaruComicState.Complete_3_NoNew:       return this.BrushNoNew;
+                case MaruComicState.Complete_4_Skip:        return this.BrushSkip;
                 case MaruComicState.Error_1_Error:          return this.BrushError;
                 case MaruComicState.Error_2_Protected:      return this.BrushProtected;
                 default:                                    return this.BrushNormal;

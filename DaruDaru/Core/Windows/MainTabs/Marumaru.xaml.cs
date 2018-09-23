@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -14,6 +15,7 @@ namespace DaruDaru.Core.Windows.MainTabs
         public static ICommand ShowArchive     = Create("다운로드한 파일 검색",       "ShowArchive",     typeof(Marumaru), (Key.H, ModifierKeys.Control), (Key.Enter, ModifierKeys.None));
         public static ICommand SearchNew       = Create("다시 검색 (새로운 것만)",    "SearchNew",       typeof(Marumaru), (Key.R, ModifierKeys.Control));
         public static ICommand Search          = Create("다시 검색",                  "Search",          typeof(Marumaru), (Key.R, ModifierKeys.Control | ModifierKeys.Shift));
+        public static ICommand Finished        = Create("완결 (갱신하지 않음)",       "Finished",        typeof(Marumaru), (Key.F, ModifierKeys.Control));
         public static ICommand OpenUri         = Create("웹 페이지 열기",             "OpenUri",         typeof(Marumaru), (Key.W, ModifierKeys.Control));
         public static ICommand CopyUri         = Create("링크 복사",                  "CopyUri",         typeof(Marumaru), (Key.C, ModifierKeys.Control));
         public static ICommand Remove          = Create("삭제",                       "Remove",          typeof(Marumaru));
@@ -53,7 +55,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             var items = this.Get<MarumaruEntry>();
             if (items.Length == 0) return;
 
-            MainWindow.Instance.DownloadUri(addNewOnly, items, e => e.Uri, e => e.Title);
+            MainWindow.Instance.DownloadUri(addNewOnly, items, e => e.Uri, e => e.Title, e => e.Completed);
         }
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
@@ -92,6 +94,23 @@ namespace DaruDaru.Core.Windows.MainTabs
         private void ctlMenuRemoveAndDelete_Click(object sender, RoutedEventArgs e)
         {
             this.RemoveArchive(true);
+        }
+
+        private void ContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            var items = this.Get<MarumaruEntry>();
+            var isChecked = items.Any(le => le.Finished);
+
+            this.MenuItemFinished.IsChecked = isChecked;
+        }
+
+        private void ctlMenuFinished_Click(object sender, ExecutedRoutedEventArgs e)
+        {
+            var newValue = !this.MenuItemFinished.IsChecked;
+
+            var items = this.Get<MarumaruEntry>();
+            foreach (var item in items)
+                item.Finished = newValue;
         }
 
         private async void RemoveArchive(bool removeFile)

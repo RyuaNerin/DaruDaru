@@ -223,7 +223,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 return;
             }
 
-            this.DownloadUri(false, uri, null);
+            this.DownloadUri(false, uri, null, false);
 
             this.Text = null;
             this.FocusTextBox();
@@ -240,15 +240,15 @@ namespace DaruDaru.Core.Windows.MainTabs
             }
         }
 
-        public void DownloadUri(bool addNewOnly, Uri uri, string comicName)
+        public void DownloadUri(bool addNewOnly, Uri uri, string comicName, bool skipMarumaru)
         {
             lock (this.Queue)
                 if (this.CheckExisted(uri))
-                    this.Queue.Add(Comic.CreateForSearch(addNewOnly, uri, comicName));
+                    this.Queue.Add(Comic.CreateForSearch(addNewOnly, uri, comicName, skipMarumaru));
 
             MainWindow.Instance.WakeQueue(1);
         }
-        public void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName)
+        public void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName, Func<T, bool> skipMarumaru)
         {
             int count = 0;
 
@@ -260,7 +260,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
                     if (this.CheckExisted(uri))
                     {
-                        this.Queue.Add(Comic.CreateForSearch(addNewOnly, uri, toComicName?.Invoke(item)));
+                        this.Queue.Add(Comic.CreateForSearch(addNewOnly, uri, toComicName?.Invoke(item), skipMarumaru?.Invoke(item) ?? false));
                         ++count;
                     }
                 }

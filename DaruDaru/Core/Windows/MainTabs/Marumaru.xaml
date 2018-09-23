@@ -20,6 +20,7 @@
         <CommandBinding Command="local:Marumaru.ShowArchive"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuArchiveSearch_Click" />
         <CommandBinding Command="local:Marumaru.SearchNew"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearchNew_Click" />
         <CommandBinding Command="local:Marumaru.Search"          CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearch_Click" />
+        <CommandBinding Command="local:Marumaru.Finished"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuFinished_Click" />
         <CommandBinding Command="local:Marumaru.OpenUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
         <CommandBinding Command="local:Marumaru.CopyUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
         <CommandBinding Command="local:Marumaru.Remove"          CanExecute="CommandBinding_CanExecute" />
@@ -28,14 +29,16 @@
     </ctrs:BaseControl.ListCommandBindings>
         
     <ctrs:BaseControl.ListContextMenu>
-        <ContextMenu>
+        <ContextMenu Opened="ContextMenu_Opened">
             <MenuItem Command="local:Marumaru.ShowArchive" />
             <Separator />
             <MenuItem Command="local:Marumaru.SearchNew" />
             <MenuItem Command="local:Marumaru.Search" />
             <Separator />
-            <MenuItem Command="local:Marumaru.OpenUri" />
+            <MenuItem x:Name="MenuItemFinished"
+                      Command="local:Marumaru.Finished"/>
             <Separator />
+            <MenuItem Command="local:Marumaru.OpenUri" />
             <MenuItem Command="local:Marumaru.CopyUri" />
             <Separator />
             <MenuItem Command="local:Marumaru.Remove">
@@ -49,8 +52,35 @@
         <GridView>
             <GridViewColumn Header="제목"
                             Width="220"
-                            util:GridViewSort.PropertyName="Title"
-                            DisplayMemberBinding="{Binding Title, Mode=OneWay}" />
+                            util:GridViewSort.PropertyName="Title">
+                <GridViewColumn.CellTemplate>                    
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title, Mode=OneWay}"
+                                   HorizontalAlignment="Stretch">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock"
+                                       BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=Finished}" Value="False">
+                                            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=Finished}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource GrayNormalBrush}" />
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=Completed}" Value="False">
+                                            <Setter Property="TextDecorations" Value="" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=Completed}" Value="True">
+                                            <Setter Property="TextDecorations" Value="Strikethrough" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
 
             <GridViewColumn Header="마지막 검색"
                             Width="130"

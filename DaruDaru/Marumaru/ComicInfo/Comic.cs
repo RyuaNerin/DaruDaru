@@ -22,6 +22,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         Complete_1_Downloaded   = Complete + 1,
         Complete_2_Archived     = Complete + 2,
         Complete_3_NoNew        = Complete + 3,
+        Complete_4_Skip         = Complete + 4,
 
         Error_1_Error           = Error    + 1,
         Error_2_Protected       = Error    + 2,
@@ -31,10 +32,10 @@ namespace DaruDaru.Marumaru.ComicInfo
 
     internal abstract class Comic : INotifyPropertyChanged
     {
-        public static Comic CreateForSearch(bool addNewOnly, Uri uri, string title)
+        public static Comic CreateForSearch(bool addNewOnly, Uri uri, string title, bool skipMarumaru)
         {
             if (DaruUriParser.Marumaru.CheckUri(uri))
-                return new MaruPage(addNewOnly, uri, title);
+                return new MaruPage(addNewOnly, uri, title, skipMarumaru);
 
             if (DaruUriParser.Archive.CheckUri(uri))
                 return new WasabiPage(addNewOnly, uri, title);
@@ -162,6 +163,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Complete_1_Downloaded:   return "완료";
                     case MaruComicState.Complete_2_Archived:     return "저장됨";
                     case MaruComicState.Complete_3_NoNew:        return "새 작품 없음";
+                    case MaruComicState.Complete_4_Skip:     return "건너뜀";
 
                     case MaruComicState.Error_1_Error:           return "오류";
                     case MaruComicState.Error_2_Protected:       return "보호됨";

@@ -37,7 +37,18 @@ namespace DaruDaru.Config.Entries
             }
         }
 
-        public string[] ArchiveCodes { get; set; }
+        private string[] m_archiveCodes;
+        public string[] ArchiveCodes
+        {
+            get => this.m_archiveCodes;
+            set
+            {
+                this.m_archiveCodes = value;
+                this.InvokePropertyChanged();
+
+                this.RecalcCompleted();
+            }
+        }
 
         private DateTime m_lastUpdated;
         public DateTime LastUpdated
@@ -46,6 +57,39 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_lastUpdated = value;
+                this.InvokePropertyChanged();
+            }
+        }
+
+        private bool m_finished = false;
+        public bool Finished
+        {
+            get => this.m_finished;
+            set
+            {
+                this.m_finished = value;
+                this.InvokePropertyChanged();
+
+                this.RecalcCompleted();
+            }
+        }
+
+        public void RecalcCompleted()
+        {
+            this.Completed = this.Finished && ArchiveManager.ArchiveAllDownloaded(this.ArchiveCodes);
+        }
+
+        private bool m_completed = false;
+        [JsonIgnore]
+        public bool Completed
+        {
+            get => this.m_completed;
+            private set
+            {
+                if (this.m_completed == value)
+                    return;
+
+                this.m_completed = value;
                 this.InvokePropertyChanged();
             }
         }

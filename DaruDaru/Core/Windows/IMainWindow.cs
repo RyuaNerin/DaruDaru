@@ -11,8 +11,8 @@ namespace DaruDaru.Core.Windows
     {
         Window Window { get; }
 
-        void DownloadUri(bool addNewOnly, Uri uri, string comicName);
-        void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName);
+        void DownloadUri(bool addNewOnly, Uri uri, string comicName, bool skipMarumaru);
+        void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName, Func<T, bool> skipMarumaru);
         void InsertNewComic(Comic sender, IEnumerable<Comic> newItems, bool removeSender);
 
         void UpdateTaskbarProgress();

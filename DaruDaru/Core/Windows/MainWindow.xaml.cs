@@ -56,11 +56,11 @@ namespace DaruDaru.Core.Windows
 
         public Window Window => this;
 
-        public void DownloadUri(bool addNewOnly, Uri uri, string comicName)
-            => this.ctlSearch.DownloadUri(addNewOnly, uri, comicName);
+        public void DownloadUri(bool addNewOnly, Uri uri, string comicName, bool skipMarumaru)
+            => this.ctlSearch.DownloadUri(addNewOnly, uri, comicName, skipMarumaru);
 
-        public void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName)
-            => this.ctlSearch.DownloadUri(addNewOnly, src, toUri, toComicName);
+        public void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName, Func<T, bool> skipMarumaru)
+            => this.ctlSearch.DownloadUri(addNewOnly, src, toUri, toComicName, skipMarumaru);
 
         public void InsertNewComic(Comic sender, IEnumerable<Comic> newItems, bool removeSender)
             => this.ctlSearch.InsertNewComic(sender, newItems, removeSender);
@@ -240,7 +240,7 @@ namespace DaruDaru.Core.Windows
                                    .Select(le => Utility.CreateUri(le.Substring(4)))
                                    .ToArray();
 
-                    this.DownloadUri(false, uris, le => le, null);
+                    this.DownloadUri(false, uris, le => le, null, null);
                 }
             }
             else
@@ -249,7 +249,7 @@ namespace DaruDaru.Core.Windows
 
                 if (GetUriFromStream(out uri, e.Data, "text/x-moz-url") ||
                     GetUriFromStream(out uri, e.Data, "UniformResourceLocatorW"))
-                    this.DownloadUri(false, uri, null);
+                    this.DownloadUri(false, uri, null, false);
             }
 
             SetDragDropAdnorner(false);

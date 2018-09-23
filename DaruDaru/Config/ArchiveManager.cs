@@ -26,27 +26,43 @@ namespace DaruDaru.Config
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
                 var newItem = e.NewItems.Cast<ArchiveEntry>();
-
-                lock (ArchiveHash)
-                    foreach (var item in newItem)
+                
+                foreach (var item in newItem)
+                {
+                    lock (ArchiveHash)
                         ArchiveHash.Add(item.ArchiveCode);
+
+                    lock (MarumaruLinks)
+                        MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(item.ArchiveCode))?.RecalcCompleted();
+                }
             }
 
             else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
                 var newItem = e.OldItems.Cast<ArchiveEntry>();
-
-                lock (ArchiveHash)
-                    foreach (var item in newItem)
+                
+                foreach (var item in newItem)
+                {
+                    lock (ArchiveHash)
                         ArchiveHash.Remove(item.ArchiveCode);
+
+                    lock (MarumaruLinks)
+                        MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(item.ArchiveCode))?.RecalcCompleted();
+                }
             }
 
             else if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
                 lock (ArchiveHash)
                     ArchiveHash.Clear();
+
+                lock (MarumaruLinks)
+                    foreach (var ml in MarumaruLinks)
+                        ml.RecalcCompleted();
+            }
         }
 
-        public static void UpdateMarumaru(string maruCode, string title, string[] archiveCodes)
+        public static void UpdateMarumaru(string maruCode, string title, string[] archiveCodes, bool? finished = null)
         {
             lock (MarumaruLinks)
             {
@@ -73,9 +89,17 @@ namespace DaruDaru.Config
                     Application.Current.Dispatcher.Invoke(new Action<MarumaruEntry>(MarumaruLinks.Add), entry);
                 }
 
-                entry.Title = title;
-                entry.LastUpdated = DateTime.Now;
-                entry.ArchiveCodes = archiveCodes;
+                if (title != null)
+                    entry.Title = title;
+
+                if (archiveCodes != null)
+                {
+                    entry.LastUpdated = DateTime.Now;
+                    entry.ArchiveCodes = archiveCodes;
+                }
+
+                if (finished.HasValue)
+                    entry.Finished = finished.Value;
 
                 ConfigManager.Save();
             }
@@ -188,6 +212,12 @@ namespace DaruDaru.Config
                         ++i;
                 }
             }
+        }
+
+        public static bool ArchiveAllDownloaded(IEnumerable<string> archiveCodes)
+        {
+            lock (ArchiveHash)
+                return archiveCodes?.All(e => ArchiveHash.Contains(e)) ?? false;
         }
     }
 }

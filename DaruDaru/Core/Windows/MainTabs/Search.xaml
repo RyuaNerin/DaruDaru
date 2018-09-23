@@ -22,6 +22,7 @@
             <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
                                         BrushNormal    ="#FFB6D2DE"
                                         BrushCompete   ="#FFB3CEB3"
+                                        BrushSkip      ="#FFB3CEB3"
                                         BrushDownloaded="#FFB3D5D5"
                                         BrushNoNew     ="#FFD4DAB3"
                                         BrushError     ="#FFE1B7B3"

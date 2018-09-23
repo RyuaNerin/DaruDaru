@@ -23,10 +23,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                 Comic comic = null;
 
                 if (DaruUriParser.Marumaru.CheckUri(newUri))
-                    comic = new WasabiPage(this.AddNewonly, newUri, null);
+                    comic = new WasabiPage(this.AddNewonly, newUri, null, null);
 
                 else if (DaruUriParser.Archive.CheckUri(newUri))
-                    comic = new MaruPage(this.AddNewonly, newUri, null);
+                    comic = new MaruPage(this.AddNewonly, newUri, null, false);
 
                 if (comic != null)
                     MainWindow.Instance.InsertNewComic(this, new Comic[] { comic }, true);
