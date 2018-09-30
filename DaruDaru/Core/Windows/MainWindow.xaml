@@ -15,7 +15,8 @@
                    DragLeave="MetroWindow_DragLeave"
                    DragEnter="MetroWindow_DragEnter"
                    Drop="MetroWindow_Drop"
-                   Loaded="MetroWindow_Loaded">
+                   Loaded="MetroWindow_Loaded"
+                   Closing="MetroWindow_Closing">
     <TabControl x:Name="ctlTab"
                 TabStripPlacement="Left">
         <TabControl.Resources>

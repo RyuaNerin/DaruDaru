@@ -54,6 +54,11 @@ namespace DaruDaru.Core.Windows
             }
         }
 
+        private void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            App.Current.Shutdown();
+        }
+
         public Window Window => this;
 
         public void DownloadUri(bool addNewOnly, Uri uri, string comicName, bool skipMarumaru)
