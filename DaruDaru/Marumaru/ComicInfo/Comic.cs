@@ -163,7 +163,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Complete_1_Downloaded:   return "완료";
                     case MaruComicState.Complete_2_Archived:     return "저장됨";
                     case MaruComicState.Complete_3_NoNew:        return "새 작품 없음";
-                    case MaruComicState.Complete_4_Skip:     return "건너뜀";
+                    case MaruComicState.Complete_4_Skip:         return "건너뜀";
 
                     case MaruComicState.Error_1_Error:           return "오류";
                     case MaruComicState.Error_2_Protected:       return "보호됨";
