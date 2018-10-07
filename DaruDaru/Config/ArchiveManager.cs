@@ -31,9 +31,6 @@ namespace DaruDaru.Config
                 {
                     lock (ArchiveHash)
                         ArchiveHash.Add(item.ArchiveCode);
-
-                    lock (MarumaruLinks)
-                        MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(item.ArchiveCode))?.RecalcCompleted();
                 }
             }
 
@@ -42,23 +39,14 @@ namespace DaruDaru.Config
                 var newItem = e.OldItems.Cast<ArchiveEntry>();
                 
                 foreach (var item in newItem)
-                {
                     lock (ArchiveHash)
                         ArchiveHash.Remove(item.ArchiveCode);
-
-                    lock (MarumaruLinks)
-                        MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(item.ArchiveCode))?.RecalcCompleted();
-                }
             }
 
             else if (e.Action == NotifyCollectionChangedAction.Reset)
             {
                 lock (ArchiveHash)
                     ArchiveHash.Clear();
-
-                lock (MarumaruLinks)
-                    foreach (var ml in MarumaruLinks)
-                        ml.RecalcCompleted();
             }
         }
 
@@ -104,7 +92,7 @@ namespace DaruDaru.Config
                 ConfigManager.Save();
             }
         }
-        
+
         public static void UpdateArchive(string archiveCode, string fullTitle, string zipPath)
         {
             lock (Archives)
@@ -132,6 +120,9 @@ namespace DaruDaru.Config
                     };
 
                     Application.Current.Dispatcher.Invoke(new Action<ArchiveEntry>(Archives.Add), entry);
+
+                    lock (MarumaruLinks)
+                        MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(archiveCode))?.RecalcCompleted();
                 }
 
                 entry.Archived = DateTime.Now;
@@ -198,15 +189,20 @@ namespace DaruDaru.Config
         {
             lock (Archives)
             {
+                string archiveCode;
                 int i = 0;
                 while (i < Archives.Count)
                 {
-                    if (Array.IndexOf(codes, Archives[i].ArchiveCode) >= 0)
+                    archiveCode = Archives[i].ArchiveCode;
+                    if (Array.IndexOf(codes, archiveCode) >= 0)
                     {
                         if (removeFile)
                             File.Delete(Archives[i].ZipPath);
 
                         Archives.RemoveAt(i);
+
+                        lock (MarumaruLinks)
+                            MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(archiveCode))?.RecalcCompleted();
                     }
                     else
                         ++i;
@@ -214,10 +210,30 @@ namespace DaruDaru.Config
             }
         }
 
+        internal static void ClearArchives()
+        {
+            lock (Archives)
+            {
+                Archives.Clear();
+
+                lock (MarumaruLinks)
+                    foreach (var ml in MarumaruLinks)
+                        ml.RecalcCompleted();
+            }
+
+        }
+
         public static bool ArchiveAllDownloaded(IEnumerable<string> archiveCodes)
         {
             lock (ArchiveHash)
                 return archiveCodes?.All(e => ArchiveHash.Contains(e)) ?? false;
+        }
+
+        public static void RecalcCompleted()
+        {
+            lock (MarumaruLinks)
+                foreach (var item in MarumaruLinks)
+                    item.RecalcCompleted();
         }
     }
 }

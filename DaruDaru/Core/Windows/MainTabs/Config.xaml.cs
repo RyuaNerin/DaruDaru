@@ -75,7 +75,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (await MainWindow.Instance.ShowMessageBox("모든 다운로드 기록을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
                 == MessageDialogResult.Affirmative)
             {
-                ArchiveManager.Archives.Clear();
+                ArchiveManager.ClearArchives();
                 ConfigManager.Save();
 
                 MainWindow.Instance.ShowMessageBox("다운로드 기록을 삭제했어요.", 5000);

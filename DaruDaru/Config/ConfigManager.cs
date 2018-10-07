@@ -33,6 +33,8 @@ namespace DaruDaru.Config
                 catch
                 {
                 }
+
+                ArchiveManager.RecalcCompleted();
             }
         }
 
