@@ -46,153 +46,161 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string TempPath;
             public string Extension;
         }
+        private struct GetInfomationArgs
+        {
+            public List<ImageInfomation> Images;
+            public Uri                   NewUri;
+
+            public bool IsProtected;
+            public bool IsCaptcha;
+        }
         protected override bool GetInfomationPriv(ref int count)
         {
-            var lst = new List<ImageInfomation>();
-            Uri newUri = null;
-
-            using (var wc = new WebClientEx())
+            var args = new GetInfomationArgs()
             {
-                var doc = new HtmlDocument();
-                
-                var success = Utility.Retry(() =>
-                {
-                    wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-                    var body = wc.DownloadString(this.Uri);
+                Images = new List<ImageInfomation>()
+            };
 
-                    newUri = wc.ResponseUri ?? this.Uri;
+            bool success;
+            using (var wc = new WebClientEx())
+                success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args) );
 
-                    doc.LoadHtml(body);
-
-                    // 타이틀은 항상 마루마루 기준으로 맞춤.
-                    // 2018-07-10 파일 이름은 Archive 기준으로 맞춤: https://marumaru.in/b/manga/208070
-                    var innerTitle = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
-
-                    if (string.IsNullOrWhiteSpace(this.Title))
-                        this.Title = innerTitle;
-
-                    // 제목이 바뀌는 경우가 있어서
-                    // 제목은 그대로 사용하고, xx화 는 새로 가져온다.
-                    var titleNo = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
-                    this.TitleWithNo = $"{innerTitle} {titleNo}";
-
-                    // 제목이 설정되어 있지 않은 경우가 있음. 이럴땐 에러로 처리.
-                    if (string.IsNullOrWhiteSpace(this.TitleWithNo.Trim()))
-                        return false;
-
-                    // 잠긴 파일
-                    if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
-                    {
-                        if (doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
-                        {
-                            // Captcha 걸린 파일
-                            if (Recaptcha.LastPostData != null)
-                            {
-                                wc.Headers.Set(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
-                                body = wc.UploadString(newUri, "POST", Recaptcha.LastPostData);
-                                doc.LoadHtml(body);
-
-                                if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null ||
-                                    doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
-                                {
-                                    lst.Add(null);
-                                    lst.Add(null);
-                                }
-                            }
-                            else
-                            {
-                                lst.Add(null);
-                                lst.Add(null);
-                            }                            
-                        }
-                        else
-                        {
-                            // 실제로 암호걸린 파일
-                            lst.Add(null);
-                        }
-
-                        return true;
-                    }
-
-                    var imgs = doc.DocumentNode.SelectNodes("//img[@data-src]");
-                    if (imgs != null && imgs.Count > 0)
-                    {
-                        foreach (var img in imgs)
-                        {
-                            if (Utility.TryCreateUri(newUri, img.Attributes["data-src"].Value, out Uri imgUri))
-                            {
-                                lst.Add(new ImageInfomation
-                                {
-                                    Index    = lst.Count + 1,
-                                    ImageUri = imgUri,
-                                    TempPath = Path.GetTempFileName()
-                                });
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
-
-                        var sig = Uri.EscapeDataString(galleryTemplate.Attributes["data-signature"].Value);
-                        var key = Uri.EscapeDataString(galleryTemplate.Attributes["data-key"].Value);
-
-                        wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-                        var jsonDoc = wc.DownloadString($"http://wasabisyrup.com/assets/{this.ArchiveCode}/1.json?signature={sig}&key={key}");
-
-                        var json = JsonConvert.DeserializeObject<Assets>(jsonDoc);
-
-                        if (json.Message != "ok" || json.Status != "ok")
-                            return false;
-
-                        foreach (var img in json.Sources)
-                        {
-                            if (Utility.TryCreateUri(newUri, img, out Uri imgUri))
-                            {
-                                lst.Add(new ImageInfomation
-                                {
-                                    Index    = lst.Count + 1,
-                                    ImageUri = imgUri,
-                                    TempPath = Path.GetTempFileName()
-                                });
-                            }
-                        }
-                    }
-
-
-                    return true;
-                });
-
-                if (!success || lst.Count == 0)
-                {
-                    this.State = MaruComicState.Error_1_Error;
-                    return false;
-                }
-
-                if (lst.Count == 1 && lst[0] == null)
-                {
-                    this.State = MaruComicState.Error_2_Protected;
-                    return true;
-                }
-
-                if (lst.Count == 2 && lst[0] == null)
-                {
-                    this.State = MaruComicState.Error_4_Captcha;
-                    return true;
-                }
+            if (!success || args.Images.Count == 0)
+            {
+                this.State = MaruComicState.Error_1_Error;
+                return false;
             }
 
-            this.Uri = newUri;
+            if (args.IsProtected)
+            {
+                this.State = MaruComicState.Error_2_Protected;
+                return false;
+            }
+
+            if (args.IsCaptcha)
+            {
+                this.State = MaruComicState.Error_4_Captcha;
+                return false;
+            }
+
+            this.Uri = args.NewUri;
 
             this.ProgressValue = 0;
-            this.ProgressMaximum = lst.Count;
+            this.ProgressMaximum = args.Images.Count;
 
-            this.m_images = lst.ToArray();
+            this.m_images = args.Images.ToArray();
 
             // 다운로드 시작
             this.State = MaruComicState.Working_2_WaitDownload;
 
             count = 1;
+
+            return true;
+        }
+
+        private bool GetInfomationWorker(WebClientEx wc, ref GetInfomationArgs args)
+        {
+            wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
+            var body = wc.DownloadString(this.Uri);
+
+            args.NewUri = wc.ResponseUri ?? this.Uri;
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(body);
+
+            // 타이틀은 항상 마루마루 기준으로 맞춤.
+            // 2018-07-10 파일 이름은 Archive 기준으로 맞춤: https://marumaru.in/b/manga/208070
+            var innerTitle = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
+
+            if (string.IsNullOrWhiteSpace(this.Title))
+                this.Title = innerTitle;
+
+            // 제목이 바뀌는 경우가 있어서
+            // 제목은 그대로 사용하고, xx화 는 새로 가져온다.
+            var titleNo = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
+            this.TitleWithNo = $"{innerTitle} {titleNo}";
+
+            // 제목이 설정되어 있지 않은 경우가 있음. 이럴땐 에러로 처리.
+            if (string.IsNullOrWhiteSpace(this.TitleWithNo.Trim()))
+                return false;
+
+            // 잠긴 파일
+            if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
+            {
+                if (doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
+                {
+                    // Captcha 걸린 파일
+                    if (Recaptcha.LastPostData != null)
+                    {
+                        wc.Headers.Set(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
+                        body = wc.UploadString(args.NewUri, "POST", Recaptcha.LastPostData);
+                        doc.LoadHtml(body);
+
+                        if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null ||
+                            doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
+                        {
+                            args.IsCaptcha = true;
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        args.IsCaptcha = true;
+                        return true;
+                    }
+                }
+                else
+                {
+                    // 실제로 암호걸린 파일
+                    args.IsProtected = true;
+                    return true;
+                }
+            }
+
+            var imgs = doc.DocumentNode.SelectNodes("//img[@data-src]");
+            if (imgs != null && imgs.Count > 0)
+            {
+                foreach (var img in imgs)
+                {
+                    if (Utility.TryCreateUri(args.NewUri, img.Attributes["data-src"].Value, out Uri imgUri))
+                    {
+                        args.Images.Add(new ImageInfomation
+                        {
+                            Index = args.Images.Count + 1,
+                            ImageUri = imgUri,
+                            TempPath = Path.GetTempFileName()
+                        });
+                    }
+                }
+            }
+            else
+            {
+                var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
+
+                var sig = Uri.EscapeDataString(galleryTemplate.Attributes["data-signature"].Value);
+                var key = Uri.EscapeDataString(galleryTemplate.Attributes["data-key"].Value);
+
+                wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
+                var jsonDoc = wc.DownloadString($"http://wasabisyrup.com/assets/{this.ArchiveCode}/1.json?signature={sig}&key={key}");
+
+                var json = JsonConvert.DeserializeObject<Assets>(jsonDoc);
+
+                if (json.Message != "ok" || json.Status != "ok")
+                    return false;
+
+                foreach (var img in json.Sources)
+                {
+                    if (Utility.TryCreateUri(args.NewUri, img, out Uri imgUri))
+                    {
+                        args.Images.Add(new ImageInfomation
+                        {
+                            Index = args.Images.Count + 1,
+                            ImageUri = imgUri,
+                            TempPath = Path.GetTempFileName()
+                        });
+                    }
+                }
+            }
 
             return true;
         }
@@ -253,51 +261,19 @@ namespace DaruDaru.Marumaru.ComicInfo
             }
         }
 
+        private long m_downloaded;
         private bool Download()
         {
             var startTime = DateTime.Now;
-            long downloaded = 0;
 
+            this.m_downloaded = 0;
             var taskDownload = Task.Factory.StartNew(() =>
             {
                 return Parallel.ForEach(
                     this.m_images,
                     (e, state) =>
                     {
-                        var succ = Utility.Retry(() =>
-                        {
-                            var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri));
-                            if (req is HttpWebRequest hreq)
-                            {
-                                hreq.Referer = this.Uri.AbsoluteUri;
-                                hreq.AllowWriteStreamBuffering = false;
-                                hreq.AllowReadStreamBuffering = false;
-                            }
-
-                            using (var res = req.GetResponse() as HttpWebResponse)
-                            using (var resBody = res.GetResponseStream())
-                            {
-                                using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                                {
-                                    var buff = new byte[4096];
-                                    int read;
-
-                                    while ((read = resBody.Read(buff, 0, 4096)) > 0)
-                                    {
-                                        Interlocked.Add(ref downloaded, read);
-                                        fileStream.Write(buff, 0, read);
-                                    }
-
-                                    fileStream.Flush();
-
-                                    fileStream.Position = 0;
-                                    e.Extension = Signatures.GetExtension(fileStream);
-                                }
-                            }
-
-                            this.IncrementProgress();
-                            return true;
-                        });
+                        var succ = Utility.Retry(() => this.DownloadWorker(e));
 
                         if (!succ)
                             state.Stop();
@@ -309,7 +285,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 Thread.Sleep(500);
 
-                befSpeed = (befSpeed + Interlocked.Read(ref downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
+                befSpeed = (befSpeed + Interlocked.Read(ref this.m_downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
 
                 this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
             }
@@ -318,6 +294,41 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             // 최소한 하나 이상의 이미지가 포함되어 있어야 함
             return this.m_images.Any(e => e.Extension != null);
+        }
+
+        private bool DownloadWorker(ImageInfomation e)
+        {
+            var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri));
+            if (req is HttpWebRequest hreq)
+            {
+                hreq.Referer = this.Uri.AbsoluteUri;
+                hreq.AllowWriteStreamBuffering = false;
+                hreq.AllowReadStreamBuffering = false;
+            }
+
+            using (var res = req.GetResponse() as HttpWebResponse)
+            using (var resBody = res.GetResponseStream())
+            {
+                using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    var buff = new byte[4096];
+                    int read;
+
+                    while ((read = resBody.Read(buff, 0, 4096)) > 0)
+                    {
+                        Interlocked.Add(ref this.m_downloaded, read);
+                        fileStream.Write(buff, 0, read);
+                    }
+
+                    fileStream.Flush();
+
+                    fileStream.Position = 0;
+                    e.Extension = Signatures.GetExtension(fileStream);
+                }
+            }
+
+            this.IncrementProgress();
+            return true;
         }
 
         private void Compress()
