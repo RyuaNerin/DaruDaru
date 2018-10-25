@@ -63,6 +63,11 @@ namespace DaruDaru.Core.Windows.MainTabs
             ConfigManager.Instance.SavePath = ConfigManager.DefaultSavePath;
         }
 
+        private void ctlWorkerCountDefault_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigManager.Instance.WorkerCount = ConfigManager.WorkerCountDefault;
+        }
+
         private async void ctlConfigClearDownload_Click(object sender, RoutedEventArgs e)
         {
             var setting = new MetroDialogSettings

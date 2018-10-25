@@ -111,6 +111,33 @@
                 </Grid>
             </GroupBox>
 
+            <GroupBox Header="동시 작업 갯수">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+
+                    <metro:NumericUpDown Value="{Binding Path=WorkerCount, Mode=TwoWay}"
+                                         Margin="0 0 5 0"
+                                         Minimum="1"
+                                         MaxHeight="16" />
+
+                    <Button Grid.Row="0"
+                            Grid.Column="3"
+                            Content="기본값"
+                            Click="ctlWorkerCountDefault_Click" />
+
+                    <TextBlock Grid.Row="1"
+                               Margin="0 3 0 0"
+                               Text="재시작 시 적용됩니다" />
+                </Grid>
+            </GroupBox>
+
             <GroupBox Header="보호된 파일 다운로드">
                 <metro:ToggleSwitch x:Name="ctlConfigDownloadProtected"
                                     ContentDirection="RightToLeft"

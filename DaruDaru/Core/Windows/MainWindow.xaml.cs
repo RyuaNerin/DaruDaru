@@ -35,7 +35,7 @@ namespace DaruDaru.Core.Windows
 
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
 
-            var p = Environment.ProcessorCount;
+            var p = ConfigManager.Instance.WorkerCount;
             ThreadPool.SetMinThreads(p * 2, p);
 
             this.m_workerInfo = new Task[p];

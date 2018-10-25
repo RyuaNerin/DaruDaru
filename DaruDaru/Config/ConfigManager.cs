@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -121,6 +122,21 @@ namespace DaruDaru.Config
             set
             {
                 this.m_urlLinkPath = string.IsNullOrWhiteSpace(value) ? DefaultSavePath : value;
+
+                this.InvokePropertyChanged();
+
+                Save();
+            }
+        }
+
+        public readonly static int WorkerCountDefault = Environment.ProcessorCount;
+        private int m_workerCount = WorkerCountDefault;
+        public int WorkerCount
+        {
+            get => this.m_workerCount;
+            set
+            {
+                this.m_workerCount = value;
 
                 this.InvokePropertyChanged();
 
