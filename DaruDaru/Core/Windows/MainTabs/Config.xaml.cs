@@ -23,7 +23,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 fsd.SelectedPath = curPath;
 
                 if (fsd.ShowDialog() == WinForms.DialogResult.OK)
-                    return curPath;
+                    return fsd.SelectedPath;
             }
 
             return null;
