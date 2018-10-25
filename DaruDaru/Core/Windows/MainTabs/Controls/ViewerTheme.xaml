@@ -1,8 +1,8 @@
 <ResourceDictionary  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                     xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                      xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
-                     xmlns:util="clr-namespace:DaruDaru.Utilities">
+                     xmlns:util="clr-namespace:DaruDaru.Utilities"
+                     xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro">
     <ControlTemplate x:Key="ViewerTemplate"
                      TargetType="{x:Type local:BaseControl}">
         <ControlTemplate.Resources>
