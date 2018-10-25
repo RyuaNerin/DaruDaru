@@ -143,7 +143,7 @@ namespace DaruDaru.Core.Windows
         {
             try
             {
-                var doc = (HTMLDocumentClass)this.ctlBrowser.Document;
+                var doc = (HTMLDocument)this.ctlBrowser.Document;
 
                 //기본 작업
                 var pass_box = doc.getElementByClassName("pass-box");
