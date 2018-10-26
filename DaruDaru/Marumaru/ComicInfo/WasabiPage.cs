@@ -50,9 +50,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             public List<ImageInfomation> Images;
             public Uri                   NewUri;
-
-            public bool IsProtected;
-            public bool IsCaptcha;
+            public bool                 IsError;
         }
         protected override bool GetInfomationPriv(ref int count)
         {
@@ -63,23 +61,13 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             bool success;
             using (var wc = new WebClientEx())
-                success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args) );
+                success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
 
-            if (args.IsProtected)
+            if (!success)
             {
-                this.State = MaruComicState.Error_2_Protected;
-                return false;
-            }
+                if (!args.IsError && args.Images.Count == 0)
+                    this.State = MaruComicState.Error_1_Error;
 
-            if (args.IsCaptcha)
-            {
-                this.State = MaruComicState.Error_4_Captcha;
-                return false;
-            }
-
-            if (!success || args.Images.Count == 0)
-            {
-                this.State = MaruComicState.Error_1_Error;
                 return false;
             }
 
@@ -104,6 +92,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             var body = wc.DownloadString(this.Uri);
             if (wc.LastStatusCode == HttpStatusCode.NotFound)
             {
+                args.IsError = true;
                 this.State = MaruComicState.Error_5_NotFound;
                 return true;
             }
@@ -144,20 +133,23 @@ namespace DaruDaru.Marumaru.ComicInfo
                         if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null ||
                             doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
                         {
-                            args.IsCaptcha = true;
+                            args.IsError = true;
+                            this.State = MaruComicState.Error_4_Captcha;
                             return true;
                         }
                     }
                     else
                     {
-                        args.IsCaptcha = true;
+                        args.IsError = true;
+                        this.State = MaruComicState.Error_4_Captcha;
                         return true;
                     }
                 }
                 else
                 {
                     // 실제로 암호걸린 파일
-                    args.IsProtected = true;
+                    args.IsError = true;
+                    this.State = MaruComicState.Error_2_Protected;
                     return true;
                 }
             }

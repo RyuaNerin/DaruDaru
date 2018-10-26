@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
@@ -102,9 +103,15 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         private bool GetInfomationWorker(WebClientEx wc, ref Args args)
         {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(wc.DownloadString(this.Uri));
+            var body = wc.DownloadString(this.Uri);
+            if ((int)wc.LastStatusCode == 520)
+            {
+                this.State = MaruComicState.Error_6_520;
+                return true;
+            }
 
+            var doc = new HtmlDocument();
+            doc.LoadHtml(body);
             args.NewUri = wc.ResponseUri ?? this.Uri;
             args.MaruCode = DaruUriParser.Marumaru.GetCode(args.NewUri);
 
