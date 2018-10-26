@@ -106,8 +106,20 @@ namespace DaruDaru.Marumaru.ComicInfo
             args.NewUri = wc.ResponseUri ?? this.Uri;
             args.MaruCode = DaruUriParser.Marumaru.GetCode(args.NewUri);
 
-            var rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
-            var vcontent = rcontent.SelectSingleNode(".//div[@id='vContent']");
+            HtmlNode rcontent = null;
+            HtmlNode vcontent = null;
+            try
+            {
+                rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
+                vcontent = rcontent.SelectSingleNode(".//div[@id='vContent']");
+            }
+            catch (Exception ex)
+            {
+                if (doc.DocumentNode.InnerHtml.Contains("서비스 점검"))
+                    throw new MaruSystemException();
+                else
+                    throw ex;
+            }
 
             args.Title = Utility.ReplcaeHtmlTag(rcontent.SelectSingleNode(".//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
 

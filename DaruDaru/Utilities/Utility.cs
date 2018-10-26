@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using DaruDaru.Core;
+using DaruDaru.Marumaru.ComicInfo;
 
 namespace DaruDaru.Utilities
 {
@@ -41,6 +42,10 @@ namespace DaruDaru.Utilities
                     if (action())
                         return true;
                 }
+                catch (MaruSystemException)
+                {
+                    Thread.Sleep(30 * 1000);
+                }
                 catch (WebException ex)
                 {
                     if (ex.Response is HttpWebResponse hres)
@@ -48,6 +53,8 @@ namespace DaruDaru.Utilities
                         if ((int)hres.StatusCode == 429)
                             Thread.Sleep(30 * 1000);
                     }
+
+                    ex.Response.Dispose();
                 }
                 catch (SocketException)
                 {

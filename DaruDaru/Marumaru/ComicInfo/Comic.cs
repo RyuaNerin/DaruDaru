@@ -7,6 +7,10 @@ using DaruDaru.Core.Windows;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
+    internal class MaruSystemException : Exception
+    {
+    }
+
     internal enum MaruComicState : long
     {
         Wait     = 0,
