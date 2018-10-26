@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -80,14 +81,18 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<WasabiPage>().GetPath();
-            if (items.Length == 0) return;
+            var maru   = this.Get<MaruPage  >().GetDir ();
+            var wasabi = this.Get<WasabiPage>().GetPath();
+            if (maru.Length == 0 && wasabi.Length == 0) return;
 
-            if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
+            if ((Explorer.GetDirectoryCount(wasabi) + maru.Length) > App.WarningItems &&
                 !await MainWindow.Instance.ShowMassageBoxTooMany())
                 return;
 
-            Explorer.OpenAndSelect(items);
+            foreach (var fe in maru)
+                Explorer.Open(fe);
+
+            Explorer.OpenAndSelect(wasabi);
         }
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
@@ -150,7 +155,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 DefaultButtonFocus = MessageDialogResult.Negative
             };
 
-            if (await MainWindow.Instance.ShowMessageBox("완료되거나 대기중인 모든 대기열을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
+            if (await MainWindow.Instance.ShowMessageBox("모든 대기열을 삭제할까요?\n\n삭제 후엔 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
                 == MessageDialogResult.Affirmative)
             {
                 lock (this.Queue)
@@ -186,30 +191,43 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ListViewDefaultCommand(Comic comic)
         {
-            if (comic is MaruPage maruPage)
-                Explorer.OpenUri(maruPage.Uri.AbsoluteUri);
+            var maruPage   = comic as MaruPage;
+            var wasabiPage = comic as WasabiPage;
 
-            else if (comic is WasabiPage wasabiPage)
+            // 진행중일 때
+            if (comic.State == MaruComicState.Wait ||
+                comic.State.HasFlag(MaruComicState.Working))
             {
-                switch (wasabiPage.State)
+                Explorer.OpenUri(comic.Uri.AbsoluteUri);
+            }
+            else if (comic.State.HasFlag(MaruComicState.Complete))
+            {
+                if (wasabiPage != null)
                 {
-                    case MaruComicState.Error_2_Protected:
-                    case MaruComicState.Error_4_Captcha:
-                        BypassProtectedArchive(wasabiPage);
-                        break;
-
-                    case MaruComicState.Error_1_Error:
-                    case MaruComicState.Error_3_NotSupport:
-                        comic.Restart();
-                        break;
-
-                    case MaruComicState.Complete_1_Downloaded:
-                    case MaruComicState.Complete_2_Archived:
-                        if (wasabiPage.IsComplete && !string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && HoneyViwer.TryCreate(out var hv))
+                    if (!string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && File.Exists(wasabiPage.ZipPath))
+                        if (HoneyViwer.TryCreate(out var hv))
                             hv.Open(wasabiPage.ZipPath);
-                        break;
-
                 }
+                else if (maruPage != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(maruPage.DirPath) && Directory.Exists(maruPage.DirPath))
+                        Explorer.Open(maruPage.DirPath);
+                }
+            }
+            else if (comic.State.HasFlag(MaruComicState.Error))
+            {
+                if (wasabiPage != null)
+                {
+                    switch (comic.State)
+                    {
+                        case MaruComicState.Error_2_Protected:
+                        case MaruComicState.Error_4_Captcha:
+                            this.BypassProtectedArchive(wasabiPage);
+                            return;
+                    }
+                }
+
+                comic.Restart();
             }
         }
 

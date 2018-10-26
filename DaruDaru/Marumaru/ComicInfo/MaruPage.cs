@@ -19,6 +19,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.State = MaruComicState.Complete_4_Skip;
         }
 
+        public string DirPath => Path.Combine(this.ConfigCur.SavePath, Utility.ReplaceInvalid(this.Title));
+
         private struct Links
         {
             public Uri Uri;

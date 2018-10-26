@@ -40,6 +40,12 @@ namespace DaruDaru.Utilities
                    .Where(e => File.Exists(e))
                    .ToArray();
 
+        public static string[] GetDir(this IEnumerable<MaruPage> coll)
+            => coll.Select(e => e.DirPath)
+                   .Distinct()
+                   .Where(e => Directory.Exists(e))
+                   .ToArray();
+
         public static string[] GetUri(this IEnumerable<Comic> coll)
             => coll.Select(e => e.Uri.AbsoluteUri)
                    .Distinct()
