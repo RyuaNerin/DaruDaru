@@ -65,12 +65,6 @@ namespace DaruDaru.Marumaru.ComicInfo
             using (var wc = new WebClientEx())
                 success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args) );
 
-            if (!success || args.Images.Count == 0)
-            {
-                this.State = MaruComicState.Error_1_Error;
-                return false;
-            }
-
             if (args.IsProtected)
             {
                 this.State = MaruComicState.Error_2_Protected;
@@ -80,6 +74,12 @@ namespace DaruDaru.Marumaru.ComicInfo
             if (args.IsCaptcha)
             {
                 this.State = MaruComicState.Error_4_Captcha;
+                return false;
+            }
+
+            if (!success || args.Images.Count == 0)
+            {
+                this.State = MaruComicState.Error_1_Error;
                 return false;
             }
 
