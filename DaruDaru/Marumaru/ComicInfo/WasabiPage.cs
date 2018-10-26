@@ -166,7 +166,6 @@ namespace DaruDaru.Marumaru.ComicInfo
                         {
                             Index = args.Images.Count + 1,
                             ImageUri = imgUri,
-                            TempPath = Path.GetTempFileName()
                         });
                     }
                 }
@@ -194,7 +193,6 @@ namespace DaruDaru.Marumaru.ComicInfo
                         {
                             Index = args.Images.Count + 1,
                             ImageUri = imgUri,
-                            TempPath = Path.GetTempFileName()
                         });
                     }
                 }
@@ -211,6 +209,9 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 if (!File.Exists(this.ZipPath))
                 {
+                    foreach (var e in this.m_images)
+                        e.TempPath = Path.GetTempFileName();
+
                     if (!this.Download())
                     {
                         this.State = MaruComicState.Error_1_Error;
@@ -245,13 +246,18 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     foreach (var file in this.m_images)
                     {
-                        try
+                        if (file.TempPath != null)
                         {
-                            File.Delete(file.TempPath);
+                            try
+                            {
+                                File.Delete(file.TempPath);
+                            }
+                            catch
+                            {
+                            }
                         }
-                        catch
-                        {
-                        }
+
+                        file.TempPath = null;
                     }
 
                     this.m_images = null;
