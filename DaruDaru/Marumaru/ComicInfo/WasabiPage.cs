@@ -63,11 +63,12 @@ namespace DaruDaru.Marumaru.ComicInfo
             using (var wc = new WebClientEx())
                 success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
 
-            if (!success)
-            {
-                if (!args.IsError && args.Images.Count == 0)
-                    this.State = MaruComicState.Error_1_Error;
+            if (args.IsError)
+                return false;
 
+            if (!success || args.Images.Count == 0)
+            {
+                this.State = MaruComicState.Error_1_Error;
                 return false;
             }
 

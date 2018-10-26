@@ -48,7 +48,10 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             this.Title = args.Title;
 
-            if (!success || args.Archives.Count == 0)
+            if (!success)
+                return false;
+
+            if (args.Archives.Count == 0)
             {
                 this.State = MaruComicState.Error_1_Error;
                 return false;
