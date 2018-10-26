@@ -210,9 +210,8 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             int count = -1;
 
-            this.GetInfomationPriv(ref count);
-
-            MainWindow.Instance.WakeDownloader(count);
+            if (this.GetInfomationPriv(ref count))
+                MainWindow.Instance.WakeDownloader(count);
         }
 
         protected abstract bool GetInfomationPriv(ref int count);
