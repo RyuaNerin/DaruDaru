@@ -168,7 +168,13 @@ namespace DaruDaru.Core.Windows
                 else
                     this.m_isProtected = true;
 
-                this.ctlBrowser.InvokeScript("eval", "$(document).contextmenu(function(){return false;});");
+                try
+                {
+                    this.ctlBrowser.InvokeScript("eval", "$(document).contextmenu(function(){return false;});");
+                }
+                catch
+                {
+                }
 
                 doc.RemoveElementByClass("logo-top");
                 doc.RemoveElementById   ("header-anchor");
