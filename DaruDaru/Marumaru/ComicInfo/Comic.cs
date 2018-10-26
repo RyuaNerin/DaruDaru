@@ -32,6 +32,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         Error_2_Protected       = Error    + 2,
         Error_3_NotSupport      = Error    + 3,
         Error_4_Captcha         = Error    + 4,
+        Error_5_NotFound        = Error    + 5,
     }
 
     internal abstract class Comic : INotifyPropertyChanged
@@ -173,6 +174,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Error_2_Protected:       return "보호됨";
                     case MaruComicState.Error_3_NotSupport:      return "지원하지 않음";
                     case MaruComicState.Error_4_Captcha:         return "Captcha";
+                    case MaruComicState.Error_5_NotFound:        return "Not Found";
                 }
 
                 return null;

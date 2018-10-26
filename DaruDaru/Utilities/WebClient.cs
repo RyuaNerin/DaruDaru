@@ -87,8 +87,9 @@ namespace DaruDaru.Utilities
             return req;
         }
 
-        private Uri m_responseUri;
-        public Uri ResponseUri => this.m_responseUri;
+        public Uri ResponseUri { get; private set; }
+        public HttpStatusCode LastStatusCode { get; private set; }
+
         protected override WebResponse GetWebResponse(WebRequest request)
         {
             WebResponse res;
@@ -108,7 +109,9 @@ namespace DaruDaru.Utilities
 
             if (res is HttpWebResponse hres)
             {
-                this.m_responseUri = hres.ResponseUri;
+                this.ResponseUri = hres.ResponseUri;
+
+                this.LastStatusCode = hres.StatusCode;
             }
 
             return res;

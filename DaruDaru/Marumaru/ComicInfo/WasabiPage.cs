@@ -102,6 +102,11 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
             var body = wc.DownloadString(this.Uri);
+            if (wc.LastStatusCode == HttpStatusCode.NotFound)
+            {
+                this.State = MaruComicState.Error_5_NotFound;
+                return true;
+            }
 
             args.NewUri = wc.ResponseUri ?? this.Uri;
 
