@@ -27,7 +27,11 @@
                     Navigating="ctlBrowser_Navigating"
                     LoadCompleted="ctlBrowser_LoadCompleted"/>
 
-        <metro:ProgressRing IsActive="True"
-                            Visibility="{Binding ElementName=ctlBrowser, Path=Visibility, Converter={StaticResource InvertVisibilityConverter}}"/>
+        <StackPanel Visibility="{Binding ElementName=ctlBrowser, Path=Visibility, Converter={StaticResource InvertVisibilityConverter}}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <metro:ProgressRing IsActive="True" />
+            <TextBlock Text="로딩중입니다. 잠시만 기다려주세요." />
+        </StackPanel>
     </Grid>
 </metro:MetroWindow>
