@@ -190,6 +190,10 @@ namespace DaruDaru.Utilities
             
             public static int CompareTo(string x, string y)
             {
+                // 대소문자 구분 안함
+                x = x.ToUpper();
+                y = y.ToUpper();
+
                 int xindex, yindex;
                 int xlen, ylen;
                 float xint, yint;
@@ -197,6 +201,7 @@ namespace DaruDaru.Utilities
                 bool xIsNum , yIsNum;
                 bool xIsNumb, yIsNumb;
                 bool xb, yb;
+                bool xl, yl;
 
                 int i;
                 int k;
@@ -215,12 +220,15 @@ namespace DaruDaru.Utilities
 
                     else if (xIsNum && yIsNum)
                     {
-                        xint = float.Parse(x.Substring(xindex, xlen).Replace('-', '.'));
-                        yint = float.Parse(y.Substring(yindex, ylen).Replace('-', '.'));
+                        xint = float.Parse(x.Substring(xindex, xlen));
+                        yint = float.Parse(y.Substring(yindex, ylen));
                         c = xint.CompareTo(yint);
                     }
                     else
                     {
+                        // ex)
+                        // 만화 1화
+                        // 만화 1-1화
                         if (!xIsNum  && !yIsNum &&
                              xIsNumb &&  yIsNumb)
                         {
@@ -229,23 +237,26 @@ namespace DaruDaru.Utilities
 
                             if ( xb && !yb) return  1;
                             if (!xb &&  yb) return -1;
+                        }
 
+                        // ex)
+                        // [단편] 만화
+                        // 만화
+                        if (x[xindex] < 128 && y[yindex] < 128)
+                        {
+                            xl = char.IsLetterOrDigit(x[xindex]);
+                            yl = char.IsLetterOrDigit(y[yindex]);
+
+                            if ( xl && !yl) return  1;
+                            if (!xl &&  yl) return -1;
                         }
 
                         k = Math.Min(xlen, ylen);
-                        c = 0;
                         for (i = 0; i < k; ++i)
-                        {
                             if (x[xindex + i] != y[yindex + i])
-                            {
-                                c = x[xindex + i].CompareTo(y[yindex + i]);
-                                break;
-                            }
-                        }
+                                return x[xindex + i].CompareTo(y[yindex + i]);
 
-                        if (c == 0)
-                            c = xlen.CompareTo(ylen);
-
+                        c = xlen.CompareTo(ylen);
                     }
 
                     if (c != 0)
