@@ -97,6 +97,7 @@
     <Compile Include="Config\ConfigCur.cs" />
     <Compile Include="Config\Entries\ArchiveEntry.cs" />
     <Compile Include="Core\Converters\InvertVisibility.cs" />
+    <Compile Include="Core\Converters\SelectedTextConverter.cs" />
     <Compile Include="Utilities\CollectionHelper.cs" />
     <Compile Include="Config\Entries\MarumaruEntry.cs" />
     <Compile Include="Config\IEntry.cs" />

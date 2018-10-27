@@ -1,8 +1,11 @@
 <ResourceDictionary  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:cvt="clr-namespace:DaruDaru.Core.Converters"
                      xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                      xmlns:util="clr-namespace:DaruDaru.Utilities"
                      xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro">
+    <cvt:SelectedTextConverter x:Key="SelectedTextConverter" />
+
     <ControlTemplate x:Key="ViewerTemplate"
                      TargetType="{x:Type local:BaseControl}">
         <ControlTemplate.Resources>
@@ -74,6 +77,21 @@
                       View="{Binding ListView, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
                       ContextMenu="{Binding ListContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}"
                       ItemsSource="{Binding ListItemSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BaseControl}}}" />
+
+            <TextBlock Grid.Row="1"
+                       Grid.ColumnSpan="2"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom"
+                       Margin="0 0 15 0"
+                       Foreground="{StaticResource GrayNormalBrush}"
+                       IsHitTestVisible="False">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource SelectedTextConverter}">
+                        <Binding ElementName="PART_ListView" Path="Items.Count" />
+                        <Binding ElementName="PART_ListView" Path="SelectedItems.Count" />
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
         </Grid>
     </ControlTemplate>
 </ResourceDictionary>
