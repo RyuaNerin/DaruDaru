@@ -261,7 +261,6 @@ namespace DaruDaru.Utilities
                 return x.Length - y.Length;
             }
 
-            static bool isExt(char x) => x == '.' || x == '-';
             static int GetPartLength(string x, int startIndex, out bool xIsNumber)
             {
                 xIsNumber = char.IsDigit(x[startIndex]);
