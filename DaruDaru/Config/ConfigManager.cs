@@ -133,7 +133,7 @@ namespace DaruDaru.Config
         private int m_workerCount = WorkerCountDefault;
         public int WorkerCount
         {
-            get => this.m_workerCount;
+            get => this.m_workerCount > 0 ? this.m_workerCount : (this.m_workerCount = WorkerCountDefault);
             set
             {
                 this.m_workerCount = value;
