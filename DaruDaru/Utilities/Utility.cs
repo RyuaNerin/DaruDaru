@@ -42,10 +42,6 @@ namespace DaruDaru.Utilities
                     if (action())
                         return true;
                 }
-                catch (MaruSystemException)
-                {
-                    Thread.Sleep(30 * 1000);
-                }
                 catch (WebException ex)
                 {
                     if (ex.Response is HttpWebResponse hres)

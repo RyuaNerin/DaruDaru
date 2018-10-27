@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
@@ -128,7 +127,10 @@ namespace DaruDaru.Marumaru.ComicInfo
             catch (Exception ex)
             {
                 if (doc.DocumentNode.InnerHtml.Contains("서비스 점검"))
-                    throw new MaruSystemException();
+                {
+                    this.State = MaruComicState.Error_6_520;
+                    return true;
+                }
                 else
                     throw ex;
             }
