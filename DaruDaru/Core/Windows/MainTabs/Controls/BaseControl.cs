@@ -292,7 +292,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
         private string m_filterString;
         private bool Filter(object item)
         {
-            if (this.m_filterMode == FileterModes.NoFilter)
+            if (this.m_filterMode == FileterModes.NoFilter || this.m_filterString == null)
                 return true;
 
             var entry = (IEntry)item;
