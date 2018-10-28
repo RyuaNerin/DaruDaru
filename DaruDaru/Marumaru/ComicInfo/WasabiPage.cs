@@ -34,7 +34,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
 
         private ImageInfomation[] m_images;
-
+        
         public string ZipPath { get; set; }
 
         public string ArchiveCode => DaruUriParser.Archive.GetCode(this.Uri);
@@ -205,37 +205,69 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             this.ZipPath = Path.Combine(this.ConfigCur.SavePath, Utility.ReplaceInvalid(this.Title), Utility.ReplaceInvalid(this.TitleWithNo) + ".zip");
 
+            var tempPath = Path.GetTempFileName();
+
             try
             {
-                if (!File.Exists(this.ZipPath))
-                {
-                    foreach (var e in this.m_images)
-                        e.TempPath = Path.GetTempFileName();
+                foreach (var e in this.m_images)
+                    e.TempPath = Path.GetTempFileName();
 
-                    if (!this.Download())
+                if (!this.Download())
+                {
+                    this.State = MaruComicState.Error_1_Error;
+                    return;
+                }
+
+                this.State = MaruComicState.Working_4_Compressing;
+                this.Compress(tempPath);
+
+                bool fileMode = true;
+                if (File.Exists(this.ZipPath))
+                {
+                    string comment = null;
+
+                    try
                     {
-                        this.State = MaruComicState.Error_1_Error;
-                        return;
+                        using (var fs = new FileStream(this.ZipPath, FileMode.Open, FileAccess.Read))
+                        using (var zf = new ZipFile(fs))
+                        {
+                            if (!string.IsNullOrWhiteSpace(zf.ZipFileComment))
+                                comment = zf.ZipFileComment;
+                        }
+                    }
+                    catch
+                    {
                     }
 
-                    this.State = MaruComicState.Working_4_Compressing;
-                    this.Compress();
-                    this.SpeedOrFileSize = Utility.ToEICFormat(new FileInfo(this.ZipPath).Length);
-
-                    this.State = MaruComicState.Complete_1_Downloaded;
-
-                    // 디렉토리 수정시간 업데이트
-                    Directory.SetCreationTime(this.ZipPath, DateTime.Now);
-                    Directory.SetLastWriteTime(this.ZipPath, DateTime.Now);
-                    Directory.SetLastAccessTime(this.ZipPath, DateTime.Now);
+                    if (
+                        new FileInfo(this.ZipPath).Length == new FileInfo(tempPath).Length ||
+                        (
+                            comment != null &&
+                            Utility.TryCreateUri(comment.Split('\n')[0], out Uri uri) &&
+                            DaruUriParser.Archive.GetCode(uri) == this.ArchiveCode
+                        ))
+                    {
+                        fileMode = false;
+                        this.State = MaruComicState.Complete_2_Archived;
+                    }
                 }
-                else
-                    this.State = MaruComicState.Complete_2_Archived;
+                if (fileMode)
+                {
+                    MoveFile(tempPath, this.ZipPath);
+                    this.SpeedOrFileSize = Utility.ToEICFormat(new FileInfo(this.ZipPath).Length);
+                    this.State = MaruComicState.Complete_1_Downloaded;
+                }
+                
+                // 디렉토리 수정시간 업데이트
+                Directory.SetCreationTime(this.ZipPath, DateTime.Now);
+                Directory.SetLastWriteTime(this.ZipPath, DateTime.Now);
+                Directory.SetLastAccessTime(this.ZipPath, DateTime.Now);
                 
                 ArchiveManager.UpdateArchive(this.ArchiveCode, this.TitleWithNo, this.ZipPath);
             }
             catch (Exception ex)
             {
+                this.SpeedOrFileSize = null;
                 this.State = MaruComicState.Error_1_Error;
 
                 CrashReport.Error(ex);
@@ -262,7 +294,63 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     this.m_images = null;
                 }
+
+                try
+                {
+                    File.Delete(tempPath);
+                }
+                catch
+                {
+                }
             }
+        }
+
+        private static string MoveFile(string orig, string dest)
+        {
+            var dir = Directory.CreateDirectory(Path.GetDirectoryName(dest)).FullName;
+            dest = Path.Combine(dir, Path.GetFileName(dest));
+
+            try
+            {
+                File.Move(orig, dest);
+            }
+            catch (IOException)
+            {
+                var i = 2;
+                string newZipPath;
+
+                do
+                {
+                    newZipPath = Path.Combine(
+                        dir,
+                        string.Format(
+                            "{0} ({1}){2}",
+                            Path.GetFileNameWithoutExtension(dest),
+                            i++,
+                            Path.GetExtension(dest))
+                        );
+
+                    try
+                    {
+                        File.Move(orig, newZipPath);
+                        dest = newZipPath;
+                        break;
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (Exception e)
+                    {
+                        throw e;
+                    }
+                } while (true);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return dest;
         }
 
         private long m_downloaded;
@@ -335,18 +423,15 @@ namespace DaruDaru.Marumaru.ComicInfo
             return true;
         }
 
-        private void Compress()
+        private void Compress(string tempPath)
         {
             var padLength = Math.Min(3, this.m_images.Length.ToString().Length);
 
-            var dir = Path.GetDirectoryName(this.ZipPath);
-            dir = Directory.CreateDirectory(dir).FullName;
-
-            this.ZipPath = Path.Combine(dir, Path.GetFileName(this.ZipPath));
-
-            using (var zipFile = new FileStream(this.ZipPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var zipFile = new FileStream(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var zipStream = new ZipOutputStream(zipFile))
             {
+                zipFile.SetLength(0);
+
                 zipStream.SetComment(this.Uri.AbsoluteUri + "\nby DaruDaru");
                 zipStream.SetLevel(0);
 
