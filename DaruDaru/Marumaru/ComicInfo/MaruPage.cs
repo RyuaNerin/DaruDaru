@@ -29,6 +29,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         private struct Args
         {
             public List<Links>  Archives;
+            public List<string> ArchiveCodes;
             public Uri          NewUri;
             public string       MaruCode;
             public string       Title;
@@ -38,17 +39,18 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             var args = new Args
             {
-                Archives = new List<Links>()
+                Archives = new List<Links>(),
+                ArchiveCodes = new List<string>(),
             };
 
             bool success;
             using (var wc = new WebClientEx())
                 success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
 
-            this.Title = args.Title;
-
             if (!success)
                 return false;
+
+            this.Title = args.Title;
 
             if (args.Archives.Count == 0)
             {
@@ -60,7 +62,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             try
             {
-                ArchiveManager.UpdateMarumaru(args.MaruCode, this.Title, args.Archives.Select(e => DaruUriParser.Archive.GetCode(e.Uri)).ToArray(), args.IsFinished);
+                ArchiveManager.UpdateMarumaru(args.MaruCode, this.Title, args.ArchiveCodes.ToArray(), args.IsFinished);
 
                 IEnumerable<Links> items = args.Archives;
 
@@ -103,22 +105,23 @@ namespace DaruDaru.Marumaru.ComicInfo
             return false;
         }
 
-        private bool GetInfomationWorker(WebClientEx wc, ref Args args)
+        private bool GetHtml(WebClientEx wc, Uri uri, ref Args args, out HtmlNode rcontent, out HtmlNode vcontent)
         {
-            var body = wc.DownloadString(this.Uri);
+            rcontent = null;
+            vcontent = null;
+
+            var body = wc.DownloadString(uri);
             if ((int)wc.LastStatusCode == 520)
             {
                 this.State = MaruComicState.Error_6_520;
-                return true;
+                return false;
             }
+            args.NewUri = wc.ResponseUri ?? this.Uri;
+            args.MaruCode = DaruUriParser.Marumaru.GetCode(uri);
 
             var doc = new HtmlDocument();
             doc.LoadHtml(body);
-            args.NewUri = wc.ResponseUri ?? this.Uri;
-            args.MaruCode = DaruUriParser.Marumaru.GetCode(args.NewUri);
 
-            HtmlNode rcontent = null;
-            HtmlNode vcontent = null;
             try
             {
                 rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
@@ -129,16 +132,21 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (doc.DocumentNode.InnerHtml.Contains("서비스 점검"))
                 {
                     this.State = MaruComicState.Error_6_520;
-                    return true;
+                    return false;
                 }
                 else
                     throw ex;
             }
 
-            args.Title = Utility.ReplcaeHtmlTag(rcontent.SelectSingleNode(".//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
-
+            return true;
+        }
+        private bool GetInfomationWorker(WebClientEx wc, ref Args args)
+        {
+            HtmlNode rcontent, vcontent;
+            if (!this.GetHtml(wc, this.Uri, ref args, out rcontent, out vcontent))
+                return false;
+            
             var isMangaup = false;
-            string titleNo;
 
             args.Archives.Clear();
             foreach (var a in vcontent.SelectNodes(".//a[@href]"))
@@ -156,14 +164,18 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     if (DaruUriParser.Archive.CheckUri(a_uri))
                     {
-                        titleNo = a.InnerText;
+                        var titleNo = a.InnerText;
 
                         if (!string.IsNullOrWhiteSpace(titleNo))
+                        {
                             args.Archives.Add(new Links
                             {
                                 Uri = a_uri,
                                 TitleNo = Utility.ReplcaeHtmlTag(a.InnerText)
                             });
+
+                            args.ArchiveCodes.Add(DaruUriParser.Archive.GetCode(a_uri));
+                        }
                     }
                     else if (DaruUriParser.Marumaru.CheckUri(a_uri))
                     {
@@ -172,29 +184,56 @@ namespace DaruDaru.Marumaru.ComicInfo
                             isMangaup = true;
                             args.NewUri = a_uri;
                         }
-                        else
-                        {
-                            if (DaruUriParser.Marumaru.GetCode(a_uri) == args.MaruCode)
-                            {
-                                var innerText = Utility.ReplcaeHtmlTag(a.InnerText);
+                    }
+                    else if (DaruUriParser.Marumaru.GetCode(a_uri) == args.MaruCode)
+                    {
+                        var innerText = Utility.ReplcaeHtmlTag(a.InnerText);
 
-                                if (innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]"))
-                                    args.IsFinished = true;
-                            }
-                        }
+                        if (innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]"))
+                            args.IsFinished = true;
                     }
                 }
             }
 
             if (isMangaup)
             {
-                doc.LoadHtml(wc.DownloadString(args.NewUri));
+                if (!this.GetHtml(wc, args.NewUri, ref args, out rcontent, out vcontent))
+                    return false;
 
-                rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
+                args.ArchiveCodes.Clear();
+                args.IsFinished = false;
 
-                args.Title = Utility.ReplcaeHtmlTag(rcontent.SelectSingleNode(".//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
+                foreach (var a in vcontent.SelectNodes(".//a[@href]"))
+                {
+                    var href = a.Attributes["href"].Value;
+                    if (href == "#")
+                        continue;
+
+                    if (Utility.TryCreateUri(args.NewUri, href, out Uri a_uri))
+                    {
+                        if (!DaruUriParser.Archive.CheckUri(a_uri) &&
+                            !DaruUriParser.Marumaru.CheckUri(a_uri) &&
+                            !Utility.ResolvUri(a_uri, out a_uri))
+                            continue;
+
+                        if (DaruUriParser.Archive.CheckUri(a_uri))
+                        {
+                            if (!string.IsNullOrWhiteSpace(a.InnerText))
+                                args.ArchiveCodes.Add(DaruUriParser.Archive.GetCode(a_uri));
+                        }
+                        else if (DaruUriParser.Marumaru.GetCode(a_uri) == args.MaruCode)
+                        {
+                            var innerText = Utility.ReplcaeHtmlTag(a.InnerText);
+
+                            if (innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]"))
+                                args.IsFinished = true;
+                        }
+                    }
+                }
             }
 
+
+            args.Title = Utility.ReplcaeHtmlTag(rcontent.SelectSingleNode(".//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
             return true;
         }
     }
