@@ -203,7 +203,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         protected override void StartDownloadPriv()
         {
-            this.ZipPath = Path.Combine(this.ConfigCur.SavePath, Utility.ReplaceInvalid(this.Title), Utility.ReplaceInvalid(this.TitleWithNo) + ".zip");
+            this.ZipPath = Path.Combine(new DirectoryInfo(Path.Combine(this.ConfigCur.SavePath, Utility.ReplaceInvalid(this.Title))).FullName, Utility.ReplaceInvalid(this.TitleWithNo) + ".zip");
 
             var tempPath = Path.GetTempFileName();
 
