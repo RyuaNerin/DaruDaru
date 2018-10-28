@@ -140,5 +140,43 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             this.ctlConfigDownloadProtected.IsEnabled = false;
         }
+
+        private async void ctlRemoveDuplicatedArchive_Click(object sender, RoutedEventArgs e)
+        {
+            var setting = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "삭제",
+                NegativeButtonText = "취소",
+                DefaultButtonFocus = MessageDialogResult.Negative
+            };
+
+            if (await MainWindow.Instance.ShowMessageBox("파일명이 겹친 만화들을 모두 삭제할까요?\n이 작업은 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
+                == MessageDialogResult.Affirmative)
+            {
+                ArchiveManager.ClearDuplicatedFileName();
+                ConfigManager.Save();
+
+                MainWindow.Instance.ShowMessageBox("중복으로 추정되는 만화들을 모두 지웠어요!", 5000);
+            }
+        }
+
+        private async void ctlRemoveDuplicatedLink_Click(object sender, RoutedEventArgs e)
+        {
+            var setting = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "삭제",
+                NegativeButtonText = "취소",
+                DefaultButtonFocus = MessageDialogResult.Negative
+            };
+
+            if (await MainWindow.Instance.ShowMessageBox("같은 링크가 두번 이상 등록되 있는 문제를 수정할까요?\n이 작업은 되돌릴 수 없어요", MessageDialogStyle.AffirmativeAndNegative, setting)
+                == MessageDialogResult.Affirmative)
+            {
+                ArchiveManager.ClearDuplicatedLink();
+                ConfigManager.Save();
+
+                MainWindow.Instance.ShowMessageBox("두번 이상 등록된 링크들을 정리했어요!", 5000);
+            }
+        }
     }
 }

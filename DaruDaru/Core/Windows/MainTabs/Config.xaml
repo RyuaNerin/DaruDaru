@@ -145,16 +145,25 @@
             </GroupBox>
 
             <GroupBox Header="기록 삭제">
-                <StackPanel>
-                    <Button Content="다운로드 기록 삭제"
-                            Margin="0 5 0 0"
-                            Click="ctlConfigClearDownload_Click" />
-                </StackPanel>
+                <Button Content="모든 다운로드 기록 삭제"
+                        Click="ctlConfigClearDownload_Click" />
             </GroupBox>
 
             <TextBlock Text="CopyRight (C) By RyuaNerin"
+                       Margin="0 0 0 30"
                        HorizontalAlignment="Stretch"
                        TextAlignment="Center" />
+
+            <GroupBox Header="응급 도구">
+                <StackPanel>
+                    <Button Content="파일명 겹친 만화 삭제"
+                            Margin="0 0 0 5"
+                            Click="ctlRemoveDuplicatedArchive_Click"/>
+
+                    <Button Content="같은 마루마루 링크 삭제"
+                            Click="ctlRemoveDuplicatedLink_Click"/>
+                </StackPanel>
+            </GroupBox>
         </StackPanel>
     </ScrollViewer>
 </ContentControl>

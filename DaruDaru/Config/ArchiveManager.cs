@@ -235,5 +235,27 @@ namespace DaruDaru.Config
                 foreach (var item in MarumaruLinks)
                     item.RecalcCompleted();
         }
+
+        public static void ClearDuplicatedFileName()
+        {
+            lock (Archives)
+            {
+                var codes = Archives.GroupBy(e => e.ZipPath).Where(e => e.Count() > 1).SelectMany(e => e).Select(e => e.ArchiveCode).ToArray();
+
+                RemoveArchives(codes, true);
+            }
+        }
+
+        public static void ClearDuplicatedLink()
+        {
+            lock (MarumaruLinks)
+            {
+                foreach (var e in MarumaruLinks.GroupBy(le => le.Title).Where(le => le.Count() > 1).Where(le => le.Any(lee => lee.ArchiveCodes.Length == 1)))
+                {
+                    foreach (var ee in e.OrderByDescending(le => le.ArchiveCodes.Length).Skip(1))
+                        MarumaruLinks.Remove(ee);
+                }
+            }
+        }
     }
 }
