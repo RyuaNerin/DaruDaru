@@ -51,7 +51,7 @@ namespace DaruDaru.Core.Windows
 
         public void Dispose()
         {
-            this.Dispose(false);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
