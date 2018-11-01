@@ -34,6 +34,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string       MaruCode;
             public string       Title;
             public bool         IsFinished;
+            public bool         OccurredError;
         }
         protected override bool GetInfomationPriv(ref int count)
         {
@@ -43,22 +44,21 @@ namespace DaruDaru.Marumaru.ComicInfo
                 ArchiveCodes = new List<string>(),
             };
 
-            bool success;
+            bool retrySuccess;
             using (var wc = new WebClientEx())
-                success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
+                retrySuccess = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
 
-            if (!success)
+            if (args.OccurredError)
                 return false;
 
-            this.Title = args.Title;
-
-            if (args.Archives.Count == 0)
+            if (!retrySuccess || args.ArchiveCodes.Count == 0 || args.Archives.Count == 0)
             {
                 this.State = MaruComicState.Error_1_Error;
                 return false;
             }
 
-            this.Uri = args.NewUri;
+            this.Title = args.Title;
+            this.Uri   = args.NewUri;
 
             try
             {
@@ -113,6 +113,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             var body = wc.DownloadString(uri);
             if ((int)wc.LastStatusCode == 520)
             {
+                args.OccurredError = true;
                 this.State = MaruComicState.Error_6_520;
                 return false;
             }
@@ -127,6 +128,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             if (rcontent == null || vcontent == null)
             {
+                args.OccurredError = true;
                 if (doc.DocumentNode.InnerHtml.Contains("서비스 점검"))
                     this.State = MaruComicState.Error_6_520;
 
@@ -139,11 +141,13 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             HtmlNode rcontent, vcontent;
             if (!this.GetHtml(wc, this.Uri, ref args, out rcontent, out vcontent))
-                return false;
+                return true;
             
             var isMangaup = false;
 
             args.Archives.Clear();
+            args.ArchiveCodes.Clear();
+
             foreach (var a in vcontent.SelectNodes(".//a[@href]"))
             {
                 var href = a.Attributes["href"].Value;
@@ -193,9 +197,9 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 if (!this.GetHtml(wc, args.NewUri, ref args, out rcontent, out vcontent))
                     return false;
-
-                args.ArchiveCodes.Clear();
+                
                 args.IsFinished = false;
+                args.ArchiveCodes.Clear();
 
                 foreach (var a in vcontent.SelectNodes(".//a[@href]"))
                 {
@@ -225,8 +229,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                 }
             }
 
-
             args.Title = Utility.ReplcaeHtmlTag(rcontent.SelectSingleNode(".//div[@class='subject']").InnerText.Replace("\n", "")).Trim();
+
             return true;
         }
     }

@@ -50,7 +50,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             public List<ImageInfomation> Images;
             public Uri                   NewUri;
-            public bool                 IsError;
+            public bool                  OccurredError;
         }
         protected override bool GetInfomationPriv(ref int count)
         {
@@ -59,14 +59,14 @@ namespace DaruDaru.Marumaru.ComicInfo
                 Images = new List<ImageInfomation>()
             };
 
-            bool success;
+            bool retrySuccess;
             using (var wc = new WebClientEx())
-                success = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
+                retrySuccess = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
 
-            if (args.IsError)
+            if (args.OccurredError)
                 return false;
 
-            if (!success || args.Images.Count == 0)
+            if (!retrySuccess)
             {
                 this.State = MaruComicState.Error_1_Error;
                 return false;
@@ -93,7 +93,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             var body = wc.DownloadString(this.Uri);
             if (wc.LastStatusCode == HttpStatusCode.NotFound)
             {
-                args.IsError = true;
+                args.OccurredError = true;
                 this.State = MaruComicState.Error_5_NotFound;
                 return true;
             }
@@ -134,14 +134,14 @@ namespace DaruDaru.Marumaru.ComicInfo
                         if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null ||
                             doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
                         {
-                            args.IsError = true;
+                            args.OccurredError = true;
                             this.State = MaruComicState.Error_4_Captcha;
                             return true;
                         }
                     }
                     else
                     {
-                        args.IsError = true;
+                        args.OccurredError = true;
                         this.State = MaruComicState.Error_4_Captcha;
                         return true;
                     }
@@ -149,7 +149,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 else
                 {
                     // 실제로 암호걸린 파일
-                    args.IsError = true;
+                    args.OccurredError = true;
                     this.State = MaruComicState.Error_2_Protected;
                     return true;
                 }
