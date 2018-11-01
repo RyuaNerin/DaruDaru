@@ -121,21 +121,16 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             var doc = new HtmlDocument();
             doc.LoadHtml(body);
+            
+            rcontent = doc.DocumentNode.SelectSingleNode( "//div[@id='rcontent']");
+            vcontent = rcontent?       .SelectSingleNode(".//div[@id='vContent']");
 
-            try
-            {
-                rcontent = doc.DocumentNode.SelectSingleNode("//div[@id='rcontent']");
-                vcontent = rcontent.SelectSingleNode(".//div[@id='vContent']");
-            }
-            catch (Exception ex)
+            if (rcontent == null || vcontent == null)
             {
                 if (doc.DocumentNode.InnerHtml.Contains("서비스 점검"))
-                {
                     this.State = MaruComicState.Error_6_520;
-                    return false;
-                }
-                else
-                    throw ex;
+
+                return false;
             }
 
             return true;
