@@ -184,8 +184,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         var innerText = Utility.ReplcaeHtmlTag(a.InnerText);
 
-                        if (innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]"))
-                            args.IsFinished = true;
+                        args.IsFinished = innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]");
                     }
                 }
             }
@@ -220,8 +219,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         {
                             var innerText = Utility.ReplcaeHtmlTag(a.InnerText);
 
-                            if (innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]"))
-                                args.IsFinished = true;
+                            args.IsFinished = innerText.StartsWith("[완결]") || innerText.StartsWith("[단편]");
                         }
                     }
                 }
