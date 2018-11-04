@@ -131,6 +131,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                 args.OccurredError = true;
                 if (doc.DocumentNode.InnerHtml.Contains("서비스 점검"))
                     this.State = MaruComicState.Error_6_520;
+                else
+                    this.State = MaruComicState.Error_1_Error;
 
                 return false;
             }
