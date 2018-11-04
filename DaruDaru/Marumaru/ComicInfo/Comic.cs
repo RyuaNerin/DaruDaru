@@ -54,7 +54,9 @@ namespace DaruDaru.Marumaru.ComicInfo
             this.Uri   = uri;
             this.Title = title;
         }
-        
+
+        private readonly object WorkingLock = new object();
+
         protected internal ConfigCur ConfigCur { get; private set; }
 
         /// <summary>새 작품 검색하기로 추가된 경우</summary>
@@ -107,7 +109,20 @@ namespace DaruDaru.Marumaru.ComicInfo
             }
         }
 
-        public bool IsRunning  => this.State.HasFlag(MaruComicState.Working);
+        public bool IsRunning
+        {
+            get
+            {
+                if (!Monitor.TryEnter(this.WorkingLock, 0))
+                    return false;
+                else
+                {
+                    Monitor.Exit(this.WorkingLock);
+                    return true;
+                }
+            }
+        }
+
         public bool IsError    => this.State.HasFlag(MaruComicState.Error);
         public bool IsComplete => this.State.HasFlag(MaruComicState.Complete);
 
@@ -205,8 +220,12 @@ namespace DaruDaru.Marumaru.ComicInfo
         public void GetInfomation()
         {
             int count = -1;
+            bool res;
 
-            if (this.GetInfomationPriv(ref count))
+            lock (this.WorkingLock)
+                res = this.GetInfomationPriv(ref count);
+
+            if (res)
                 MainWindow.Instance.WakeDownloader(count);
         }
 
@@ -214,7 +233,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         public void StartDownload()
         {
-            this.StartDownloadPriv();
+            lock (this.WorkingLock)
+                this.StartDownloadPriv();
 
             MainWindow.Instance.WakeDownloader(1);
             MainWindow.Instance.UpdateTaskbarProgress();
