@@ -158,7 +158,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     if (!DaruUriParser.Archive.CheckUri(a_uri) &&
                         !DaruUriParser.Marumaru.CheckUri(a_uri) &&
-                        !Utility.ResolvUri(a_uri, out a_uri))
+                        (   a_uri.Host != "marumaru.in" &&
+                            a_uri.Host != "wasabisyrup.com" &&
+                            !Utility.ResolvUri(a_uri, out a_uri)))
                         continue;
 
                     if (DaruUriParser.Archive.CheckUri(a_uri))
@@ -211,7 +213,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         if (!DaruUriParser.Archive.CheckUri(a_uri) &&
                             !DaruUriParser.Marumaru.CheckUri(a_uri) &&
-                            !Utility.ResolvUri(a_uri, out a_uri))
+                            (   a_uri.Host != "marumaru.in" &&
+                                a_uri.Host != "wasabisyrup.com" &&
+                                !Utility.ResolvUri(a_uri, out a_uri)))
                             continue;
 
                         if (DaruUriParser.Archive.CheckUri(a_uri))
