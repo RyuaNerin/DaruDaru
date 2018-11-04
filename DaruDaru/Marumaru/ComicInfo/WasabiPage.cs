@@ -41,10 +41,10 @@ namespace DaruDaru.Marumaru.ComicInfo
         
         private class ImageInfomation
         {
-            public int Index;
-            public Uri ImageUri;
-            public string TempPath;
-            public string Extension;
+            public int          Index;
+            public Uri          ImageUri;
+            public FileStream   TempStream;
+            public string       Extension;
         }
         private struct GetInfomationArgs
         {
@@ -205,18 +205,20 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             this.ZipPath = Path.Combine(new DirectoryInfo(Path.Combine(this.ConfigCur.SavePath, Utility.ReplaceInvalid(this.Title))).FullName, Utility.ReplaceInvalid(this.TitleWithNo) + ".zip");
 
-            var tempPath = Path.GetTempFileName();
+            string tempPath = null;
 
             try
             {
                 foreach (var e in this.m_images)
-                    e.TempPath = Path.GetTempFileName();
+                    e.TempStream = new FileStream(Path.GetTempFileName(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
 
                 if (!this.Download())
                 {
                     this.State = MaruComicState.Error_1_Error;
                     return;
                 }
+
+                tempPath = Path.GetTempFileName();
 
                 this.State = MaruComicState.Working_4_Compressing;
                 this.Compress(tempPath);
@@ -277,20 +279,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (this.m_images != null)
                 {
                     foreach (var file in this.m_images)
-                    {
-                        if (file.TempPath != null)
-                        {
-                            try
-                            {
-                                File.Delete(file.TempPath);
-                            }
-                            catch
-                            {
-                            }
-                        }
-
-                        file.TempPath = null;
-                    }
+                        if (file.TempStream != null)
+                            file.TempStream.Dispose();
 
                     this.m_images = null;
                 }
@@ -401,22 +391,21 @@ namespace DaruDaru.Marumaru.ComicInfo
             using (var res = req.GetResponse() as HttpWebResponse)
             using (var resBody = res.GetResponseStream())
             {
-                using (var fileStream = new FileStream(e.TempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                e.TempStream.SetLength(0);
+
+                var buff = new byte[4096];
+                int read;
+
+                while ((read = resBody.Read(buff, 0, 4096)) > 0)
                 {
-                    var buff = new byte[4096];
-                    int read;
-
-                    while ((read = resBody.Read(buff, 0, 4096)) > 0)
-                    {
-                        Interlocked.Add(ref this.m_downloaded, read);
-                        fileStream.Write(buff, 0, read);
-                    }
-
-                    fileStream.Flush();
-
-                    fileStream.Position = 0;
-                    e.Extension = Signatures.GetExtension(fileStream);
+                    Interlocked.Add(ref this.m_downloaded, read);
+                    e.TempStream.Write(buff, 0, read);
                 }
+
+                e.TempStream.Flush();
+
+                e.TempStream.Position = 0;
+                e.Extension = Signatures.GetExtension(e.TempStream);
             }
 
             this.IncrementProgress();
@@ -446,9 +435,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     zipStream.PutNextEntry(entry);
 
-                    using (var fileStream = File.OpenRead(file.TempPath))
-                        while ((read = fileStream.Read(buff, 0, 4096)) > 0)
-                            zipStream.Write(buff, 0, read);
+                    while ((read = file.TempStream.Read(buff, 0, 4096)) > 0)
+                        zipStream.Write(buff, 0, read);
                 }
 
                 zipFile.Flush();
