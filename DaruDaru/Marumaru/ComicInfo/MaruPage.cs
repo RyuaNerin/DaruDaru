@@ -139,7 +139,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             HtmlNode rcontent, vcontent;
             if (!this.GetHtml(wc, this.Uri, ref args, out rcontent, out vcontent))
-                return true;
+                return false;
             
             var isMangaup = false;
 
