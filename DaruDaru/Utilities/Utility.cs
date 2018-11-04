@@ -44,13 +44,16 @@ namespace DaruDaru.Utilities
                 }
                 catch (WebException ex)
                 {
-                    if (ex.Response is HttpWebResponse hres)
+                    if (ex.Response != null)
                     {
-                        if ((int)hres.StatusCode == 429)
-                            Thread.Sleep(30 * 1000);
-                    }
+                        if (ex.Response is HttpWebResponse hres)
+                        {
+                            if ((int)hres.StatusCode == 429)
+                                Thread.Sleep(30 * 1000);
+                        }
 
-                    ex.Response.Dispose();
+                        ex.Response.Dispose();
+                    }
                 }
                 catch (SocketException)
                 {
