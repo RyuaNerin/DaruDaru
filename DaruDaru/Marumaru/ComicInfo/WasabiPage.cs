@@ -406,6 +406,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 e.TempStream.Position = 0;
                 e.Extension = Signatures.GetExtension(e.TempStream);
+
+                e.TempStream.Position = 0;
             }
 
             this.IncrementProgress();
