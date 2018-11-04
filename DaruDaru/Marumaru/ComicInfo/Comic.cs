@@ -114,11 +114,11 @@ namespace DaruDaru.Marumaru.ComicInfo
             get
             {
                 if (!Monitor.TryEnter(this.WorkingLock, 0))
-                    return false;
+                    return true;
                 else
                 {
                     Monitor.Exit(this.WorkingLock);
-                    return true;
+                    return false;
                 }
             }
         }
