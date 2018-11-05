@@ -284,5 +284,10 @@ namespace DaruDaru.Core.Windows
             uri = null;
             return false;
         }
+
+        public void ShowNotEnoughDiskSpace()
+        {
+            DialogManager.ShowMessageAsync(this, null, "디스크 공간이 부족합니다!", MessageDialogStyle.Affirmative);
+        }
     }
 }

@@ -27,5 +27,7 @@ namespace DaruDaru.Core.Windows
         void ShowMessageBox(string message, int timeOut);
 
         Task<bool> ShowMassageBoxTooMany();
+
+        void ShowNotEnoughDiskSpace();
     }
 }

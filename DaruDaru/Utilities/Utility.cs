@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using DaruDaru.Core;
+using DaruDaru.Core.Windows;
 using DaruDaru.Marumaru.ComicInfo;
 
 namespace DaruDaru.Utilities
@@ -33,6 +34,9 @@ namespace DaruDaru.Utilities
                                                           .Replace("&copy;", "©")
                                                           .Replace("&reg;", "®");
 
+        private const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
+        private const int HR_ERROR_DISK_FULL        = unchecked((int)0x80070070);
+
         public static bool Retry(Func<bool> action, int retries = 3)
         {
             do
@@ -54,6 +58,11 @@ namespace DaruDaru.Utilities
 
                         ex.Response.Dispose();
                     }
+                }
+                // 디스크 공간 부족
+                catch (IOException ex) when (ex.HResult == HR_ERROR_DISK_FULL || ex.HResult == HR_ERROR_HANDLE_DISK_FULL)
+                {
+                    MainWindow.Instance.ShowNotEnoughDiskSpace();
                 }
                 catch (SocketException)
                 {
