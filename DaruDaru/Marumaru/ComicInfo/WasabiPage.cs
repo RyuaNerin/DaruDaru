@@ -295,6 +295,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             }
         }
 
+        private const int HR_ERROR_FILE_EXISTS = unchecked((int)0x80070050);
         private static string MoveFile(string orig, string dest)
         {
             var dir = Directory.CreateDirectory(Path.GetDirectoryName(dest)).FullName;
@@ -304,7 +305,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 File.Move(orig, dest);
             }
-            catch (IOException)
+            catch (IOException e) when (e.HResult == HR_ERROR_FILE_EXISTS)
             {
                 var i = 2;
                 string newZipPath;
@@ -326,7 +327,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         dest = newZipPath;
                         break;
                     }
-                    catch (IOException)
+                    catch (IOException e) when (e.HResult == HR_ERROR_FILE_EXISTS)
                     {
                     }
                     catch (Exception e)
