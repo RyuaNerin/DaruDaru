@@ -305,7 +305,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 File.Move(orig, dest);
             }
-            catch (IOException e) when (e.HResult == HR_ERROR_FILE_EXISTS)
+            catch (IOException ioex) when (ioex.HResult == HR_ERROR_FILE_EXISTS)
             {
                 var i = 2;
                 string newZipPath;
@@ -327,7 +327,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         dest = newZipPath;
                         break;
                     }
-                    catch (IOException e) when (e.HResult == HR_ERROR_FILE_EXISTS)
+                    catch (IOException ioex2) when (ioex2.HResult == HR_ERROR_FILE_EXISTS)
                     {
                     }
                     catch (Exception e)
