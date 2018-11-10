@@ -155,7 +155,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                 }
             }
 
-            var imgs = doc.DocumentNode.SelectNodes("//img[@data-src]");
+
+            var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
+            var imgs = galleryTemplate?.SelectNodes(".//img[@data-src]");
             if (imgs != null && imgs.Count > 0)
             {
                 foreach (var img in imgs)
@@ -172,8 +174,6 @@ namespace DaruDaru.Marumaru.ComicInfo
             }
             else
             {
-                var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
-
                 var sig = Uri.EscapeDataString(galleryTemplate.Attributes["data-signature"].Value);
                 var key = Uri.EscapeDataString(galleryTemplate.Attributes["data-key"].Value);
 
