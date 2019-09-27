@@ -153,8 +153,8 @@
     <Compile Include="Core\Windows\Recaptcha.xaml.cs">
       <DependentUpon>Recaptcha.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Marumaru\ComicInfo\WasabiPage.cs" />
-    <Compile Include="Marumaru\ComicInfo\MaruPage.cs" />
+    <Compile Include="Marumaru\ComicInfo\MangaArticle.cs" />
+    <Compile Include="Marumaru\ComicInfo\Manga.cs" />
     <Compile Include="Utilities\Signature.cs" />
     <Compile Include="Config\ArchiveManager.cs" />
     <Compile Include="Core\LastRelease.cs" />

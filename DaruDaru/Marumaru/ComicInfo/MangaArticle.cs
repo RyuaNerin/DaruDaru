@@ -15,9 +15,9 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
-    internal class WasabiPage : Comic
+    internal class MangaArticle : Comic
     {
-        public WasabiPage(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
+        public MangaArticle(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
             : base(addNewOnly, DaruUriParser.Archive.FixUri(uri), title)
         {
             this.TitleWithNo = tempTitleWithNo;

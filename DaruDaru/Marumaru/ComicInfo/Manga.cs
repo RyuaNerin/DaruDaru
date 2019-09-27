@@ -10,9 +10,9 @@ using HtmlAgilityPack;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
-    internal class MaruPage : Comic
+    internal class Manga : Comic
     {
-        public MaruPage(bool addNewOnly, Uri uri, string comicName, bool skip)
+        public Manga(bool addNewOnly, Uri uri, string comicName, bool skip)
             : base(addNewOnly, uri, comicName)
         {
             if (skip)
