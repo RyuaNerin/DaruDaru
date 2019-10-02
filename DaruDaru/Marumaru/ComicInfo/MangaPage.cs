@@ -199,7 +199,10 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.m_images = new ImageInfomation[imgList.Length];
                 for (var i = 0; i < imgList.Length; i++)
                 {
-                    this.m_images[i] = new ImageInfomation();
+                    this.m_images[i] = new ImageInfomation()
+                    {
+                        Index = i + 1,
+                    };
 
                     if (i < imgList1.Length)
                     {

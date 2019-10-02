@@ -10,7 +10,7 @@
                   xmlns:util="clr-namespace:DaruDaru.Utilities"
                   TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
                   ButtonContent="검색"
-                  DaruUriParser="{x:Static mr:DaruUriParser.Marumaru}"
+                  DaruUriParser="{x:Static mr:DaruUriParser.Detail}"
                   Template="{StaticResource ViewerTemplate}"
                   DragDropStarted="ctlViewer_DragDropStarted"
                   mc:Ignorable="d"
