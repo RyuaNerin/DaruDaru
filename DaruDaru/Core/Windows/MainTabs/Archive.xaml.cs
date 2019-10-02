@@ -28,7 +28,7 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             InitializeComponent();
 
-            this.ListItemSource = ArchiveManager.Archives;
+            this.ListItemSource = ArchiveManager.Manga;
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -38,7 +38,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpen_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<ArchiveEntry>().GetPath();
+            var items = this.Get<MangaArticleEntry>().GetPath();
             if (items.Length == 0) return;
 
             if (items.Count() > App.WarningItems &&
@@ -52,7 +52,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<ArchiveEntry>().GetPath();
+            var items = this.Get<MangaArticleEntry>().GetPath();
             if (items.Length == 0) return;
 
             if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
@@ -64,7 +64,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<ArchiveEntry>().GetUri();
+            var items = this.Get<MangaArticleEntry>().GetUri();
             if (items.Length == 0) return;
 
             if (items.Count() > App.WarningItems &&
@@ -77,7 +77,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyFile_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<ArchiveEntry>().GetPath();
+            var items = this.Get<MangaArticleEntry>().GetPath();
             if (items.Length == 0) return;
 
             var files = new StringCollection();
@@ -88,7 +88,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<ArchiveEntry>().GetUri();
+            var items = this.Get<MangaArticleEntry>().GetUri();
             if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join(Environment.NewLine, items));
@@ -98,7 +98,7 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             if (HoneyViwer.TryCreate(out var hv))
             {
-                var item = ((ListViewItem)sender).Content as ArchiveEntry;
+                var item = ((ListViewItem)sender).Content as MangaArticleEntry;
 
                 if (File.Exists(item.ZipPath))
                     hv.Open(item.ZipPath);
@@ -111,7 +111,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 return;
 
             e.AllowedEffects = DragDropEffects.Copy | DragDropEffects.Link;
-            e.Data           = e.IList.Cast<ArchiveEntry>().Select(le => le.ZipPath).ToArray();
+            e.Data           = e.IList.Cast<MangaArticleEntry>().Select(le => le.ZipPath).ToArray();
             e.DataFormat     = DataFormats.FileDrop;
         }
 
@@ -127,7 +127,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void RemoveArchive(bool removeFile)
         {
-            var items = this.Get<ArchiveEntry>().GetCodes();
+            var items = this.Get<MangaArticleEntry>().GetCodes();
             if (items.Length == 0) return;
 
             var settings = new MetroDialogSettings
@@ -145,7 +145,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 == MessageDialogResult.Negative)
                 return;
 
-            ArchiveManager.RemoveArchives(items, removeFile);
+            ArchiveManager.RemoveManga(items, removeFile);
         }
     }
 }

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Config.Entries
 {
-    internal class ArchiveEntry : INotifyPropertyChanged, IEntry
+    internal class MangaArticleEntry : INotifyPropertyChanged, IEntry
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
@@ -19,7 +19,7 @@ namespace DaruDaru.Config.Entries
             set
             {
                 this.m_archiveCode = value;
-                this.Uri = DaruUriParser.Archive.GetUri(value);
+                this.Uri = DaruUriParser.Manga.GetUri(value);
             }
         }
 

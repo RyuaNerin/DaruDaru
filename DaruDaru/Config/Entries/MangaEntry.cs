@@ -6,20 +6,20 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Config.Entries
 {
-    internal class MarumaruEntry : INotifyPropertyChanged, IEntry
+    internal class MangaEntry : INotifyPropertyChanged, IEntry
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
             => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         
-        private string m_maruCode;
-        public string MaruCode
+        private string m_detailCode;
+        public string DetailCode
         {
-            get => this.m_maruCode;
+            get => this.m_detailCode;
             set
             {
-                this.m_maruCode = value;
-                this.Uri = DaruUriParser.Marumaru.GetUri(value);
+                this.m_detailCode = value;
+                this.Uri = DaruUriParser.Detail.GetUri(value);
             }
         }
 
@@ -37,13 +37,13 @@ namespace DaruDaru.Config.Entries
             }
         }
 
-        private string[] m_archiveCodes;
-        public string[] ArchiveCodes
+        private string[] m_mangaCodes;
+        public string[] MangaCodes
         {
-            get => this.m_archiveCodes;
+            get => this.m_mangaCodes;
             set
             {
-                this.m_archiveCodes = value;
+                this.m_mangaCodes = value;
                 this.InvokePropertyChanged();
 
                 this.RecalcCompleted();
@@ -76,7 +76,7 @@ namespace DaruDaru.Config.Entries
 
         public void RecalcCompleted()
         {
-            this.Completed = this.Finished && ArchiveManager.ArchiveAllDownloaded(this.ArchiveCodes);
+            this.Completed = this.Finished && ArchiveManager.ArchiveAllDownloaded(this.MangaCodes);
         }
 
         private bool m_completed = false;
@@ -94,7 +94,7 @@ namespace DaruDaru.Config.Entries
             }
         }
 
-        [JsonIgnore] string IEntry.Code => this.MaruCode;
+        [JsonIgnore] string IEntry.Code => this.DetailCode;
         [JsonIgnore] string IEntry.Text => this.Title;
     }
 }

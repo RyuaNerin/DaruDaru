@@ -80,7 +80,6 @@ namespace DaruDaru.Utilities
                 hreq.AllowAutoRedirect      = true;
 
                 hreq.Headers.Add("charset",         "utf-8");
-                hreq.Headers.Add("cookie",          Recaptcha.Cookie);
                 hreq.Headers.Add("Accept-Language", "ko");
             }
 

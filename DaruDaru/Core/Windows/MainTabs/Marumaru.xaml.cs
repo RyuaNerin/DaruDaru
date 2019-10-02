@@ -26,7 +26,7 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             InitializeComponent();
 
-            this.ListItemSource = ArchiveManager.MarumaruLinks;
+            this.ListItemSource = ArchiveManager.Detail;
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -36,8 +36,8 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuArchiveSearch_Click(object sender, RoutedEventArgs e)
         {
-            if (this.SelectedItem is MarumaruEntry entry)
-                MainWindow.Instance.SearchArchiveByCodes(entry.ArchiveCodes, entry.Title);
+            if (this.SelectedItem is MangaEntry entry)
+                MainWindow.Instance.SearchArchiveByCodes(entry.MangaCodes, entry.Title);
         }
 
         private void ctlMenuSearchNew_Click(object sender, RoutedEventArgs e)
@@ -52,7 +52,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void AddRecentSelectedItems(bool addNewOnly)
         {
-            var items = this.Get<MarumaruEntry>();
+            var items = this.Get<MangaEntry>();
             if (items.Length == 0) return;
 
             MainWindow.Instance.DownloadUri(addNewOnly, items, e => e.Uri, e => e.Title, e => e.Completed);
@@ -60,7 +60,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<MarumaruEntry>().GetUri();
+            var items = this.Get<MangaEntry>().GetUri();
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
@@ -73,7 +73,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<MarumaruEntry>().GetUri();
+            var items = this.Get<MangaEntry>().GetUri();
             if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join("\n", items));
@@ -81,9 +81,9 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var entry = ((ListViewItem)sender).Content as MarumaruEntry;
+            var entry = ((ListViewItem)sender).Content as MangaEntry;
             if (entry != null)
-                MainWindow.Instance.SearchArchiveByCodes(entry.ArchiveCodes, entry.Title);
+                MainWindow.Instance.SearchArchiveByCodes(entry.MangaCodes, entry.Title);
         }
 
         private void ctlMenuRemoveOnly_Click(object sender, RoutedEventArgs e)
@@ -98,7 +98,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ContextMenu_Opened(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<MarumaruEntry>();
+            var items = this.Get<MangaEntry>();
             var isChecked = items.Any(le => le.Finished);
 
             this.MenuItemFinished.IsChecked = isChecked;
@@ -108,14 +108,14 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             var newValue = !this.MenuItemFinished.IsChecked;
 
-            var items = this.Get<MarumaruEntry>();
+            var items = this.Get<MangaEntry>();
             foreach (var item in items)
                 item.Finished = newValue;
         }
 
         private async void RemoveArchive(bool removeFile)
         {
-            var items = this.Get<MarumaruEntry>().GetCodes();
+            var items = this.Get<MangaEntry>().GetCodes();
             if (items.Length == 0) return;
 
             var settings = new MetroDialogSettings
@@ -133,7 +133,7 @@ namespace DaruDaru.Core.Windows.MainTabs
                 == MessageDialogResult.Negative)
                 return;
 
-            ArchiveManager.RemoveMarumaru(items, removeFile);
+            ArchiveManager.RemoveDetail(items, removeFile);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using DaruDaru.Config;
@@ -15,14 +16,14 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
-    internal class MangaArticle : Comic
+    internal class MangaPage : Comic
     {
-        public MangaArticle(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
-            : base(addNewOnly, DaruUriParser.Archive.FixUri(uri), title)
+        public MangaPage(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
+            : base(addNewOnly, DaruUriParser.Manga.FixUri(uri), title)
         {
             this.TitleWithNo = tempTitleWithNo;
 
-            var entry = ArchiveManager.GetArchive(this.ArchiveCode);
+            var entry = ArchiveManager.GetManga(this.ArchiveCode);
             if (entry != null)
             {
                 this.TitleWithNo = entry.TitleWithNo;
@@ -34,15 +35,16 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
 
         private ImageInfomation[] m_images;
+        private ImageDecryptor m_decryptor;
         
         public string ZipPath { get; set; }
 
-        public string ArchiveCode => DaruUriParser.Archive.GetCode(this.Uri);
+        public string ArchiveCode => DaruUriParser.Manga.GetCode(this.Uri);
         
         private class ImageInfomation
         {
             public int          Index;
-            public Uri          ImageUri;
+            public Uri[]        ImageUri;
             public FileStream   TempStream;
             public string       Extension;
         }
@@ -52,6 +54,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             public Uri                   NewUri;
             public bool                  OccurredError;
         }
+
         protected override bool GetInfomationPriv(ref int count)
         {
             var args = new GetInfomationArgs()
@@ -90,113 +93,136 @@ namespace DaruDaru.Marumaru.ComicInfo
         private bool GetInfomationWorker(WebClientEx wc, ref GetInfomationArgs args)
         {
             wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-            var body = wc.DownloadString(this.Uri);
-            if (wc.LastStatusCode == HttpStatusCode.NotFound)
+            var html = this.GetHtml(wc, this.Uri);
+
+            if (html == null)
             {
                 args.OccurredError = true;
-                this.State = MaruComicState.Error_5_NotFound;
-                return true;
+                return false;
             }
 
             args.NewUri = wc.ResponseUri ?? this.Uri;
 
             var doc = new HtmlDocument();
-            doc.LoadHtml(body);
+            doc.LoadHtml(html);
 
-            // 타이틀은 항상 마루마루 기준으로 맞춤.
-            // 2018-07-10 파일 이름은 Archive 기준으로 맞춤: https://marumaru.in/b/manga/208070
-            var innerTitle = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-subject']").InnerText).Trim();
-
-            if (string.IsNullOrWhiteSpace(this.Title))
-                this.Title = innerTitle;
-
-            // 제목이 바뀌는 경우가 있어서
-            // 제목은 그대로 사용하고, xx화 는 새로 가져온다.
-            var titleNo = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//span[@class='title-no']").InnerText).Trim();
-            this.TitleWithNo = $"{innerTitle} {titleNo}";
-
-            // 제목이 설정되어 있지 않은 경우가 있음. 이럴땐 에러로 처리.
-            if (string.IsNullOrWhiteSpace(this.TitleWithNo.Trim()))
-                return false;
-
-            // 잠긴 파일
-            if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null)
+#region 폴더 이름은 Detail 에서 설정
             {
-                if (doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
-                {
-                    // Captcha 걸린 파일
-                    if (Recaptcha.LastPostData != null)
-                    {
-                        wc.Headers.Set(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
-                        body = wc.UploadString(args.NewUri, "POST", Recaptcha.LastPostData);
-                        doc.LoadHtml(body);
+                // /bbs/page.php?hid=manga_detail&manga_id=9495
+                var toonNav = doc.DocumentNode.SelectSingleNode("//div[@class='toon-nav']");
+                if (toonNav == null)
+                    return false;
 
-                        if (doc.DocumentNode.SelectSingleNode("//div[@class='pass-box']") != null ||
-                            doc.DocumentNode.SelectSingleNode("//input[@name='captcha2']") != null)
-                        {
-                            args.OccurredError = true;
-                            this.State = MaruComicState.Error_4_Captcha;
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        args.OccurredError = true;
-                        this.State = MaruComicState.Error_4_Captcha;
-                        return true;
-                    }
+                string detailCode = null;
+                foreach (HtmlNode node in toonNav.SelectNodes(".//a[@href]"))
+                {
+                    var href = node.GetAttributeValue("href", "");
+                    if (string.IsNullOrWhiteSpace(href))
+                        continue;
+
+                    var code = DaruUriParser.Detail.GetCode(new Uri(this.Uri, href));
+                    if (string.IsNullOrWhiteSpace(code))
+                        continue;
+
+                    detailCode = code;
+                    break;
+                }
+
+                var detailEntry = ArchiveManager.GetDetail(detailCode);
+
+                if (detailEntry == null)
+                {
+                    var info = new DetailPage.DetailInfomation();
+                    var htmlDetail = this.GetHtml(wc, DaruUriParser.Detail.GetUri(detailCode));
+
+                    var docDetail = new HtmlDocument();
+                    docDetail.LoadHtml(htmlDetail);
+
+                    if (!DetailPage.GetDetailInfomation(docDetail.DocumentNode, ref info))
+                        return false;
+
+                    ArchiveManager.UpdateDetail(detailCode, info.Title, info.MangaList.Select(e => e.MangaCode).ToArray());
+
+                    detailEntry = ArchiveManager.GetDetail(detailCode);
+
+                    if (detailEntry == null)
+                        return false;
+                }
+
+                this.Title = detailEntry.Title;
+            }
+#endregion
+
+            #region Detail.Title + xx화
+            {
+                var mangaNo =
+                    Regex.Matches(
+                        Regex.Match(doc.DocumentNode.InnerHtml, "var only_chapter ?= ?\\[[^;]+\\];").Groups[0].Value,
+                        "\\[ *\"([^\"]+)\" *, *\"([^\"]+)\" *\\]"
+                    )
+                    .Cast<Match>()
+                    .FirstOrDefault(e => e.Groups[2].Value == this.ArchiveCode)
+                    ?.Groups[1].Value;
+
+                string titleWithNo;
+                if (!string.IsNullOrWhiteSpace(mangaNo))
+                {
+                    titleWithNo = $"{this.Title} {mangaNo}";
                 }
                 else
                 {
-                    // 실제로 암호걸린 파일
-                    args.OccurredError = true;
-                    this.State = MaruComicState.Error_2_Protected;
-                    return true;
+                    var title = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//meta[@name='title']").GetAttributeValue("content", "")).Trim();
+                    if (string.IsNullOrWhiteSpace(title))
+                        return false;
+                    titleWithNo = title;
                 }
-            }
 
-
-            var galleryTemplate = doc.DocumentNode.SelectSingleNode("//div[@class='gallery-template']");
-            var imgs = galleryTemplate?.SelectNodes(".//img[@data-src]");
-            if (imgs != null && imgs.Count > 0)
-            {
-                foreach (var img in imgs)
-                {
-                    if (Utility.TryCreateUri(args.NewUri, img.Attributes["data-src"].Value, out Uri imgUri))
-                    {
-                        args.Images.Add(new ImageInfomation
-                        {
-                            Index = args.Images.Count + 1,
-                            ImageUri = imgUri,
-                        });
-                    }
-                }
-            }
-            else
-            {
-                var sig = Uri.EscapeDataString(galleryTemplate.Attributes["data-signature"].Value);
-                var key = Uri.EscapeDataString(galleryTemplate.Attributes["data-key"].Value);
-
-                wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-                var jsonDoc = wc.DownloadString($"http://wasabisyrup.com/assets/{this.ArchiveCode}/1.json?signature={sig}&key={key}");
-
-                var json = JsonConvert.DeserializeObject<Assets>(jsonDoc);
-
-                if (json.Message != "ok" || json.Status != "ok")
+                if (string.IsNullOrWhiteSpace(titleWithNo))
                     return false;
+                this.TitleWithNo = titleWithNo;
+            }
+            #endregion
 
-                foreach (var img in json.Sources)
+            #region 이미지 정보 가져오는 부분
+            {
+                var imgList = Regex.Matches(Regex.Match(doc.DocumentNode.InnerHtml, "var img_list = [^;]+").Groups[0].Value, "\"([^\"]+)\"")
+                          .Cast<Match>()
+                          .Select(e => e.Groups[1].Value.Replace("\\", ""))
+                          .Select(e => new Uri(this.Uri, e))
+                          .ToArray();
+                var imgList1 = Regex.Matches(Regex.Match(html, "var img_list1 = [^;]+").Groups[0].Value, "\"([^\"]+)\"")
+                          .Cast<Match>()
+                          .Select(e => e.Groups[1].Value.Replace("\\", ""))
+                          .Select(e => new Uri(this.Uri, e))
+                          .ToArray();
+
+                this.m_images = new ImageInfomation[imgList.Length];
+                for (var i = 0; i < imgList.Length; i++)
                 {
-                    if (Utility.TryCreateUri(args.NewUri, img, out Uri imgUri))
+                    this.m_images[i] = new ImageInfomation();
+
+                    if (i < imgList1.Length)
                     {
-                        args.Images.Add(new ImageInfomation
+                        this.m_images[i].ImageUri = new Uri[]
                         {
-                            Index = args.Images.Count + 1,
-                            ImageUri = imgUri,
-                        });
+                            imgList[i],
+                            new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
+                            imgList1[i],
+                        };
+                    }
+                    else
+                    {
+                        this.m_images[i].ImageUri = new Uri[]
+                        {
+                            imgList[i],
+                            new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
+                        };
                     }
                 }
             }
+            #endregion
+
+            this.m_decryptor = new ImageDecryptor(html, args.NewUri);
 
             return true;
         }
@@ -246,7 +272,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         (
                             comment != null &&
                             Utility.TryCreateUri(comment.Split('\n')[0], out Uri uri) &&
-                            DaruUriParser.Archive.GetCode(uri) == this.ArchiveCode
+                            DaruUriParser.Manga.GetCode(uri) == this.ArchiveCode
                         ))
                     {
                         fileMode = false;
@@ -265,7 +291,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 Directory.SetLastWriteTime(this.ZipPath, DateTime.Now);
                 Directory.SetLastAccessTime(this.ZipPath, DateTime.Now);
                 
-                ArchiveManager.UpdateArchive(this.ArchiveCode, this.TitleWithNo, this.ZipPath);
+                ArchiveManager.UpdateManga(this.ArchiveCode, this.TitleWithNo, this.ZipPath);
             }
             catch (Exception ex)
             {
@@ -356,10 +382,13 @@ namespace DaruDaru.Marumaru.ComicInfo
                     this.m_images,
                     (e, state) =>
                     {
-                        var succ = Utility.Retry(() => this.DownloadWorker(e));
+                        for (var index = 0; index < e.ImageUri.Length; ++index)
+                        {
+                            var succ = Utility.Retry(() => this.DownloadWorker(e, index));
 
-                        if (!succ)
-                            state.Stop();
+                            if (!succ)
+                                state.Stop();
+                        }
                     }).IsCompleted;
             });
 
@@ -379,9 +408,9 @@ namespace DaruDaru.Marumaru.ComicInfo
             return this.m_images.Any(e => e.Extension != null);
         }
 
-        private bool DownloadWorker(ImageInfomation e)
+        private bool DownloadWorker(ImageInfomation e, int uriIndex)
         {
-            var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri));
+            var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri[uriIndex]));
             if (req is HttpWebRequest hreq)
             {
                 hreq.Referer = this.Uri.AbsoluteUri;
@@ -410,6 +439,9 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 e.TempStream.Position = 0;
             }
+
+            // 이미지 암호화 푸는 작업
+            this.m_decryptor.Decrypt(e.TempStream);
 
             this.IncrementProgress();
             return true;

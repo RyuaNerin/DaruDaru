@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using DaruDaru.Config;
 using DaruDaru.Core.Windows;
+using DaruDaru.Utilities;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
@@ -25,9 +27,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         Complete_4_Skip         = Complete + 4,
 
         Error_1_Error           = Error    + 1,
-        Error_2_Protected       = Error    + 2,
         Error_3_NotSupport      = Error    + 3,
-        Error_4_Captcha         = Error    + 4,
         Error_5_NotFound        = Error    + 5,
         Error_6_520             = Error    + 6,
     }
@@ -36,11 +36,11 @@ namespace DaruDaru.Marumaru.ComicInfo
     {
         public static Comic CreateForSearch(bool addNewOnly, Uri uri, string title, bool skipMarumaru)
         {
-            if (DaruUriParser.Marumaru.CheckUri(uri))
-                return new MaruPage(addNewOnly, uri, title, skipMarumaru);
+            if (DaruUriParser.Detail.CheckUri(uri))
+                return new DetailPage(addNewOnly, uri, title, skipMarumaru);
 
-            if (DaruUriParser.Archive.CheckUri(uri))
-                return new WasabiPage(addNewOnly, uri, title);
+            if (DaruUriParser.Manga.CheckUri(uri))
+                return new MangaPage(addNewOnly, uri, title);
 
             return new UnknownPage(addNewOnly, uri, title);
         }
@@ -52,7 +52,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             this.AddNewonly = addNewOnly;
 
             this.Uri   = uri;
-            this.Title = title;
+            this.Title = !string.IsNullOrWhiteSpace(title) ? title : uri.ToString();
         }
 
         private readonly object WorkingLock = new object();
@@ -183,9 +183,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Complete_4_Skip:         return "건너뜀";
 
                     case MaruComicState.Error_1_Error:           return "오류";
-                    case MaruComicState.Error_2_Protected:       return "보호됨";
                     case MaruComicState.Error_3_NotSupport:      return "지원하지 않음";
-                    case MaruComicState.Error_4_Captcha:         return "Captcha";
                     case MaruComicState.Error_5_NotFound:        return "Not Found";
                     case MaruComicState.Error_6_520:             return "서비스 점검중";
                 }
@@ -241,6 +239,25 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
         protected virtual void StartDownloadPriv()
         {
+        }
+
+        protected string GetHtml(WebClientEx wc, Uri uri)
+        {
+            wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
+            var body = wc.DownloadString(uri);
+
+            switch ((int)wc.LastStatusCode)
+            {
+            case 520:
+                this.State = MaruComicState.Error_6_520;
+                return null;
+
+            case 404:
+                this.State = MaruComicState.Error_5_NotFound;
+                return null;
+            }
+
+            return body;
         }
     }
 }

@@ -134,14 +134,17 @@
 
                     <TextBlock Grid.Row="1"
                                Margin="0 3 0 0"
-                               Text="재시작 시 적용됩니다" />
+                               Text="* 재시작 후 적용됩니다" />
                 </Grid>
             </GroupBox>
 
-            <GroupBox Header="보호된 파일 다운로드">
-                <metro:ToggleSwitch x:Name="ctlConfigDownloadProtected"
-                                    ContentDirection="RightToLeft"
-                                    Click="ctlConfigDownloadProtected_Click"/>
+            <GroupBox Header="우회용 호스트 설정">
+                <StackPanel>
+                    <TextBox x:Name="ctlConfigServerHost"
+                             Text="{Binding Path=ServerHost, Mode=TwoWay}"/>
+                    <TextBlock Margin="0 3 0 0"
+                               Text="* 재시작 후 적용됩니다" />
+                </StackPanel>
             </GroupBox>
 
             <GroupBox Header="기록 삭제">

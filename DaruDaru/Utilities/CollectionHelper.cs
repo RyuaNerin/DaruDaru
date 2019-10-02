@@ -8,39 +8,39 @@ namespace DaruDaru.Utilities
 {
     internal static class CollectionHelper
     {
-        public static string[] GetUri(this IEnumerable<MarumaruEntry> coll)
+        public static string[] GetUri(this IEnumerable<MangaEntry> coll)
             => coll.Select(e => e.Uri.AbsoluteUri)
                    .Distinct()
                    .ToArray();
 
-        public static string[] GetCodes(this IEnumerable<MarumaruEntry> coll)
-            => coll.Select(e => e.MaruCode)
+        public static string[] GetCodes(this IEnumerable<MangaEntry> coll)
+            => coll.Select(e => e.DetailCode)
                    .Distinct()
                    .ToArray();
 
-        public static string[] GetPath(this IEnumerable<ArchiveEntry> coll)
+        public static string[] GetPath(this IEnumerable<MangaArticleEntry> coll)
             => coll.Select(e => e.ZipPath)
                    .Distinct()
                    .Where(e => File.Exists(e))
                    .ToArray();
 
-        public static string[] GetUri(this IEnumerable<ArchiveEntry> coll)
+        public static string[] GetUri(this IEnumerable<MangaArticleEntry> coll)
             => coll.Select(e => e.Uri.AbsoluteUri)
                    .Distinct()
                    .ToArray();
 
-        public static string[] GetCodes(this IEnumerable<ArchiveEntry> coll)
+        public static string[] GetCodes(this IEnumerable<MangaArticleEntry> coll)
             => coll.Select(e => e.ArchiveCode)
                    .Distinct()
                    .ToArray();
 
-        public static string[] GetPath(this IEnumerable<WasabiPage> coll)
+        public static string[] GetPath(this IEnumerable<MangaPage> coll)
             => coll.Select(e => e.ZipPath)
                    .Distinct()
                    .Where(e => File.Exists(e))
                    .ToArray();
 
-        public static string[] GetDir(this IEnumerable<MaruPage> coll)
+        public static string[] GetDir(this IEnumerable<DetailPage> coll)
             => coll.Select(e => e.DirPath)
                    .Distinct()
                    .Where(e => Directory.Exists(e))

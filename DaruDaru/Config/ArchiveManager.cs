@@ -11,56 +11,56 @@ namespace DaruDaru.Config
 {
     internal static class ArchiveManager
     {
-        public static ObservableCollection<MarumaruEntry> MarumaruLinks { get; } = new ObservableCollection<MarumaruEntry>();
+        public static ObservableCollection<MangaEntry> Detail { get; } = new ObservableCollection<MangaEntry>();
 
-        public static ObservableCollection<ArchiveEntry> Archives { get; } = new ObservableCollection<ArchiveEntry>();
-        private static readonly HashSet<string> ArchiveHash = new HashSet<string>(StringComparer.Ordinal);
+        public static ObservableCollection<MangaArticleEntry> Manga { get; } = new ObservableCollection<MangaArticleEntry>();
+        private static readonly HashSet<string> MangaCodeHash = new HashSet<string>(StringComparer.Ordinal);
 
         static ArchiveManager()
         {
-            Archives.CollectionChanged += Archives_CollectionChanged;
+            Manga.CollectionChanged += MangaArticle_CollectionChanged;
         }
 
-        private static void Archives_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private static void MangaArticle_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                var newItem = e.NewItems.Cast<ArchiveEntry>();
+                var newItem = e.NewItems.Cast<MangaArticleEntry>();
                 
                 foreach (var item in newItem)
                 {
-                    lock (ArchiveHash)
-                        ArchiveHash.Add(item.ArchiveCode);
+                    lock (MangaCodeHash)
+                        MangaCodeHash.Add(item.ArchiveCode);
                 }
             }
 
             else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                var newItem = e.OldItems.Cast<ArchiveEntry>();
+                var newItem = e.OldItems.Cast<MangaArticleEntry>();
                 
                 foreach (var item in newItem)
-                    lock (ArchiveHash)
-                        ArchiveHash.Remove(item.ArchiveCode);
+                    lock (MangaCodeHash)
+                        MangaCodeHash.Remove(item.ArchiveCode);
             }
 
             else if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                lock (ArchiveHash)
-                    ArchiveHash.Clear();
+                lock (MangaCodeHash)
+                    MangaCodeHash.Clear();
             }
         }
 
-        public static void UpdateMarumaru(string maruCode, string title, string[] archiveCodes, bool? finished = null)
+        public static void UpdateDetail(string detailCode, string detailTitle, string[] detailMangaCodes, bool? finished = null)
         {
-            lock (MarumaruLinks)
+            lock (Detail)
             {
                 bool found = false;
-                MarumaruEntry entry = null;
+                MangaEntry entry = null;
 
-                for (var i = 0; i < MarumaruLinks.Count; ++i)
+                for (var i = 0; i < Detail.Count; ++i)
                 {
-                    entry = MarumaruLinks[i];
-                    if (string.Equals(entry.MaruCode, maruCode, StringComparison.OrdinalIgnoreCase))
+                    entry = Detail[i];
+                    if (string.Equals(entry.DetailCode, detailCode, StringComparison.OrdinalIgnoreCase))
                     {
                         found = true;
                         break;
@@ -69,21 +69,21 @@ namespace DaruDaru.Config
 
                 if (!found)
                 {
-                    entry = new MarumaruEntry
+                    entry = new MangaEntry
                     {
-                        MaruCode = maruCode
+                        DetailCode = detailCode
                     };
 
-                    Application.Current.Dispatcher.Invoke(new Action<MarumaruEntry>(MarumaruLinks.Add), entry);
+                    Application.Current.Dispatcher.Invoke(new Action<MangaEntry>(Detail.Add), entry);
                 }
 
-                if (title != null)
-                    entry.Title = title;
+                if (detailTitle != null)
+                    entry.Title = detailTitle;
 
-                if (archiveCodes != null)
+                if (detailMangaCodes != null)
                 {
                     entry.LastUpdated = DateTime.Now;
-                    entry.ArchiveCodes = archiveCodes;
+                    entry.MangaCodes = detailMangaCodes;
                 }
 
                 if (finished.HasValue)
@@ -93,17 +93,17 @@ namespace DaruDaru.Config
             }
         }
 
-        public static void UpdateArchive(string archiveCode, string fullTitle, string zipPath)
+        public static void UpdateManga(string mangaCode, string mangaName, string mangaZipPath)
         {
-            lock (Archives)
+            lock (Manga)
             {
                 bool found = false;
-                ArchiveEntry entry = null;
+                MangaArticleEntry entry = null;
 
-                for (var i = 0; i < Archives.Count; ++i)
+                for (var i = 0; i < Manga.Count; ++i)
                 {
-                    entry = Archives[i];
-                    if (string.Equals(entry.ArchiveCode, archiveCode, StringComparison.OrdinalIgnoreCase))
+                    entry = Manga[i];
+                    if (string.Equals(entry.ArchiveCode, mangaCode, StringComparison.OrdinalIgnoreCase))
                     {
                         found = true;
                         break;
@@ -112,17 +112,17 @@ namespace DaruDaru.Config
 
                 if (!found)
                 {
-                    entry = new ArchiveEntry
+                    entry = new MangaArticleEntry
                     {
-                        ArchiveCode = archiveCode,
-                        TitleWithNo = fullTitle,
-                        ZipPath     = zipPath,
+                        ArchiveCode = mangaCode,
+                        TitleWithNo = mangaName,
+                        ZipPath     = mangaZipPath,
                     };
 
-                    Application.Current.Dispatcher.Invoke(new Action<ArchiveEntry>(Archives.Add), entry);
+                    Application.Current.Dispatcher.Invoke(new Action<MangaArticleEntry>(Manga.Add), entry);
 
-                    lock (MarumaruLinks)
-                        MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(archiveCode))?.RecalcCompleted();
+                    lock (Detail)
+                        Detail.FirstOrDefault(le => le.MangaCodes != null && le.MangaCodes.Contains(mangaCode))?.RecalcCompleted();
                 }
 
                 entry.Archived = DateTime.Now;
@@ -131,16 +131,28 @@ namespace DaruDaru.Config
             }
         }
 
-        public static ArchiveEntry GetArchive(string archiveCode)
+        public static MangaEntry GetDetail(string detailCode)
         {
-            lock (Archives)
+            lock (Detail)
             {
-                ArchiveEntry entry = null;
-
-                for (var i = 0; i < Archives.Count; ++i)
+                for (var i = 0; i < Detail.Count; ++i)
                 {
-                    entry = Archives[i];
-                    if (string.Equals(entry.ArchiveCode, archiveCode, StringComparison.OrdinalIgnoreCase))
+                    var entry = Detail[i];
+                    if (string.Equals(entry.DetailCode, detailCode, StringComparison.OrdinalIgnoreCase))
+                        return entry;
+                }
+
+                return null;
+            }
+        }
+        public static MangaArticleEntry GetManga(string mangaCode)
+        {
+            lock (Manga)
+            {
+                for (var i = 0; i < Manga.Count; ++i)
+                {
+                    var entry = Manga[i];
+                    if (string.Equals(entry.ArchiveCode, mangaCode, StringComparison.OrdinalIgnoreCase))
                         return entry;
                 }
 
@@ -148,36 +160,36 @@ namespace DaruDaru.Config
             }
         }
 
-        public static bool CheckNewArchive(string archiveCode)
+        public static bool ContainsManga(string mangaCode)
         {
-            lock (ArchiveHash)
-                return ArchiveHash.Contains(archiveCode);
+            lock (MangaCodeHash)
+                return MangaCodeHash.Contains(mangaCode);
         }
-        public static IEnumerable<TData> IsNewArchive<TData>(IEnumerable<TData> src, Func<TData, string> keySelector)
+        public static IEnumerable<TData> IsNewManga<TData>(IEnumerable<TData> src, Func<TData, string> keySelector)
         {
             var lst = new List<TData>();
 
-            lock (ArchiveHash)
+            lock (MangaCodeHash)
                 foreach (var data in src)
-                    if (!ArchiveHash.Contains(keySelector(data)))
+                    if (!MangaCodeHash.Contains(keySelector(data)))
                         lst.Add(data);
 
             return lst;
         }
 
-        public static void RemoveMarumaru(string[] codes, bool removeFile)
+        public static void RemoveDetail(string[] detailCodes, bool removeFile)
         {
-            lock (MarumaruLinks)
+            lock (Detail)
             {
                 int i = 0;
-                while (i < MarumaruLinks.Count)
+                while (i < Detail.Count)
                 {
-                    if (Array.IndexOf(codes, MarumaruLinks[i].MaruCode) >= 0)
+                    if (Array.IndexOf(detailCodes, Detail[i].DetailCode) >= 0)
                     {
                         if (removeFile)
-                            RemoveArchives(MarumaruLinks[i].ArchiveCodes, true);
+                            RemoveManga(Detail[i].MangaCodes, true);
 
-                        MarumaruLinks.RemoveAt(i);
+                        Detail.RemoveAt(i);
                     }
                     else
                         ++i;
@@ -185,24 +197,24 @@ namespace DaruDaru.Config
             }
         }
 
-        public static void RemoveArchives(string[] codes, bool removeFile)
+        public static void RemoveManga(string[] mangaCodes, bool removeFile)
         {
-            lock (Archives)
+            lock (Manga)
             {
                 string archiveCode;
                 int i = 0;
-                while (i < Archives.Count)
+                while (i < Manga.Count)
                 {
-                    archiveCode = Archives[i].ArchiveCode;
-                    if (Array.IndexOf(codes, archiveCode) >= 0)
+                    archiveCode = Manga[i].ArchiveCode;
+                    if (Array.IndexOf(mangaCodes, archiveCode) >= 0)
                     {
                         if (removeFile)
-                            File.Delete(Archives[i].ZipPath);
+                            File.Delete(Manga[i].ZipPath);
 
-                        Archives.RemoveAt(i);
+                        Manga.RemoveAt(i);
 
-                        lock (MarumaruLinks)
-                            MarumaruLinks.FirstOrDefault(le => le.ArchiveCodes != null && le.ArchiveCodes.Contains(archiveCode))?.RecalcCompleted();
+                        lock (Detail)
+                            Detail.FirstOrDefault(le => le.MangaCodes != null && le.MangaCodes.Contains(archiveCode))?.RecalcCompleted();
                     }
                     else
                         ++i;
@@ -210,14 +222,14 @@ namespace DaruDaru.Config
             }
         }
 
-        internal static void ClearArchives()
+        internal static void ClearManga()
         {
-            lock (Archives)
+            lock (Manga)
             {
-                Archives.Clear();
+                Manga.Clear();
 
-                lock (MarumaruLinks)
-                    foreach (var ml in MarumaruLinks)
+                lock (Detail)
+                    foreach (var ml in Detail)
                         ml.RecalcCompleted();
             }
 
@@ -225,35 +237,35 @@ namespace DaruDaru.Config
 
         public static bool ArchiveAllDownloaded(IEnumerable<string> archiveCodes)
         {
-            lock (ArchiveHash)
-                return archiveCodes?.All(e => ArchiveHash.Contains(e)) ?? false;
+            lock (MangaCodeHash)
+                return archiveCodes?.All(e => MangaCodeHash.Contains(e)) ?? false;
         }
 
         public static void RecalcCompleted()
         {
-            lock (MarumaruLinks)
-                foreach (var item in MarumaruLinks)
+            lock (Detail)
+                foreach (var item in Detail)
                     item.RecalcCompleted();
         }
 
         public static void ClearDuplicatedFileName()
         {
-            lock (Archives)
+            lock (Manga)
             {
-                var codes = Archives.GroupBy(e => e.ZipPath).Where(e => e.Count() > 1).SelectMany(e => e).Select(e => e.ArchiveCode).ToArray();
+                var codes = Manga.GroupBy(e => e.ZipPath).Where(e => e.Count() > 1).SelectMany(e => e).Select(e => e.ArchiveCode).ToArray();
 
-                RemoveArchives(codes, true);
+                RemoveManga(codes, true);
             }
         }
 
         public static void ClearDuplicatedLink()
         {
-            lock (MarumaruLinks)
+            lock (Detail)
             {
-                foreach (var e in MarumaruLinks.GroupBy(le => le.Title).Where(le => le.Count() > 1).Where(le => le.Any(lee => lee.ArchiveCodes.Length == 1)))
+                foreach (var e in Detail.GroupBy(le => le.Title).Where(le => le.Count() > 1).Where(le => le.Any(lee => lee.MangaCodes.Length == 1)))
                 {
-                    foreach (var ee in e.OrderByDescending(le => le.ArchiveCodes.Length).Skip(1))
-                        MarumaruLinks.Remove(ee);
+                    foreach (var ee in e.OrderByDescending(le => le.MangaCodes.Length).Skip(1))
+                        Detail.Remove(ee);
                 }
             }
         }

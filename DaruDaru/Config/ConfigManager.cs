@@ -18,6 +18,8 @@ namespace DaruDaru.Config
         private static readonly string ConfigPath2 = Path.ChangeExtension(App.AppPath, ".cfg.new");
         private static readonly JsonSerializer Serializer = JsonSerializer.Create();
 
+        public static string CurrentServerHost;
+        
         static ConfigManager()
         {
             //Serializer.Formatting = Formatting.Indented;
@@ -37,6 +39,8 @@ namespace DaruDaru.Config
 
                 ArchiveManager.RecalcCompleted();
             }
+
+            CurrentServerHost = Instance.ServerHost;
         }
 
         private static readonly object SaveSync = new object();
@@ -144,22 +148,22 @@ namespace DaruDaru.Config
             }
         }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
-        public IList<MarumaruEntry> MaruLinks => ArchiveManager.MarumaruLinks;
-
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
-        public IList<ArchiveEntry> Archives => ArchiveManager.Archives;
-
-        private string m_protectedUrl;
-        public string ProtectedUri
+        private string m_serverHost = "manamoa15.net";
+        public string ServerHost
         {
-            get => this.m_protectedUrl;
+            get => this.m_serverHost;
             set
             {
-                this.m_protectedUrl = value;
+                this.m_serverHost = value;
 
                 Save();
             }
         }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public IList<MangaEntry> MaruLinks => ArchiveManager.Detail;
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public IList<MangaArticleEntry> Archives => ArchiveManager.Manga;
     }
 }

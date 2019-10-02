@@ -16,7 +16,6 @@ namespace DaruDaru.Core.Converters
         public Brush BrushSkip       { get; set; }
 
         public Brush BrushError      { get; set; }
-        public Brush BrushProtected  { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -28,8 +27,6 @@ namespace DaruDaru.Core.Converters
                 case MaruComicState.Complete_2_Archived:    return this.BrushDownloaded;
                 case MaruComicState.Complete_3_NoNew:       return this.BrushNoNew;
                 case MaruComicState.Complete_4_Skip:        return this.BrushSkip;
-                    
-                case MaruComicState.Error_2_Protected:      return this.BrushProtected;
             }
 
             if (state.HasFlag(MaruComicState.Error))

@@ -22,11 +22,11 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 Comic comic = null;
 
-                if (DaruUriParser.Marumaru.CheckUri(newUri))
-                    comic = new WasabiPage(this.AddNewonly, newUri, null, null);
+                if (DaruUriParser.Detail.CheckUri(newUri))
+                    comic = new DetailPage(this.AddNewonly, newUri, null, false);
 
-                else if (DaruUriParser.Archive.CheckUri(newUri))
-                    comic = new MaruPage(this.AddNewonly, newUri, null, false);
+                else if (DaruUriParser.Manga.CheckUri(newUri))
+                    comic = new MangaPage(this.AddNewonly, newUri, null, null);
 
                 if (comic != null)
                     MainWindow.Instance.InsertNewComic(this, new Comic[] { comic }, true);

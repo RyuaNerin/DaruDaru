@@ -67,7 +67,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenFile_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<WasabiPage>().GetPath();
+            var items = this.Get<MangaPage>().GetPath();
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
@@ -81,18 +81,18 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenDir_Click(object sender, RoutedEventArgs e)
         {
-            var maru   = this.Get<MaruPage  >().GetDir ();
-            var wasabi = this.Get<WasabiPage>().GetPath();
-            if (maru.Length == 0 && wasabi.Length == 0) return;
+            var detailPages = this.Get<DetailPage>().GetDir ();
+            var mangaPages  = this.Get<MangaPage >().GetPath();
+            if (detailPages.Length == 0 && mangaPages.Length == 0) return;
 
-            if ((Explorer.GetDirectoryCount(wasabi) + maru.Length) > App.WarningItems &&
+            if ((Explorer.GetDirectoryCount(mangaPages) + detailPages.Length) > App.WarningItems &&
                 !await MainWindow.Instance.ShowMassageBoxTooMany())
                 return;
 
-            foreach (var fe in maru)
+            foreach (var fe in detailPages)
                 Explorer.Open(fe);
 
-            Explorer.OpenAndSelect(wasabi);
+            Explorer.OpenAndSelect(mangaPages);
         }
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
@@ -191,8 +191,8 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ListViewDefaultCommand(Comic comic)
         {
-            var maruPage   = comic as MaruPage;
-            var wasabiPage = comic as WasabiPage;
+            var detailPage = comic as DetailPage;
+            var mangaPage  = comic as MangaPage;
 
             // 진행중일 때
             if (comic.State == MaruComicState.Wait ||
@@ -202,31 +202,20 @@ namespace DaruDaru.Core.Windows.MainTabs
             }
             else if (comic.State.HasFlag(MaruComicState.Complete))
             {
-                if (wasabiPage != null)
+                if (mangaPage != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(wasabiPage.ZipPath) && File.Exists(wasabiPage.ZipPath))
+                    if (!string.IsNullOrWhiteSpace(mangaPage.ZipPath) && File.Exists(mangaPage.ZipPath))
                         if (HoneyViwer.TryCreate(out var hv))
-                            hv.Open(wasabiPage.ZipPath);
+                            hv.Open(mangaPage.ZipPath);
                 }
-                else if (maruPage != null)
+                else if (detailPage != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(maruPage.DirPath) && Directory.Exists(maruPage.DirPath))
-                        Explorer.Open(maruPage.DirPath);
+                    if (!string.IsNullOrWhiteSpace(detailPage.DirPath) && Directory.Exists(detailPage.DirPath))
+                        Explorer.Open(detailPage.DirPath);
                 }
             }
             else if (comic.State.HasFlag(MaruComicState.Error))
             {
-                if (wasabiPage != null)
-                {
-                    switch (comic.State)
-                    {
-                        case MaruComicState.Error_2_Protected:
-                        case MaruComicState.Error_4_Captcha:
-                            this.BypassProtectedArchive(wasabiPage);
-                            return;
-                    }
-                }
-
                 comic.Restart();
             }
         }
@@ -245,17 +234,6 @@ namespace DaruDaru.Core.Windows.MainTabs
 
             this.Text = null;
             this.FocusTextBox();
-        }
-
-        private void BypassProtectedArchive(WasabiPage page)
-        {
-            using (var wnd = new Recaptcha(MainWindow.Instance.Window, page.Uri))
-            {
-                wnd.ShowDialog();
-
-                if (wnd.RecaptchaResult == Recaptcha.Result.Success)
-                    page.Restart();
-            }
         }
 
         public void DownloadUri(bool addNewOnly, Uri uri, string comicName, bool skipMarumaru)
@@ -302,7 +280,9 @@ namespace DaruDaru.Core.Windows.MainTabs
                 if (removeSender)
                     this.Queue.RemoveAt(index);
                 else
+                {
                     index += 1;
+                }
 
                 foreach (var newItem in newItems)
                 {

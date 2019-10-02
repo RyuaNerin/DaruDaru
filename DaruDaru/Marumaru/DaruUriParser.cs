@@ -1,19 +1,21 @@
 using System;
 using System.Text.RegularExpressions;
+using DaruDaru.Config;
 
 namespace DaruDaru.Marumaru
 {
     internal class DaruUriParser
     {
-        public static DaruUriParser Marumaru { get; } = new DaruUriParser(
-                @"^https?:\/\/(?:[a-zA-Z0-9][a-zA-Z0-9-]*\.)*marumaru\.in\/(?:@*\/)*(?:@*\?(?:(?!uid)@+=@+&)*uid=)?(\d+)+.*$"
+        public static DaruUriParser Detail { get; } = new DaruUriParser(
+                @"^https?:\/\/manamoa\d*\.net\/bbs\/page\.php\?(?:(?:hid=manga_detail&|(?!manga_id)@+=@+&)*manga_id=)?(\d+)+.*$"
                     .Replace("@", @"[\w\-\._~:\/#\[\]@!\$&'\(\)\*\+,;=.%]"),
-                code => new Uri("https://marumaru.in/b/manga/" + code)
+                code => new Uri($"https://{ConfigManager.CurrentServerHost}/bbs/page.php?hid=manga_detail&manga_id=" + code)
             );
 
-        public static DaruUriParser Archive { get; } = new DaruUriParser(
-                @"^https?:\/\/(?:[^\.]*\.)?(?:mangaumaru\.com|shencomics\.com|(?:blog\.)?yuncomics\.com|wasabisyrup\.com)\/archives\/([^\?""']+)",
-                code => new Uri("http://wasabisyrup.com/archives/" + code)
+        public static DaruUriParser Manga { get; } = new DaruUriParser(
+                @"^^https?:\/\/manamoa\d*\.net\/bbs\/page\.php\?(?:(?:bo_table=manga&|(?!wr_id)@+=@+&)*wr_id=)?(\d+)+.*$"
+                    .Replace("@", @"[\w\-\._~:\/#\[\]@!\$&'\(\)\*\+,;=.%]"),
+                code => new Uri($"https://{ConfigManager.CurrentServerHost}/bbs/board.php?bo_table=manga&wr_id=" + code)
             );
 
         private DaruUriParser(string regex, Func<string, Uri> toUri)
