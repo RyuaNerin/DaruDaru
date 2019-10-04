@@ -172,7 +172,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         Regex.Match(doc.DocumentNode.InnerHtml, "var only_chapter ?= ?\\[[^;]+\\];").Groups[0].Value,
                         "\\[ *\"([^\"]+)\" *, *\"([^\"]+)\" *\\]"
                     )
-                    .Cast<Match>()
+                    ?.Cast<Match>()
                     .FirstOrDefault(e => e.Groups[2].Value == this.ArchiveCode)
                     ?.Groups[1].Value;
 
@@ -183,9 +183,20 @@ namespace DaruDaru.Marumaru.ComicInfo
                 }
                 else
                 {
-                    var title = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//meta[@name='title']").GetAttributeValue("content", "")).Trim();
+                    var titleNode = doc.DocumentNode.SelectSingleNode("div[@class='toon-title']");
+                    if (titleNode == null)
+                        return null;
+
+                    foreach (var titleNodeChild in titleNode.ChildNodes)
+                    {
+                        if (titleNodeChild.NodeType == HtmlNodeType.Element)
+                            titleNodeChild.Remove();
+                    }
+
+                    var title = Utility.ReplcaeHtmlTag(titleNode.InnerText ?? string.Empty);
                     if (string.IsNullOrWhiteSpace(title))
                         return null;
+
                     titleWithNo = title;
                 }
 

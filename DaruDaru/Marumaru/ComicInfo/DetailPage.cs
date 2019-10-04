@@ -133,49 +133,69 @@ namespace DaruDaru.Marumaru.ComicInfo
                 NewUri = uri,
                 MaruCode = DaruUriParser.Detail.GetCode(uri),
                 IsFinished = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//a[@class='publish_type']")?.InnerText) == "완결",
+                Title = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//div[@class='red title']").InnerText.Replace("\n", "")).Trim(),
             };
 
             var mangaDetail = node.SelectSingleNode(".//div[@class='manga-detail-list']");
             if (mangaDetail == null)
                 return null;
 
-            foreach (var a in mangaDetail.SelectNodes(".//a[@href]"))
+            foreach (var slot in mangaDetail.SelectNodes(".//div[@class='slot']"))
             {
-                var href = a.Attributes["href"].Value;
-                if (href == "#")
-                    continue;
+                Uri mangaUri = null;
 
-                if (Utility.TryCreateUri(detailInfo.NewUri, href, out Uri a_uri))
                 {
-                    if (!DaruUriParser.Manga.CheckUri(a_uri) && !Utility.ResolvUri(a_uri, out a_uri))
-                        continue;
-
-                    if (DaruUriParser.Manga.CheckUri(a_uri))
+                    var mangaCode = slot.GetAttributeValue("data-wrid", null);
+                    if (mangaCode != null)
                     {
-                        var titleNo = a.InnerText;
+                        mangaUri = DaruUriParser.Manga.GetUri(mangaCode);
+                    }
+                }
 
-                        if (!string.IsNullOrWhiteSpace(titleNo))
+                if (mangaUri == null)
+                {
+                    foreach (var a in slot.SelectNodes(".//a[@class='href']"))
+                    {
+                        var href = a.Attributes["href"].Value;
+                        if (href == "#")
+                            continue;
+
+                        if (Utility.TryCreateUri(detailInfo.NewUri, href, out mangaUri))
                         {
-                            var title = a.SelectSingleNode(".//div[@class='title']")?.InnerText ?? string.Empty;
-                            title = Utility.ReplcaeHtmlTag(title).Trim('\t').Trim();
+                            if (DaruUriParser.Manga.CheckUri(mangaUri))
+                                break;
 
-                            while (title.Contains("  "))
-                            {
-                                title = title.Replace("  ", " ");
-                            }
-
-                            detailInfo.MangaList.Add(new Links
-                            {
-                                Uri        = a_uri,
-                                MangaCode  = DaruUriParser.Manga.GetCode(a_uri),
-                                MangaTitle = title,
-                            });
+                            if (Utility.ResolvUri(mangaUri, out mangaUri) && DaruUriParser.Manga.CheckUri(mangaUri))
+                                break;
                         }
                     }
                 }
+
+                if (mangaUri == null)
+                    continue;
+
+                string title = null;
+
+                var titleNode = slot.SelectSingleNode(".//div[@class='title']");
+                if (titleNode != null)
+                {
+                    foreach (var child in titleNode.ChildNodes)
+                    {
+                        if (child.NodeType == HtmlNodeType.Element)
+                            child.Remove();
+                    }
+
+                    title = Utility.ReplcaeHtmlTag(titleNode.InnerText ?? string.Empty);
+                }
+
+                detailInfo.MangaList.Add(new Links
+                {
+                    Uri        = mangaUri,
+                    MangaCode  = DaruUriParser.Manga.GetCode(mangaUri),
+                    MangaTitle = title,
+                });
             }
 
-            detailInfo.Title = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//div[@class='red title']").InnerText.Replace("\n", "")).Trim();
 
             return detailInfo;
         }

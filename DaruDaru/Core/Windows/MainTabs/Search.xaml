@@ -60,8 +60,19 @@
     <ctrs:BaseControl.ListView>
         <GridView>
             <GridViewColumn Header="제목"
-                            Width="190"
-                            DisplayMemberBinding="{Binding DisplayName, Mode=OneWay}" />
+                            Width="190">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"
+                                   TextAlignment="Left"
+                                   TextWrapping="NoWrap"
+                                   LineStackingStrategy="BlockLineHeight"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding DisplayName, Mode=OneWay}" />
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
 
             <GridViewColumn Header="상태"
                             Width="90">

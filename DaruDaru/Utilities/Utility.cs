@@ -34,6 +34,17 @@ namespace DaruDaru.Utilities
                                                           .Replace("&copy;", "©")
                                                           .Replace("&reg;", "®");
 
+        public static string ReplaceHtmlTagAndRemoveTab(string s)
+        {
+            s = ReplcaeHtmlTag(s).Replace('\t', ' ').Trim();
+
+            while (s.Contains("  "))
+            {
+                s = s.Replace("  ", " ");
+            }
+            return s;
+        }
+
         private const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
         private const int HR_ERROR_DISK_FULL        = unchecked((int)0x80070070);
 

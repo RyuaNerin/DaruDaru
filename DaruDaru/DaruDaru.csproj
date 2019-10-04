@@ -96,12 +96,12 @@
     </ApplicationDefinition>
     <Compile Include="Config\ConfigManager.cs" />
     <Compile Include="Config\ConfigCur.cs" />
-    <Compile Include="Config\Entries\MangaArticleEntry.cs" />
+    <Compile Include="Config\Entries\MangaEntry.cs" />
     <Compile Include="Core\Converters\InvertVisibility.cs" />
     <Compile Include="Core\Converters\SelectedTextConverter.cs" />
     <Compile Include="Marumaru\ImageDecryptor.cs" />
     <Compile Include="Utilities\CollectionHelper.cs" />
-    <Compile Include="Config\Entries\MangaEntry.cs" />
+    <Compile Include="Config\Entries\DetailEntry.cs" />
     <Compile Include="Config\IEntry.cs" />
     <Compile Include="Core\Windows\MainTabs\Controls\BaseControl.cs" />
     <Compile Include="Core\Windows\MainTabs\Config.xaml.cs">
