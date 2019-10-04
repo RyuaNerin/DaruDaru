@@ -13,7 +13,7 @@ namespace DaruDaru.Config
     {
         public static ObservableCollection<DetailEntry> Detail { get; } = new ObservableCollection<DetailEntry>();
 
-        public static ObservableCollection<MangaArticleEntry> Manga { get; } = new ObservableCollection<MangaArticleEntry>();
+        public static ObservableCollection<MangaEntry> Manga { get; } = new ObservableCollection<MangaEntry>();
         private static readonly HashSet<string> MangaCodeHash = new HashSet<string>(StringComparer.Ordinal);
 
         static ArchiveManager()
@@ -25,7 +25,7 @@ namespace DaruDaru.Config
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                var newItem = e.NewItems.Cast<MangaArticleEntry>();
+                var newItem = e.NewItems.Cast<MangaEntry>();
                 
                 foreach (var item in newItem)
                 {
@@ -36,7 +36,7 @@ namespace DaruDaru.Config
 
             else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                var newItem = e.OldItems.Cast<MangaArticleEntry>();
+                var newItem = e.OldItems.Cast<MangaEntry>();
                 
                 foreach (var item in newItem)
                     lock (MangaCodeHash)
@@ -98,7 +98,7 @@ namespace DaruDaru.Config
             lock (Manga)
             {
                 bool found = false;
-                MangaArticleEntry entry = null;
+                MangaEntry entry = null;
 
                 for (var i = 0; i < Manga.Count; ++i)
                 {
@@ -112,14 +112,14 @@ namespace DaruDaru.Config
 
                 if (!found)
                 {
-                    entry = new MangaArticleEntry
+                    entry = new MangaEntry
                     {
                         ArchiveCode = mangaCode,
                         TitleWithNo = mangaName,
                         ZipPath     = mangaZipPath,
                     };
 
-                    Application.Current.Dispatcher.Invoke(new Action<MangaArticleEntry>(Manga.Add), entry);
+                    Application.Current.Dispatcher.Invoke(new Action<MangaEntry>(Manga.Add), entry);
 
                     lock (Detail)
                         Detail.FirstOrDefault(le => le.MangaCodes != null && le.MangaCodes.Contains(mangaCode))?.RecalcCompleted();
@@ -145,7 +145,7 @@ namespace DaruDaru.Config
                 return null;
             }
         }
-        public static MangaArticleEntry GetManga(string mangaCode)
+        public static MangaEntry GetManga(string mangaCode)
         {
             lock (Manga)
             {

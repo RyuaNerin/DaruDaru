@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace DaruDaru.Config.Entries
 {
-    internal class MangaArticleEntry : INotifyPropertyChanged, IEntry
+    internal class MangaEntry : INotifyPropertyChanged, IEntry
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)

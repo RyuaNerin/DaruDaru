@@ -18,18 +18,18 @@ namespace DaruDaru.Utilities
                    .Distinct()
                    .ToArray();
 
-        public static string[] GetPath(this IEnumerable<MangaArticleEntry> coll)
+        public static string[] GetPath(this IEnumerable<MangaEntry> coll)
             => coll.Select(e => e.ZipPath)
                    .Distinct()
                    .Where(e => File.Exists(e))
                    .ToArray();
 
-        public static string[] GetUri(this IEnumerable<MangaArticleEntry> coll)
+        public static string[] GetUri(this IEnumerable<MangaEntry> coll)
             => coll.Select(e => e.Uri.AbsoluteUri)
                    .Distinct()
                    .ToArray();
 
-        public static string[] GetCodes(this IEnumerable<MangaArticleEntry> coll)
+        public static string[] GetCodes(this IEnumerable<MangaEntry> coll)
             => coll.Select(e => e.ArchiveCode)
                    .Distinct()
                    .ToArray();

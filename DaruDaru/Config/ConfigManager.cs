@@ -164,6 +164,6 @@ namespace DaruDaru.Config
         public IList<DetailEntry> Detail => ArchiveManager.Detail;
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
-        public IList<MangaArticleEntry> Manga => ArchiveManager.Manga;
+        public IList<MangaEntry> Manga => ArchiveManager.Manga;
     }
 }
