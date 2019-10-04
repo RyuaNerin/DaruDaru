@@ -13,7 +13,7 @@ namespace DaruDaru.Marumaru
             );
 
         public static DaruUriParser Manga { get; } = new DaruUriParser(
-                @"^^https?:\/\/manamoa\d*\.net\/bbs\/page\.php\?(?:(?:bo_table=manga&|(?!wr_id)@+=@+&)*wr_id=)?(\d+)+.*$"
+                @"^https?:\/\/manamoa\d*\.net\/bbs\/board\.php\?(?:(?:bo_table=manga&|(?!wr_id)@+=@+&)*wr_id=)?(\d+)+.*$"
                     .Replace("@", @"[\w\-\._~:\/#\[\]@!\$&'\(\)\*\+,;=.%]"),
                 code => new Uri($"https://{ConfigManager.CurrentServerHost}/bbs/board.php?bo_table=manga&wr_id=" + code)
             );

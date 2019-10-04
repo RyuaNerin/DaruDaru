@@ -18,7 +18,7 @@ namespace DaruDaru.Core
             AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
             AppDir  = Path.GetDirectoryName(AppPath);
 
-            WebRequest.DefaultWebProxy = null;
+            //WebRequest.DefaultWebProxy = null;
 
             HttpWebRequest.DefaultCachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 

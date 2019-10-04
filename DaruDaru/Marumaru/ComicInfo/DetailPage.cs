@@ -34,9 +34,9 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string MangaCode;
             public string MangaTitle;
         }
-        public struct DetailInfomation
+        public class DetailInfomation
         {
-            public List<Links>  MangaList;
+            public List<Links>  MangaList { get; } = new List<Links>();
             public Uri          NewUri;
             public string       MaruCode;
             public string       Title;
@@ -45,32 +45,29 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
         protected override bool GetInfomationPriv(ref int count)
         {
-            var args = new DetailInfomation
-            {
-                MangaList = new List<Links>(),
-            };
+            DetailInfomation detailInfo = null;
 
             bool retrySuccess;
             using (var wc = new WebClientEx())
-                retrySuccess = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
+                retrySuccess = Utility.Retry(() => (detailInfo = this.GetInfomationWorker(wc)) != null);
 
-            if (args.OccurredError)
+            if (detailInfo.OccurredError)
                 return false;
 
-            if (!retrySuccess || args.MangaList.Count == 0)
+            if (!retrySuccess || detailInfo.MangaList.Count == 0)
             {
                 this.State = MaruComicState.Error_1_Error;
                 return false;
             }
 
-            this.Title = args.Title;
-            this.Uri   = args.NewUri;
+            this.Title = detailInfo.Title;
+            this.Uri   = detailInfo.NewUri;
 
             try
             {
-                ArchiveManager.UpdateDetail(args.MaruCode, this.Title, args.MangaList.Select(e => e.MangaCode).ToArray(), args.IsFinished);
+                ArchiveManager.UpdateDetail(detailInfo.MaruCode, this.Title, detailInfo.MangaList.Select(e => e.MangaCode).ToArray(), detailInfo.IsFinished);
 
-                IEnumerable<Links> items = args.MangaList;
+                IEnumerable<Links> items = detailInfo.MangaList;
 
                 if (this.AddNewonly)
                     items = ArchiveManager.IsNewManga(items, e => DaruUriParser.Manga.GetCode(e.Uri));
@@ -87,7 +84,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     MainWindow.Instance.UpdateTaskbarProgress();
                 }
 
-                count = args.MangaList.Count;
+                count = detailInfo.MangaList.Count;
 
                 // Create Shortcut
                 if (this.ConfigCur.CreateUrlLink)
@@ -111,33 +108,36 @@ namespace DaruDaru.Marumaru.ComicInfo
             return false;
         }
 
-        private bool GetInfomationWorker(WebClientEx wc, ref DetailInfomation args)
+        private DetailInfomation GetInfomationWorker(WebClientEx wc)
         {
             var html = this.GetHtml(wc, this.Uri);
             if (html == null)
             {
-                args.OccurredError = true;
-                return false;
+                return new DetailInfomation
+                {
+                    OccurredError = true,
+                };
             }
 
-            args.NewUri = wc.ResponseUri ?? this.Uri;
-            args.MaruCode = DaruUriParser.Detail.GetCode(args.NewUri);
 
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            return GetDetailInfomation(doc.DocumentNode, ref args);
+            return GetDetailInfomation(wc.ResponseUri ?? this.Uri, doc.DocumentNode);
         }
 
-        public static bool GetDetailInfomation(HtmlNode node, ref DetailInfomation args)
+        public static DetailInfomation GetDetailInfomation(Uri uri, HtmlNode node)
         {
-            args.MangaList.Clear();
-
-            args.IsFinished = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//a[@class='publish_type']")?.InnerText) == "완결";
+            var detailInfo = new DetailInfomation
+            {
+                NewUri = uri,
+                MaruCode = DaruUriParser.Detail.GetCode(uri),
+                IsFinished = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//a[@class='publish_type']")?.InnerText) == "완결",
+            };
 
             var mangaDetail = node.SelectSingleNode(".//div[@class='manga-detail-list']");
             if (mangaDetail == null)
-                return false;
+                return null;
 
             foreach (var a in mangaDetail.SelectNodes(".//a[@href]"))
             {
@@ -145,7 +145,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (href == "#")
                     continue;
 
-                if (Utility.TryCreateUri(args.NewUri, href, out Uri a_uri))
+                if (Utility.TryCreateUri(detailInfo.NewUri, href, out Uri a_uri))
                 {
                     if (!DaruUriParser.Manga.CheckUri(a_uri) && !Utility.ResolvUri(a_uri, out a_uri))
                         continue;
@@ -156,22 +156,28 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         if (!string.IsNullOrWhiteSpace(titleNo))
                         {
-                            var title = a.SelectSingleNode(".//div[@class='title']");
+                            var title = a.SelectSingleNode(".//div[@class='title']")?.InnerText ?? string.Empty;
+                            title = Utility.ReplcaeHtmlTag(title).Trim('\t').Trim();
 
-                            args.MangaList.Add(new Links
+                            while (title.Contains("  "))
+                            {
+                                title = title.Replace("  ", " ");
+                            }
+
+                            detailInfo.MangaList.Add(new Links
                             {
                                 Uri        = a_uri,
                                 MangaCode  = DaruUriParser.Manga.GetCode(a_uri),
-                                MangaTitle = Utility.ReplcaeHtmlTag(title?.InnerText),
+                                MangaTitle = title,
                             });
                         }
                     }
                 }
             }
 
-            args.Title = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//div[@class='red title']").InnerText.Replace("\n", "")).Trim();
+            detailInfo.Title = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//div[@class='red title']").InnerText.Replace("\n", "")).Trim();
 
-            return true;
+            return detailInfo;
         }
     }
 }

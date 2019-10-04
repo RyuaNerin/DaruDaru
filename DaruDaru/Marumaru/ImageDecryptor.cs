@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,10 +12,11 @@ namespace DaruDaru.Marumaru
     {
         private readonly int[] m_partOrder;
         private readonly V2 m_v2 = new V2();
+        private readonly bool m_skip;
 
-        public ImageDecryptor(string html, Uri baseUri)
+        public ImageDecryptor(string html, Uri uri)
         {
-            this.m_v2.Chapter = int.Parse(Regex.Match(baseUri.Query, "wr_id=(\\d+)").Groups[1].Value);
+            this.m_v2.Chapter = int.Parse(Regex.Match(uri.Query, "wr_id=(\\d+)").Groups[1].Value);
 
             var view_cnt = int.Parse(Regex.Match(html, "view_cnt ?= ?(\\d+)").Groups[1].Value);
             if (3e4 < view_cnt / 10)
@@ -34,15 +36,25 @@ namespace DaruDaru.Marumaru
             this.m_v2.__s(view_cnt / 10);
 
             this.m_partOrder = this.m_v2.GetPagenation();
+
+            this.m_skip = this.m_partOrder.SequenceEqual(this.m_partOrder.OrderBy(e => e));
         }
 
         public void Decrypt(Stream stream)
         {
+            if (this.m_skip)
+                return;
+
+
             Image imgOriginal;
+            ImageFormat imgFormat;
 
             stream.Position = 0;
             using (var n = Image.FromStream(stream))
+            {
                 imgOriginal = new Bitmap(n);
+                imgFormat = n.RawFormat;
+            }
 
             using (imgOriginal)
             {
@@ -69,7 +81,7 @@ namespace DaruDaru.Marumaru
                     }
 
                     stream.SetLength(0);
-                    imgDec.Save(stream, imgOriginal.RawFormat);
+                    imgDec.Save(stream, imgFormat);
                 }
             }
         }

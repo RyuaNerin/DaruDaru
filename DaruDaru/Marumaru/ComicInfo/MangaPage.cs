@@ -48,25 +48,21 @@ namespace DaruDaru.Marumaru.ComicInfo
             public FileStream   TempStream;
             public string       Extension;
         }
-        private struct GetInfomationArgs
+        private class MangaInfomation
         {
-            public List<ImageInfomation> Images;
+            public List<ImageInfomation> Images { get; } = new List<ImageInfomation>();
             public Uri                   NewUri;
             public bool                  OccurredError;
         }
 
         protected override bool GetInfomationPriv(ref int count)
         {
-            var args = new GetInfomationArgs()
-            {
-                Images = new List<ImageInfomation>()
-            };
-
+            MangaInfomation mangaInfo = null;
             bool retrySuccess;
             using (var wc = new WebClientEx())
-                retrySuccess = Utility.Retry(() => this.GetInfomationWorker(wc, ref args));
+                retrySuccess = Utility.Retry(() => (mangaInfo = this.GetInfomationWorker(wc)) != null);
 
-            if (args.OccurredError)
+            if (mangaInfo.OccurredError)
                 return false;
 
             if (!retrySuccess)
@@ -75,12 +71,12 @@ namespace DaruDaru.Marumaru.ComicInfo
                 return false;
             }
 
-            this.Uri = args.NewUri;
+            this.Uri = mangaInfo.NewUri;
 
             this.ProgressValue = 0;
-            this.ProgressMaximum = args.Images.Count;
+            this.ProgressMaximum = mangaInfo.Images.Count;
 
-            this.m_images = args.Images.ToArray();
+            this.m_images = mangaInfo.Images.ToArray();
 
             // 다운로드 시작
             this.State = MaruComicState.Working_2_WaitDownload;
@@ -90,28 +86,32 @@ namespace DaruDaru.Marumaru.ComicInfo
             return true;
         }
 
-        private bool GetInfomationWorker(WebClientEx wc, ref GetInfomationArgs args)
+        private MangaInfomation GetInfomationWorker(WebClientEx wc)
         {
+            var mangaInfo = new MangaInfomation();
+
             wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
             var html = this.GetHtml(wc, this.Uri);
 
             if (html == null)
             {
-                args.OccurredError = true;
-                return false;
+                return new MangaInfomation
+                {
+                    OccurredError = true,
+                };
             }
 
-            args.NewUri = wc.ResponseUri ?? this.Uri;
+            mangaInfo.NewUri = wc.ResponseUri ?? this.Uri;
 
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-#region 폴더 이름은 Detail 에서 설정
+            #region 폴더 이름은 Detail 에서 설정
             {
                 // /bbs/page.php?hid=manga_detail&manga_id=9495
                 var toonNav = doc.DocumentNode.SelectSingleNode("//div[@class='toon-nav']");
                 if (toonNav == null)
-                    return false;
+                    return null;
 
                 string detailCode = null;
                 foreach (HtmlNode node in toonNav.SelectNodes(".//a[@href]"))
@@ -132,26 +132,38 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 if (detailEntry == null)
                 {
-                    var info = new DetailPage.DetailInfomation();
-                    var htmlDetail = this.GetHtml(wc, DaruUriParser.Detail.GetUri(detailCode));
+                    var detailUri = DaruUriParser.Detail.GetUri(detailCode);
+                    string htmlDetail = null;
 
                     var docDetail = new HtmlDocument();
-                    docDetail.LoadHtml(htmlDetail);
+                    DetailPage.DetailInfomation detailInfo = null;
 
-                    if (!DetailPage.GetDetailInfomation(docDetail.DocumentNode, ref info))
-                        return false;
+                    var detailResult = Utility.Retry(() =>
+                    {
+                        htmlDetail = this.GetHtml(wc, detailUri);
+                        if (htmlDetail == null)
+                            return false;
 
-                    ArchiveManager.UpdateDetail(detailCode, info.Title, info.MangaList.Select(e => e.MangaCode).ToArray());
+                        docDetail.LoadHtml(htmlDetail);
+
+                        detailInfo = DetailPage.GetDetailInfomation(detailUri, docDetail.DocumentNode);
+                        return detailInfo != null;
+                    });
+
+                    if (!detailResult)
+                        return null;
+
+                    ArchiveManager.UpdateDetail(detailCode, detailInfo.Title, detailInfo.MangaList.Select(e => e.MangaCode).ToArray());
 
                     detailEntry = ArchiveManager.GetDetail(detailCode);
 
                     if (detailEntry == null)
-                        return false;
+                        return null;
                 }
 
                 this.Title = detailEntry.Title;
             }
-#endregion
+            #endregion
 
             #region Detail.Title + xx화
             {
@@ -173,12 +185,12 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     var title = Utility.ReplcaeHtmlTag(doc.DocumentNode.SelectSingleNode("//meta[@name='title']").GetAttributeValue("content", "")).Trim();
                     if (string.IsNullOrWhiteSpace(title))
-                        return false;
+                        return null;
                     titleWithNo = title;
                 }
 
                 if (string.IsNullOrWhiteSpace(titleWithNo))
-                    return false;
+                    return null;
                 this.TitleWithNo = titleWithNo;
             }
             #endregion
@@ -196,17 +208,16 @@ namespace DaruDaru.Marumaru.ComicInfo
                           .Select(e => new Uri(this.Uri, e))
                           .ToArray();
 
-                this.m_images = new ImageInfomation[imgList.Length];
                 for (var i = 0; i < imgList.Length; i++)
                 {
-                    this.m_images[i] = new ImageInfomation()
+                    var imageInfo = new ImageInfomation()
                     {
                         Index = i + 1,
                     };
 
                     if (i < imgList1.Length)
                     {
-                        this.m_images[i].ImageUri = new Uri[]
+                        imageInfo.ImageUri = new Uri[]
                         {
                             imgList[i],
                             new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
@@ -215,19 +226,21 @@ namespace DaruDaru.Marumaru.ComicInfo
                     }
                     else
                     {
-                        this.m_images[i].ImageUri = new Uri[]
+                        imageInfo.ImageUri = new Uri[]
                         {
                             imgList[i],
                             new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
                         };
                     }
+
+                    mangaInfo.Images.Add(imageInfo);
                 }
             }
             #endregion
 
-            this.m_decryptor = new ImageDecryptor(html, args.NewUri);
+            this.m_decryptor = new ImageDecryptor(html, mangaInfo.NewUri);
 
-            return true;
+            return mangaInfo;
         }
 
         protected override void StartDownloadPriv()
@@ -389,9 +402,11 @@ namespace DaruDaru.Marumaru.ComicInfo
                         {
                             var succ = Utility.Retry(() => this.DownloadWorker(e, index));
 
-                            if (!succ)
-                                state.Stop();
+                            if (succ)
+                                return;
                         }
+
+                        state.Stop();
                     }).IsCompleted;
             });
 
