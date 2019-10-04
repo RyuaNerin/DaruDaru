@@ -8,12 +8,12 @@ namespace DaruDaru.Utilities
 {
     internal static class CollectionHelper
     {
-        public static string[] GetUri(this IEnumerable<MangaEntry> coll)
+        public static string[] GetUri(this IEnumerable<DetailEntry> coll)
             => coll.Select(e => e.Uri.AbsoluteUri)
                    .Distinct()
                    .ToArray();
 
-        public static string[] GetCodes(this IEnumerable<MangaEntry> coll)
+        public static string[] GetCodes(this IEnumerable<DetailEntry> coll)
             => coll.Select(e => e.DetailCode)
                    .Distinct()
                    .ToArray();

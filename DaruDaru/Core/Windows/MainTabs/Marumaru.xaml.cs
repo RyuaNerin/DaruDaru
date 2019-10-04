@@ -36,7 +36,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuArchiveSearch_Click(object sender, RoutedEventArgs e)
         {
-            if (this.SelectedItem is MangaEntry entry)
+            if (this.SelectedItem is DetailEntry entry)
                 MainWindow.Instance.SearchArchiveByCodes(entry.MangaCodes, entry.Title);
         }
 
@@ -52,7 +52,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void AddRecentSelectedItems(bool addNewOnly)
         {
-            var items = this.Get<MangaEntry>();
+            var items = this.Get<DetailEntry>();
             if (items.Length == 0) return;
 
             MainWindow.Instance.DownloadUri(addNewOnly, items, e => e.Uri, e => e.Title, e => e.Completed);
@@ -60,7 +60,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private async void ctlMenuOpenWeb_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<MangaEntry>().GetUri();
+            var items = this.Get<DetailEntry>().GetUri();
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
@@ -73,7 +73,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<MangaEntry>().GetUri();
+            var items = this.Get<DetailEntry>().GetUri();
             if (items.Length == 0) return;
 
             Clipboard.SetText(string.Join("\n", items));
@@ -81,7 +81,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var entry = ((ListViewItem)sender).Content as MangaEntry;
+            var entry = ((ListViewItem)sender).Content as DetailEntry;
             if (entry != null)
                 MainWindow.Instance.SearchArchiveByCodes(entry.MangaCodes, entry.Title);
         }
@@ -98,7 +98,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ContextMenu_Opened(object sender, RoutedEventArgs e)
         {
-            var items = this.Get<MangaEntry>();
+            var items = this.Get<DetailEntry>();
             var isChecked = items.Any(le => le.Finished);
 
             this.MenuItemFinished.IsChecked = isChecked;
@@ -108,14 +108,14 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             var newValue = !this.MenuItemFinished.IsChecked;
 
-            var items = this.Get<MangaEntry>();
+            var items = this.Get<DetailEntry>();
             foreach (var item in items)
                 item.Finished = newValue;
         }
 
         private async void RemoveArchive(bool removeFile)
         {
-            var items = this.Get<MangaEntry>().GetCodes();
+            var items = this.Get<DetailEntry>().GetCodes();
             if (items.Length == 0) return;
 
             var settings = new MetroDialogSettings

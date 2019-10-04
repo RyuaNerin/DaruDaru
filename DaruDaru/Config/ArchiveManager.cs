@@ -11,7 +11,7 @@ namespace DaruDaru.Config
 {
     internal static class ArchiveManager
     {
-        public static ObservableCollection<MangaEntry> Detail { get; } = new ObservableCollection<MangaEntry>();
+        public static ObservableCollection<DetailEntry> Detail { get; } = new ObservableCollection<DetailEntry>();
 
         public static ObservableCollection<MangaArticleEntry> Manga { get; } = new ObservableCollection<MangaArticleEntry>();
         private static readonly HashSet<string> MangaCodeHash = new HashSet<string>(StringComparer.Ordinal);
@@ -55,7 +55,7 @@ namespace DaruDaru.Config
             lock (Detail)
             {
                 bool found = false;
-                MangaEntry entry = null;
+                DetailEntry entry = null;
 
                 for (var i = 0; i < Detail.Count; ++i)
                 {
@@ -69,12 +69,12 @@ namespace DaruDaru.Config
 
                 if (!found)
                 {
-                    entry = new MangaEntry
+                    entry = new DetailEntry
                     {
                         DetailCode = detailCode
                     };
 
-                    Application.Current.Dispatcher.Invoke(new Action<MangaEntry>(Detail.Add), entry);
+                    Application.Current.Dispatcher.Invoke(new Action<DetailEntry>(Detail.Add), entry);
                 }
 
                 if (detailTitle != null)
@@ -131,7 +131,7 @@ namespace DaruDaru.Config
             }
         }
 
-        public static MangaEntry GetDetail(string detailCode)
+        public static DetailEntry GetDetail(string detailCode)
         {
             lock (Detail)
             {
