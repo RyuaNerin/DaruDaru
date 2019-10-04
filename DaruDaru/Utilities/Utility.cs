@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
-using DaruDaru.Marumaru.ComicInfo;
 
 namespace DaruDaru.Utilities
 {
