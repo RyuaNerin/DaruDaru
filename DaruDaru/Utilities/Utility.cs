@@ -62,8 +62,13 @@ namespace DaruDaru.Utilities
                     {
                         if (ex.Response is HttpWebResponse hres)
                         {
-                            if ((int)hres.StatusCode == 429)
-                                Thread.Sleep(30 * 1000);
+                            switch ((int)hres.StatusCode)
+                            {
+                                case 429:
+                                case 520:
+                                    Thread.Sleep(30 * 1000);
+                                    break;
+                            }
                         }
 
                         ex.Response.Dispose();
