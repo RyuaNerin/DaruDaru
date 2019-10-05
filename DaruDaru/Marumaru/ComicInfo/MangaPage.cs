@@ -167,7 +167,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             #region Detail.Title + xx화
             {
-                var titleNode = doc.DocumentNode.SelectSingleNode("div[@class='toon-title']");
+                var titleNode = doc.DocumentNode.SelectSingleNode(".//div[@class='toon-title']");
                 if (titleNode == null)
                     return null;
 
@@ -177,7 +177,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         titleNodeChild.Remove();
                 }
 
-                var title = Utility.ReplcaeHtmlTag(titleNode.InnerText ?? string.Empty);
+                var title = Utility.ReplaceHtmlTagAndRemoveTab(titleNode.InnerText ?? string.Empty);
                 if (string.IsNullOrWhiteSpace(title))
                     return null;
 
