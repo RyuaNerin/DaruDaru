@@ -1,8 +1,6 @@
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using DaruDaru.Config;
-using DaruDaru.Marumaru;
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls.Dialogs;
 using WinForms = System.Windows.Forms;
