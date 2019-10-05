@@ -8,6 +8,7 @@
                   xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                   xmlns:mr="clr-namespace:DaruDaru.Marumaru"
                   xmlns:util="clr-namespace:DaruDaru.Utilities"
+                  xmlns:cmd="clr-namespace:DaruDaru.Core.Windows.Commands"
                   TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
                   ButtonContent="검색"
                   DaruUriParser="{x:Static mr:DaruUriParser.Detail}"
@@ -17,30 +18,57 @@
                   d:DesignHeight="250"
                   d:DesignWidth="400"
                   ListViewItemDoubleClick="Viewer_ListViewItemDoubleClick">
+    <ctrs:BaseControl.Resources>
+        <cmd:RoutedUICommand2 x:Key="cmdOpenZip" Text="꿀뷰로 열기">
+            <cmd:KeyGesture2 Key="H" Modifier="Ctrl" />
+            <cmd:KeyGesture2 Key="Return" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenDir" Text="폴더 열기">
+            <cmd:KeyGesture2 Key="D" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenWeb" Text="웹에서 보기">
+            <cmd:KeyGesture2 Key="W" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenCopyZip" Text="파일 복사">
+            <cmd:KeyGesture2 Key="C" Modifier="Ctrl+Shift" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenCopyWeb" Text="웹 주소 복사">
+            <cmd:KeyGesture2 Key="C" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdRemove" Text="지우기" />
+        <cmd:RoutedUICommand2 x:Key="cmdRemoveOnly" Text="기록 지우기" />
+        <cmd:RoutedUICommand2 x:Key="cmdRemoveAndDelete" Text="기록과 파일 모두 지우기" />
+    </ctrs:BaseControl.Resources>
+    
     <ctrs:BaseControl.ListCommandBindings>
-        <CommandBinding Command="local:Archive.OpenZip"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpen_Click" />
-        <CommandBinding Command="local:Archive.OpenDir"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
-        <CommandBinding Command="local:Archive.OpenWeb"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
-        <CommandBinding Command="local:Archive.OpenCopyZip"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyFile_Click" />
-        <CommandBinding Command="local:Archive.OpenCopyWeb"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
-        <CommandBinding Command="local:Archive.Remove"          CanExecute="CommandBinding_CanExecute" />
-        <CommandBinding Command="local:Archive.RemoveOnly"      CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
-        <CommandBinding Command="local:Archive.RemoveAndDelete" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenZip}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpen_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenDir}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenWeb}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenCopyZip}"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyFile_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenCopyWeb}"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
+        <CommandBinding Command="{StaticResource cmdRemove}"            CanExecute="CommandBinding_CanExecute" />
+        <CommandBinding Command="{StaticResource cmdRemoveOnly}"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
+        <CommandBinding Command="{StaticResource cmdRemoveAndDelete}"   CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
     </ctrs:BaseControl.ListCommandBindings>
 
     <ctrs:BaseControl.ListContextMenu>
         <ContextMenu>
-            <MenuItem Command="local:Archive.OpenZip" />
-            <MenuItem Command="local:Archive.OpenDir" />
+            <MenuItem Command="{StaticResource cmdOpenZip}" />
+            <MenuItem Command="{StaticResource cmdOpenDir}" />
             <Separator />
-            <MenuItem Command="local:Archive.OpenWeb" />
+            <MenuItem Command="{StaticResource cmdOpenWeb}" />
             <Separator />
-            <MenuItem Command="local:Archive.OpenCopyZip" />
-            <MenuItem Command="local:Archive.OpenCopyWeb" />
+            <MenuItem Command="{StaticResource cmdOpenCopyZip}" />
+            <MenuItem Command="{StaticResource cmdOpenCopyWeb}" />
             <Separator />
-            <MenuItem Command="local:Archive.Remove">
-                <MenuItem Command="local:Archive.RemoveOnly" />
-                <MenuItem Command="local:Archive.RemoveAndDelete" />
+            <MenuItem Command="{StaticResource cmdRemove}">
+                <MenuItem Command="{StaticResource cmdRemoveOnly}" />
+                <MenuItem Command="{StaticResource cmdRemoveAndDelete}" />
             </MenuItem>
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>

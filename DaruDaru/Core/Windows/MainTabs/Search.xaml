@@ -8,6 +8,7 @@
                   xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs"
                   xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                   xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                  xmlns:cmd="clr-namespace:DaruDaru.Core.Windows.Commands"
                   TextWatermark="만화 주소 입력 혹은 링크 드래그"
                   ButtonContent="다운로드"
                   UseSearch="False"
@@ -18,42 +19,68 @@
                   d:DesignWidth="400"
                   ListViewItemDoubleClick="Viewer_ListViewItemDoubleClick">
     <ctrs:BaseControl.Resources>
-        <ResourceDictionary>
-            <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
-                                        BrushNormal    ="#FFB6D2DE"
-                                        BrushCompete   ="#FFB3CEB3"
-                                        BrushDownloaded="#FFB3D5D5"
-                                        BrushSkip      ="#FFD4DAB3"
-                                        BrushNoNew     ="#FFD4DAB3"
-                                        BrushError     ="#FFE1B7B3" />
-        </ResourceDictionary>
+        <cvt:ProgressColorConverter x:Key="ProgressColorConverter"
+                                    BrushNormal    ="#FFB6D2DE"
+                                    BrushCompete   ="#FFB3CEB3"
+                                    BrushDownloaded="#FFB3D5D5"
+                                    BrushSkip      ="#FFD4DAB3"
+                                    BrushNoNew     ="#FFD4DAB3"
+                                    BrushError     ="#FFE1B7B3" />
+
+        <cmd:RoutedUICommand2 x:Key="cmdEnterCommand" Text="Enter">
+            <cmd:KeyGesture2 Key="Return" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenFile" Text="꿀뷰로 열기">
+            <cmd:KeyGesture2 Key="H" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenDir" Text="폴더 열기">
+            <cmd:KeyGesture2 Key="D" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenWeb" Text="웹에서 열기">
+            <cmd:KeyGesture2 Key="W" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdCopyUri" Text="웹 주소 복사">
+            <cmd:KeyGesture2 Key="C" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdRetry" Text="다시 시도">
+            <cmd:KeyGesture2 Key="R" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdRemoveSelected" Text="선택 항목 목록에서 제거" />
+        <cmd:RoutedUICommand2 x:Key="cmdRemoveCompleted" Text="완료된 항목 제거" />
+        <cmd:RoutedUICommand2 x:Key="cmdRemoveAll" Text="모두 제거" />
     </ctrs:BaseControl.Resources>
 
     <ctrs:BaseControl.ListCommandBindings>
-        <CommandBinding Command="local:Search.EnterCommand"    CanExecute="CommandBinding_CanExecute" Executed="Viewer_EnterCommand" />
-        <CommandBinding Command="local:Search.OpenFile"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenFile_Click" />
-        <CommandBinding Command="local:Search.OpenDir"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
-        <CommandBinding Command="local:Search.OpenWeb"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
-        <CommandBinding Command="local:Search.CopyUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
-        <CommandBinding Command="local:Search.Retry"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRetry_Click" />
-        <CommandBinding Command="local:Search.RemoveSelected"  CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveItem_Click" />
-        <CommandBinding Command="local:Search.RemoveCompleted" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveCompleted_Click" />
-        <CommandBinding Command="local:Search.RemoveAll"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAll_Click" />
+        <CommandBinding Command="{StaticResource cmdEnterCommand}"      CanExecute="CommandBinding_CanExecute" Executed="Viewer_EnterCommand" />
+        <CommandBinding Command="{StaticResource cmdOpenFile}"          CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenFile_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenDir}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenDir_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenWeb}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
+        <CommandBinding Command="{StaticResource cmdCopyUri}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
+        <CommandBinding Command="{StaticResource cmdRetry}"             CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRetry_Click" />
+        <CommandBinding Command="{StaticResource cmdRemoveSelected}"    CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveItem_Click" />
+        <CommandBinding Command="{StaticResource cmdRemoveCompleted}"   CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveCompleted_Click" />
+        <CommandBinding Command="{StaticResource cmdRemoveAll}"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAll_Click" />
     </ctrs:BaseControl.ListCommandBindings>
         
     <ctrs:BaseControl.ListContextMenu>
         <ContextMenu>
-            <MenuItem Command="local:Search.OpenFile" />
-            <MenuItem Command="local:Search.OpenDir" />
-            <MenuItem Command="local:Search.OpenWeb" />
+            <MenuItem Command="{StaticResource cmdOpenFile}" />
+            <MenuItem Command="{StaticResource cmdOpenDir}" />
+            <MenuItem Command="{StaticResource cmdOpenWeb}" />
             <Separator />
-            <MenuItem Command="local:Search.CopyUri" />
+            <MenuItem Command="{StaticResource cmdCopyUri}" />
             <Separator />
-            <MenuItem Command="local:Search.Retry" />
+            <MenuItem Command="{StaticResource cmdRetry}" />
             <Separator />
-            <MenuItem Command="local:Search.RemoveSelected" />
-            <MenuItem Command="local:Search.RemoveCompleted" />
-            <MenuItem Command="local:Search.RemoveAll" />
+            <MenuItem Command="{StaticResource cmdRemoveSelected}" />
+            <MenuItem Command="{StaticResource cmdRemoveCompleted}" />
+            <MenuItem Command="{StaticResource cmdRemoveAll}" />
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>
         

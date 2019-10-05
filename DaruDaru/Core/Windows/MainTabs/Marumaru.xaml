@@ -7,6 +7,7 @@
                   xmlns:local="clr-namespace:DaruDaru.Core.Windows.MainTabs"
                   xmlns:ctrs="clr-namespace:DaruDaru.Core.Windows.MainTabs.Controls"
                   xmlns:mr="clr-namespace:DaruDaru.Marumaru"
+                  xmlns:cmd="clr-namespace:DaruDaru.Core.Windows.Commands"
                   xmlns:util="clr-namespace:DaruDaru.Utilities"
                   TextWatermark="검색할 제목 혹은 주소를 입력해주세요"
                   ButtonContent="검색"
@@ -16,34 +17,65 @@
                   d:DesignHeight="250"
                   d:DesignWidth="400"
                   ListViewItemDoubleClick="Viewer_ListViewItemDoubleClick">
+    <ctrs:BaseControl.Resources>
+        <cmd:RoutedUICommand2 x:Key="cmdShowArchive" Text="다운로드한 파일 검색">
+            <cmd:KeyGesture2 Key="H" Modifier="Ctrl" />
+            <cmd:KeyGesture2 Key="Return" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdSearchNew" Text="다시 검색 (새로운 것만)">
+            <cmd:KeyGesture2 Key="R" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdSearch" Text="다시 검색">
+            <cmd:KeyGesture2 Key="R" Modifier="Ctrl+Shift" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdFinished" Text="완결 (갱신하지 않음)">
+            <cmd:KeyGesture2 Key="F" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdOpenUri" Text="웹 페이지 열기">
+            <cmd:KeyGesture2 Key="W" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdCopyUri" Text="링크 복사">
+            <cmd:KeyGesture2 Key="C" Modifier="Ctrl" />
+        </cmd:RoutedUICommand2>
+
+        <cmd:RoutedUICommand2 x:Key="cmdRemove" Text="지우기" />
+        <cmd:RoutedUICommand2 x:Key="cmdRemoveOnly" Text="링크 지우기" />
+        <cmd:RoutedUICommand2 x:Key="cmdRemoveAndDelete" Text="링크와 관련 파일 모두 지우기" />
+    </ctrs:BaseControl.Resources>
+    
     <ctrs:BaseControl.ListCommandBindings>
-        <CommandBinding Command="local:Marumaru.ShowArchive"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuArchiveSearch_Click" />
-        <CommandBinding Command="local:Marumaru.SearchNew"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearchNew_Click" />
-        <CommandBinding Command="local:Marumaru.Search"          CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearch_Click" />
-        <CommandBinding Command="local:Marumaru.Finished"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuFinished_Click" />
-        <CommandBinding Command="local:Marumaru.OpenUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
-        <CommandBinding Command="local:Marumaru.CopyUri"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
-        <CommandBinding Command="local:Marumaru.Remove"          CanExecute="CommandBinding_CanExecute" />
-        <CommandBinding Command="local:Marumaru.RemoveOnly"      CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
-        <CommandBinding Command="local:Marumaru.RemoveAndDelete" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
+        <CommandBinding Command="{StaticResource cmdShowArchive}"     CanExecute="CommandBinding_CanExecute" Executed="ctlMenuArchiveSearch_Click" />
+        <CommandBinding Command="{StaticResource cmdSearchNew}"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearchNew_Click" />
+        <CommandBinding Command="{StaticResource cmdSearch}"          CanExecute="CommandBinding_CanExecute" Executed="ctlMenuSearch_Click" />
+        <CommandBinding Command="{StaticResource cmdFinished}"        CanExecute="CommandBinding_CanExecute" Executed="ctlMenuFinished_Click" />
+        <CommandBinding Command="{StaticResource cmdOpenUri}"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
+        <CommandBinding Command="{StaticResource cmdCopyUri}"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
+        <CommandBinding Command="{StaticResource cmdRemove}"          CanExecute="CommandBinding_CanExecute" />
+        <CommandBinding Command="{StaticResource cmdRemoveOnly}"      CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveOnly_Click" />
+        <CommandBinding Command="{StaticResource cmdRemoveAndDelete}" CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAndDelete_Click" />
     </ctrs:BaseControl.ListCommandBindings>
         
     <ctrs:BaseControl.ListContextMenu>
         <ContextMenu Opened="ContextMenu_Opened">
-            <MenuItem Command="local:Marumaru.ShowArchive" />
+            <MenuItem Command="{StaticResource cmdShowArchive}" />
             <Separator />
-            <MenuItem Command="local:Marumaru.SearchNew" />
-            <MenuItem Command="local:Marumaru.Search" />
+            <MenuItem Command="{StaticResource cmdSearchNew}" />
+            <MenuItem Command="{StaticResource cmdSearch}" />
             <Separator />
             <MenuItem x:Name="MenuItemFinished"
-                      Command="local:Marumaru.Finished"/>
+                      Command="{StaticResource cmdFinished}"/>
             <Separator />
-            <MenuItem Command="local:Marumaru.OpenUri" />
-            <MenuItem Command="local:Marumaru.CopyUri" />
+            <MenuItem Command="{StaticResource cmdOpenUri}" />
+            <MenuItem Command="{StaticResource cmdCopyUri}" />
             <Separator />
-            <MenuItem Command="local:Marumaru.Remove">
-                <MenuItem Command="local:Marumaru.RemoveOnly" />
-                <MenuItem Command="local:Marumaru.RemoveAndDelete" />
+            <MenuItem Command="{StaticResource cmdRemove}">
+                <MenuItem Command="{StaticResource cmdRemoveOnly}" />
+                <MenuItem Command="{StaticResource cmdRemoveAndDelete}" />
             </MenuItem>
         </ContextMenu>
     </ctrs:BaseControl.ListContextMenu>

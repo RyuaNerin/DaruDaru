@@ -31,19 +31,6 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
 
     internal class BaseControl : Control
     {
-        protected static RoutedUICommand Create(string text, string name, Type type)
-            => new RoutedUICommand(text, name, typeof(Archive));
-
-        protected static RoutedUICommand Create(string text, string name, Type type, params (Key key, ModifierKeys mkey)[] commands)
-        {
-            var command = Create(text, name, type);
-
-            foreach (var (key, mkey) in commands)
-                command.InputGestures.Add(new KeyGesture(key, mkey));
-
-            return command;
-        }
-
         private const string TextBoxName  = "PART_TextBox";
         private const string ButtonName   = "PART_Button";
         private const string ListName     = "PART_ListView";

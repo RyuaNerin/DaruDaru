@@ -16,17 +16,6 @@ namespace DaruDaru.Core.Windows.MainTabs
 {
     internal partial class Search : BaseControl
     {
-        public static ICommand EnterCommand    = Create("-",                       "EnterCommand",    typeof(Search), (Key.Enter, ModifierKeys.None));
-        public static ICommand OpenFile        = Create("꿀뷰로 열기",             "OpenFile",        typeof(Search), (Key.H, ModifierKeys.Control));
-        public static ICommand OpenDir         = Create("폴더 열기",               "OpenDir",         typeof(Search), (Key.D, ModifierKeys.Control));
-        public static ICommand OpenWeb         = Create("홈페이지 열기",           "OpenWeb",         typeof(Search), (Key.W, ModifierKeys.Control));
-        public static ICommand CopyUri         = Create("주소 복사",               "CopyUri",         typeof(Search), (Key.C, ModifierKeys.Control));
-        public static ICommand Retry           = Create("다시 시도",               "Retry",           typeof(Search), (Key.R, ModifierKeys.Control));
-        public static ICommand RemoveSelected  = Create("선택 항목 목록에서 제거", "RemoveSelected",  typeof(Search));
-        public static ICommand RemoveCompleted = Create("완료된 항목 제거",        "RemoveCompleted", typeof(Search));
-        public static ICommand RemoveAll       = Create("모두 제거",               "RemoveAll",       typeof(Search));
-
-
         public ObservableCollection<Comic> Queue { get; } = new ObservableCollection<Comic>();
 
         public Search()

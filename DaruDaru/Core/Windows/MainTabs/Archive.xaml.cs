@@ -15,15 +15,6 @@ namespace DaruDaru.Core.Windows.MainTabs
 {
     internal partial class Archive : BaseControl
     {
-        public static ICommand OpenZip         = Create("꿀뷰로 열기",      "OpenZip",         typeof(Archive), (Key.H, ModifierKeys.Control), (Key.Enter, ModifierKeys.None));
-        public static ICommand OpenDir         = Create("폴더 열기",        "OpenDir",         typeof(Archive), (Key.D, ModifierKeys.Control));
-        public static ICommand OpenWeb         = Create("웹에서 보기",      "OpenWeb",         typeof(Archive), (Key.W, ModifierKeys.Control));
-        public static ICommand OpenCopyZip     = Create("파일 복사",        "OpenCopyZip",     typeof(Archive), (Key.C, ModifierKeys.Control | ModifierKeys.Shift));
-        public static ICommand OpenCopyWeb     = Create("웹 주소 복사",     "OpenCopyWeb",     typeof(Archive), (Key.C, ModifierKeys.Control));
-        public static ICommand Remove          = Create("삭제",             "Remove",          typeof(Archive));
-        public static ICommand RemoveOnly      = Create("기록 삭제",        "RemoveOnly",      typeof(Archive));
-        public static ICommand RemoveAndDelete = Create("기록과 파일 삭제", "RemoveAndDelete", typeof(Archive));
-
         public Archive()
         {
             InitializeComponent();
