@@ -36,10 +36,9 @@ namespace DaruDaru.Core.Windows
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
 
             var p = ConfigManager.Instance.WorkerCount;
-            ThreadPool.SetMinThreads(p * 2, p);
 
-            this.m_workerInfo = new Task[p];
-            this.m_workerDown = new Task[p];
+            this.m_workerInfo = new Thread[p];
+            this.m_workerDown = new Thread[p];
         }
 
         private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
@@ -131,8 +130,8 @@ namespace DaruDaru.Core.Windows
             this.ctlTab.SelectedIndex = 2;
         }
 
-        private readonly Task[] m_workerInfo;
-        private readonly Task[] m_workerDown;
+        private readonly Thread[] m_workerInfo;
+        private readonly Thread[] m_workerDown;
 
         public void WakeQueue(int count)
         {
@@ -140,10 +139,15 @@ namespace DaruDaru.Core.Windows
             {
                 for (int i = 0; i < this.m_workerInfo.Length; ++i)
                 {
-                    if (this.m_workerInfo[i] == null || this.m_workerInfo[i].IsCompleted)
+                    if (this.m_workerInfo[i] == null || !this.m_workerInfo[i].IsAlive)
                     {
-                        this.m_workerInfo[i]?.Dispose();
-                        this.m_workerInfo[i] = Task.Factory.StartNew(this.Worker_Infomation);
+                        this.m_workerInfo[i] = new Thread(this.Worker_Infomation)
+                        {
+                            IsBackground = true,
+                            Priority = ThreadPriority.Lowest,
+                        };
+                        this.m_workerInfo[i].Start();
+
 
                         if (--count <= 0) return;
                     }
@@ -157,10 +161,14 @@ namespace DaruDaru.Core.Windows
             {
                 for (int i = 0; i < this.m_workerDown.Length; ++i)
                 {
-                    if (this.m_workerDown[i] == null || this.m_workerDown[i].IsCompleted)
+                    if (this.m_workerDown[i] == null || !this.m_workerDown[i].IsAlive)
                     {
-                        this.m_workerDown[i]?.Dispose();
-                        this.m_workerDown[i] = Task.Factory.StartNew(this.Worker_Download);
+                        this.m_workerDown[i] = new Thread(this.Worker_Download)
+                        {
+                            IsBackground = true,
+                            Priority = ThreadPriority.Lowest,
+                        };
+                        this.m_workerDown[i].Start();
 
                         if (--count <= 0) return;
                     }
