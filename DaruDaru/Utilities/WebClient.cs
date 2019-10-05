@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 
 namespace DaruDaru.Utilities
@@ -6,13 +7,6 @@ namespace DaruDaru.Utilities
     [System.ComponentModel.DesignerCategory("CODE")]
     internal class WebClientEx : WebClient
     {
-        public WebClientEx() : base()
-        {
-            this.Encoding = System.Text.Encoding.UTF8;
-        }
-
-        protected override WebRequest GetWebRequest(Uri address) => AddHeader(base.GetWebRequest(address));
-
         private static readonly string[] UserAgents =
         {
             "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)",
@@ -61,7 +55,44 @@ namespace DaruDaru.Utilities
         };
         private static readonly Random Random = new Random(DateTime.Now.Millisecond);
 
-        public static WebRequest AddHeader(WebRequest req)
+        private static Stack<WebClientEx> Pool = new Stack<WebClientEx>();
+        public static WebClientEx GetOrCreate()
+        {
+            lock (Pool)
+            {
+                if (Pool.Count == 0)
+                    return new WebClientEx();
+
+                return Pool.Pop();
+            }
+        }
+
+
+        private readonly string m_userAgent;
+        private readonly CookieContainer m_cookie = new CookieContainer();
+        private WebClientEx() : base()
+        {
+            this.Encoding = System.Text.Encoding.UTF8;
+            this.m_userAgent = UserAgents[Random.Next(0, UserAgents.Length)];
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            //base.Dispose(disposing);
+            if (disposing)
+            {
+                lock (Pool)
+                    Pool.Push(this);
+            }
+        }
+
+        public Uri ResponseUri { get; private set; }
+        public HttpStatusCode LastStatusCode { get; private set; }
+
+        protected override WebRequest GetWebRequest(Uri address)
+            => AddHeader(base.GetWebRequest(address), this);
+
+        public static WebRequest AddHeader(WebRequest req, WebClientEx wcEx = null)
         {
             if (req is HttpWebRequest hreq)
             {
@@ -72,21 +103,26 @@ namespace DaruDaru.Utilities
                 if (string.IsNullOrWhiteSpace(hreq.Referer))
                     hreq.Referer            = req.RequestUri.AbsoluteUri;
 
-                //hreq.UserAgent              = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.9600";
-                hreq.UserAgent              = UserAgents[Random.Next(0, UserAgents.Length)];
                 hreq.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
                 hreq.Accept                 = "html/text,image/*,*/*;q=0.9";
                 hreq.AllowAutoRedirect      = true;
 
                 hreq.Headers.Add("charset",         "utf-8");
                 hreq.Headers.Add("Accept-Language", "ko");
+
+                if (wcEx == null)
+                {
+                    hreq.UserAgent = UserAgents[Random.Next(0, UserAgents.Length)];
+                }
+                else
+                {
+                    hreq.CookieContainer = wcEx.m_cookie;
+                    hreq.UserAgent       = wcEx.m_userAgent;
+                }
             }
 
             return req;
         }
-
-        public Uri ResponseUri { get; private set; }
-        public HttpStatusCode LastStatusCode { get; private set; }
 
         protected override WebResponse GetWebResponse(WebRequest request)
         {

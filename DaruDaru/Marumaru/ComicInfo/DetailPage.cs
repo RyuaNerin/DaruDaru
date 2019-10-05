@@ -48,17 +48,17 @@ namespace DaruDaru.Marumaru.ComicInfo
             DetailInfomation detailInfo = null;
 
             bool retrySuccess;
-            using (var wc = new WebClientEx())
+            using (var wc = WebClientEx.GetOrCreate())
                 retrySuccess = Utility.Retry(() => (detailInfo = this.GetInfomationWorker(wc)) != null);
-
-            if (detailInfo.OccurredError)
-                return false;
 
             if (!retrySuccess || detailInfo.MangaList.Count == 0)
             {
                 this.State = MaruComicState.Error_1_Error;
                 return false;
             }
+
+            if (detailInfo.OccurredError)
+                return false;
 
             this.Title = detailInfo.Title;
             this.Uri   = detailInfo.NewUri;
@@ -140,7 +140,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             if (mangaDetail == null)
                 return null;
 
-            foreach (var slot in mangaDetail.SelectNodes(".//div[@class='slot']"))
+            foreach (var slot in mangaDetail.SelectNodes(".//div[@class='slot ']").ToArray())
             {
                 Uri mangaUri = null;
 
@@ -179,13 +179,13 @@ namespace DaruDaru.Marumaru.ComicInfo
                 var titleNode = slot.SelectSingleNode(".//div[@class='title']");
                 if (titleNode != null)
                 {
-                    foreach (var child in titleNode.ChildNodes)
+                    foreach (var child in titleNode.ChildNodes.ToArray())
                     {
                         if (child.NodeType == HtmlNodeType.Element)
                             child.Remove();
                     }
 
-                    title = Utility.ReplcaeHtmlTag(titleNode.InnerText ?? string.Empty);
+                    title = Utility.ReplaceHtmlTagAndRemoveTab(titleNode.InnerText ?? string.Empty);
                 }
 
                 detailInfo.MangaList.Add(new Links

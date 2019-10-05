@@ -59,17 +59,17 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             MangaInfomation mangaInfo = null;
             bool retrySuccess;
-            using (var wc = new WebClientEx())
+            using (var wc = WebClientEx.GetOrCreate())
                 retrySuccess = Utility.Retry(() => (mangaInfo = this.GetInfomationWorker(wc)) != null);
-
-            if (mangaInfo.OccurredError)
-                return false;
 
             if (!retrySuccess)
             {
                 this.State = MaruComicState.Error_1_Error;
                 return false;
             }
+
+            if (mangaInfo.OccurredError)
+                return false;
 
             this.Uri = mangaInfo.NewUri;
 
@@ -114,7 +114,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     return null;
 
                 string detailCode = null;
-                foreach (HtmlNode node in toonNav.SelectNodes(".//a[@href]"))
+                foreach (HtmlNode node in toonNav.SelectNodes(".//a[@href]").ToArray())
                 {
                     var href = node.GetAttributeValue("href", "");
                     if (string.IsNullOrWhiteSpace(href))
@@ -187,7 +187,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     if (titleNode == null)
                         return null;
 
-                    foreach (var titleNodeChild in titleNode.ChildNodes)
+                    foreach (var titleNodeChild in titleNode.ChildNodes.ToArray())
                     {
                         if (titleNodeChild.NodeType == HtmlNodeType.Element)
                             titleNodeChild.Remove();
