@@ -11,20 +11,11 @@ namespace DaruDaru.Config.Entries
         public event PropertyChangedEventHandler PropertyChanged;
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
             => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        
-        private string m_detailCode;
-        public string DetailCode
-        {
-            get => this.m_detailCode;
-            set
-            {
-                this.m_detailCode = value;
-                this.Uri = DaruUriParser.Detail.GetUri(value);
-            }
-        }
+
+        public string DetailCode { get; set; }
 
         [JsonIgnore]
-        public Uri Uri { get; private set; }
+        public Uri Uri => DaruUriParser.Detail.GetUri(this.DetailCode);
 
         private string m_title;
         public string Title

@@ -12,19 +12,10 @@ namespace DaruDaru.Config.Entries
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
             => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        private string m_archiveCode;
-        public string ArchiveCode
-        {
-            get => this.m_archiveCode;
-            set
-            {
-                this.m_archiveCode = value;
-                this.Uri = DaruUriParser.Manga.GetUri(value);
-            }
-        }
+        public string ArchiveCode { get; set; }
 
         [JsonIgnore]
-        public Uri Uri { get; private set; }
+        public Uri Uri => DaruUriParser.Manga.GetUri(this.ArchiveCode);
 
         public string TitleWithNo { get; set; }
 
