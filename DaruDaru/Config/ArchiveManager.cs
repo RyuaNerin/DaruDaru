@@ -30,7 +30,7 @@ namespace DaruDaru.Config
                 foreach (var item in newItem)
                 {
                     lock (MangaCodeHash)
-                        MangaCodeHash.Add(item.ArchiveCode);
+                        MangaCodeHash.Add(item.MangaCode);
                 }
             }
 
@@ -40,7 +40,7 @@ namespace DaruDaru.Config
                 
                 foreach (var item in newItem)
                     lock (MangaCodeHash)
-                        MangaCodeHash.Remove(item.ArchiveCode);
+                        MangaCodeHash.Remove(item.MangaCode);
             }
 
             else if (e.Action == NotifyCollectionChangedAction.Reset)
@@ -103,7 +103,7 @@ namespace DaruDaru.Config
                 for (var i = 0; i < Manga.Count; ++i)
                 {
                     entry = Manga[i];
-                    if (string.Equals(entry.ArchiveCode, mangaCode, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(entry.MangaCode, mangaCode, StringComparison.OrdinalIgnoreCase))
                     {
                         found = true;
                         break;
@@ -114,7 +114,7 @@ namespace DaruDaru.Config
                 {
                     entry = new MangaEntry
                     {
-                        ArchiveCode = mangaCode,
+                        MangaCode = mangaCode,
                         TitleWithNo = mangaName,
                         ZipPath     = mangaZipPath,
                     };
@@ -152,7 +152,7 @@ namespace DaruDaru.Config
                 for (var i = 0; i < Manga.Count; ++i)
                 {
                     var entry = Manga[i];
-                    if (string.Equals(entry.ArchiveCode, mangaCode, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(entry.MangaCode, mangaCode, StringComparison.OrdinalIgnoreCase))
                         return entry;
                 }
 
@@ -205,7 +205,7 @@ namespace DaruDaru.Config
                 int i = 0;
                 while (i < Manga.Count)
                 {
-                    archiveCode = Manga[i].ArchiveCode;
+                    archiveCode = Manga[i].MangaCode;
                     if (Array.IndexOf(mangaCodes, archiveCode) >= 0)
                     {
                         if (removeFile)
@@ -252,7 +252,7 @@ namespace DaruDaru.Config
         {
             lock (Manga)
             {
-                var codes = Manga.GroupBy(e => e.ZipPath).Where(e => e.Count() > 1).SelectMany(e => e).Select(e => e.ArchiveCode).ToArray();
+                var codes = Manga.GroupBy(e => e.ZipPath).Where(e => e.Count() > 1).SelectMany(e => e).Select(e => e.MangaCode).ToArray();
 
                 RemoveManga(codes, true);
             }

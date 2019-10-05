@@ -30,7 +30,7 @@ namespace DaruDaru.Utilities
                    .ToArray();
 
         public static string[] GetCodes(this IEnumerable<MangaEntry> coll)
-            => coll.Select(e => e.ArchiveCode)
+            => coll.Select(e => e.MangaCode)
                    .Distinct()
                    .ToArray();
 

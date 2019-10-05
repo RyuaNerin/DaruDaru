@@ -12,10 +12,10 @@ namespace DaruDaru.Config.Entries
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
             => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        public string ArchiveCode { get; set; }
+        public string MangaCode { get; set; }
 
         [JsonIgnore]
-        public Uri Uri => DaruUriParser.Manga.GetUri(this.ArchiveCode);
+        public Uri Uri => DaruUriParser.Manga.GetUri(this.MangaCode);
 
         public string TitleWithNo { get; set; }
 
@@ -32,7 +32,7 @@ namespace DaruDaru.Config.Entries
             }
         }
 
-        [JsonIgnore] string IEntry.Code => this.ArchiveCode;
+        [JsonIgnore] string IEntry.Code => this.MangaCode;
         [JsonIgnore] string IEntry.Text => this.TitleWithNo;
     }
 }
