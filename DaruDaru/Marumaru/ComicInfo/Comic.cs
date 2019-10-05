@@ -29,6 +29,10 @@ namespace DaruDaru.Marumaru.ComicInfo
         Error_1_Error           = Error    + 1,
         Error_3_NotSupport      = Error    + 3,
         Error_5_NotFound        = Error    + 5,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         Error_6_520             = Error    + 6,
     }
 
@@ -248,10 +252,6 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             switch ((int)wc.LastStatusCode)
             {
-            case 520:
-                this.State = MaruComicState.Error_6_520;
-                return null;
-
             case 404:
                 this.State = MaruComicState.Error_5_NotFound;
                 return null;
