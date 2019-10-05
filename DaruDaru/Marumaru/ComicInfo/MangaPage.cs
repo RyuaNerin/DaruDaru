@@ -167,42 +167,23 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             #region Detail.Title + xx화
             {
-                var mangaNo =
-                    Regex.Matches(
-                        Regex.Match(doc.DocumentNode.InnerHtml, "var only_chapter ?= ?\\[[^;]+\\];").Groups[0].Value,
-                        "\\[ *\"([^\"]+)\" *, *\"([^\"]+)\" *\\]"
-                    )
-                    ?.Cast<Match>()
-                    .FirstOrDefault(e => e.Groups[2].Value == this.ArchiveCode)
-                    ?.Groups[1].Value;
-
-                string titleWithNo;
-                if (!string.IsNullOrWhiteSpace(mangaNo))
-                {
-                    titleWithNo = $"{this.Title} {mangaNo}";
-                }
-                else
-                {
-                    var titleNode = doc.DocumentNode.SelectSingleNode("div[@class='toon-title']");
-                    if (titleNode == null)
-                        return null;
-
-                    foreach (var titleNodeChild in titleNode.ChildNodes.ToArray())
-                    {
-                        if (titleNodeChild.NodeType == HtmlNodeType.Element)
-                            titleNodeChild.Remove();
-                    }
-
-                    var title = Utility.ReplcaeHtmlTag(titleNode.InnerText ?? string.Empty);
-                    if (string.IsNullOrWhiteSpace(title))
-                        return null;
-
-                    titleWithNo = title;
-                }
-
-                if (string.IsNullOrWhiteSpace(titleWithNo))
+                var titleNode = doc.DocumentNode.SelectSingleNode("div[@class='toon-title']");
+                if (titleNode == null)
                     return null;
-                this.TitleWithNo = titleWithNo;
+
+                foreach (var titleNodeChild in titleNode.ChildNodes.ToArray())
+                {
+                    if (titleNodeChild.NodeType == HtmlNodeType.Element)
+                        titleNodeChild.Remove();
+                }
+
+                var title = Utility.ReplcaeHtmlTag(titleNode.InnerText ?? string.Empty);
+                if (string.IsNullOrWhiteSpace(title))
+                    return null;
+
+                if (string.IsNullOrWhiteSpace(title))
+                    return null;
+                this.TitleWithNo = title;
             }
             #endregion
 
