@@ -19,7 +19,9 @@ namespace DaruDaru.Config
         private static readonly JsonSerializer Serializer = JsonSerializer.Create();
 
         public static string CurrentServerHost;
-        
+
+        private static readonly object SaveSync = new object();
+        private static volatile bool ConfigLoaded = false;
         static ConfigManager()
         {
             //Serializer.Formatting = Formatting.Indented;
@@ -41,11 +43,14 @@ namespace DaruDaru.Config
             }
 
             CurrentServerHost = Instance.ServerHost;
+            ConfigLoaded = true;
         }
 
-        private static readonly object SaveSync = new object();
         public static void Save()
         {
+            if (!ConfigLoaded)
+                return;
+
             if (Monitor.TryEnter(SaveSync, 0))
             {
                 try
