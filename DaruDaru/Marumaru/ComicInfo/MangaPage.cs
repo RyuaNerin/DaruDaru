@@ -109,7 +109,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             #region 폴더 이름은 Detail 에서 설정
             {
                 // /bbs/page.php?hid=manga_detail&manga_id=9495
-                var toonNav = doc.DocumentNode.SelectSingleNode("//div[@class='toon-nav']");
+                var toonNav = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'toon-nav')]");
                 if (toonNav == null)
                     return null;
 
@@ -167,7 +167,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             #region Detail.Title + xx화
             {
-                var titleNode = doc.DocumentNode.SelectSingleNode(".//div[@class='toon-title']");
+                var titleNode = doc.DocumentNode.SelectSingleNode(".//div[contains(@class, 'toon-title')]");
                 if (titleNode == null)
                     return null;
 

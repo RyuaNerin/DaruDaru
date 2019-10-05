@@ -132,15 +132,15 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 NewUri = uri,
                 MaruCode = DaruUriParser.Detail.GetCode(uri),
-                IsFinished = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//a[@class='publish_type']")?.InnerText) == "완결",
-                Title = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//div[@class='red title']").InnerText.Replace("\n", "")).Trim(),
+                IsFinished = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//a[contains(@class, 'publish_type')]")?.InnerText) == "완결",
+                Title = Utility.ReplcaeHtmlTag(node.SelectSingleNode(".//div[contains(@class, 'red') and contains(@class, 'title')]").InnerText.Replace("\n", "")).Trim(),
             };
 
-            var mangaDetail = node.SelectSingleNode(".//div[@class='manga-detail-list']");
+            var mangaDetail = node.SelectSingleNode(".//div[contains(@class, 'manga-detail-list')]");
             if (mangaDetail == null)
                 return null;
 
-            foreach (var slot in mangaDetail.SelectNodes(".//div[@class='slot ']").ToArray())
+            foreach (var slot in mangaDetail.SelectNodes(".//div[contains(@class, 'slot')]").ToArray())
             {
                 Uri mangaUri = null;
 
@@ -154,7 +154,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 if (mangaUri == null)
                 {
-                    foreach (var a in slot.SelectNodes(".//a[@class='href']"))
+                    foreach (var a in slot.SelectNodes(".//a[contains(@class, 'href')]"))
                     {
                         var href = a.Attributes["href"].Value;
                         if (href == "#")
@@ -176,7 +176,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 string title = null;
 
-                var titleNode = slot.SelectSingleNode(".//div[@class='title']");
+                var titleNode = slot.SelectSingleNode(".//div[contains(@class, 'title')]");
                 if (titleNode != null)
                 {
                     foreach (var child in titleNode.ChildNodes.ToArray())
