@@ -199,18 +199,18 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         imageInfo.ImageUri = new Uri[]
                         {
-                            imgList[i],
                             new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
+                            imgList[i],
                             imgList1[i],
-                        };
+                        }.Distinct().ToArray();
                     }
                     else
                     {
                         imageInfo.ImageUri = new Uri[]
                         {
-                            imgList[i],
                             new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
-                        };
+                            imgList[i],
+                        }.Distinct().ToArray();
                     }
 
                     mangaInfo.Images.Add(imageInfo);
@@ -369,12 +369,25 @@ namespace DaruDaru.Marumaru.ComicInfo
         private long m_downloaded;
         private bool Download()
         {
-            var startTime = DateTime.Now;
-
-            this.m_downloaded = 0;
-            var taskDownload = Task.Factory.StartNew(() =>
+            using (var stopSlim = new ManualResetEventSlim(false))
             {
-                return Parallel.ForEach(
+                this.m_downloaded = 0;
+                var updateTask = Task.Factory.StartNew(() =>
+                {
+                    var startTime = DateTime.Now;
+
+                    double befSpeed = 0;
+                    while (!stopSlim.IsSet)
+                    {
+                        Thread.Sleep(500);
+
+                        befSpeed = (befSpeed + Interlocked.Read(ref this.m_downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
+
+                        this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
+                    }
+                });
+
+                var parallelSucc = Parallel.ForEach(
                     this.m_images,
                     (e, state) =>
                     {
@@ -388,20 +401,15 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         state.Stop();
                     }).IsCompleted;
-            });
 
-            double befSpeed = 0;
-            while (!taskDownload.Wait(0))
-            {
-                Thread.Sleep(500);
+                stopSlim.Set();
+                updateTask.Wait();
 
-                befSpeed = (befSpeed + Interlocked.Read(ref this.m_downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
-
-                this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
+                if (!parallelSucc)
+                    return false;
             }
 
             this.SpeedOrFileSize = null;
-
             // 최소한 하나 이상의 이미지가 포함되어 있어야 함
             return this.m_images.Any(e => e.Extension != null);
         }
@@ -468,6 +476,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     zipStream.PutNextEntry(entry);
 
+                    file.TempStream.Seek(0, SeekOrigin.Begin);
                     while ((read = file.TempStream.Read(buff, 0, 4096)) > 0)
                         zipStream.Write(buff, 0, read);
                 }
