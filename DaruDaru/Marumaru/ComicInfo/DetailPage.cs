@@ -189,6 +189,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                 });
             }
 
+            // 내림차순에서 오름차순으로 변경
+            detailInfo.MangaList.Reverse();
 
             return detailInfo;
         }
