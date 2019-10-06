@@ -76,8 +76,19 @@
         <GridView>
             <GridViewColumn Header="제목"
                             Width="220"
-                            util:GridViewSort.PropertyName="TitleWithNo"
-                            DisplayMemberBinding="{Binding TitleWithNo, Mode=OneWay}" />
+                            util:GridViewSort.PropertyName="TitleWithNo">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"
+                                   TextAlignment="Left"
+                                   TextWrapping="NoWrap"
+                                   LineStackingStrategy="BlockLineHeight"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding TitleWithNo, Mode=OneWay}" />
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
 
             <GridViewColumn Header="저장한 날"
                             Width="130"

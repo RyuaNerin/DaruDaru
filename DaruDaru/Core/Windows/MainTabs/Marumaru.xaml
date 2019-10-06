@@ -87,7 +87,12 @@
                 <GridViewColumn.CellTemplate>                    
                     <DataTemplate>
                         <TextBlock Text="{Binding Title, Mode=OneWay}"
-                                   HorizontalAlignment="Stretch">
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"
+                                   TextAlignment="Left"
+                                   TextWrapping="NoWrap"
+                                   LineStackingStrategy="BlockLineHeight"
+                                   TextTrimming="CharacterEllipsis">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock"
                                        BasedOn="{StaticResource {x:Type TextBlock}}">
