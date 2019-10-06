@@ -116,8 +116,8 @@ namespace DaruDaru.Core.Windows.MainTabs
             };
 
             var message = removeFile ?
-                "마루마루 기록과 모든 파일을 삭제합니다":
-                "마루마루 기록에서 삭제합니다";
+                "마나모아 기록과 모든 파일을 삭제합니다":
+                "마나모아 기록에서 삭제합니다";
 
             if (await MainWindow.Instance.ShowMessageBox(message, MessageDialogStyle.AffirmativeAndNegative, settings)
                 == MessageDialogResult.Negative)

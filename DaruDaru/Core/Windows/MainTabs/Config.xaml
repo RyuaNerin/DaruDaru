@@ -163,7 +163,7 @@
                             Margin="0 0 0 5"
                             Click="ctlRemoveDuplicatedArchive_Click"/>
 
-                    <Button Content="같은 마루마루 링크 삭제"
+                    <Button Content="같은 마나모아 링크 삭제"
                             Click="ctlRemoveDuplicatedLink_Click"/>
                 </StackPanel>
             </GroupBox>
