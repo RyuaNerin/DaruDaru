@@ -232,7 +232,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             try
             {
                 foreach (var e in this.m_images)
-                    e.TempStream = new FileStream(Path.GetTempFileName(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+                    e.TempStream = new FileStream(Path.GetTempFileName(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, App.BufferSize, FileOptions.DeleteOnClose);
 
                 if (!this.Download())
                 {
@@ -429,10 +429,10 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 e.TempStream.SetLength(0);
 
-                var buff = new byte[4096];
+                var buff = new byte[App.BufferSize];
                 int read;
 
-                while ((read = resBody.Read(buff, 0, 4096)) > 0)
+                while ((read = resBody.Read(buff, 0, App.BufferSize)) > 0)
                 {
                     Interlocked.Add(ref this.m_downloaded, read);
                     e.TempStream.Write(buff, 0, read);
@@ -465,7 +465,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 zipStream.SetComment(this.Uri.AbsoluteUri + "\nby DaruDaru");
                 zipStream.SetLevel(0);
 
-                var buff = new byte[4096];
+                var buff = new byte[App.BufferSize];
                 int read;
                 foreach (var file in this.m_images)
                 {
@@ -477,7 +477,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     zipStream.PutNextEntry(entry);
 
                     file.TempStream.Seek(0, SeekOrigin.Begin);
-                    while ((read = file.TempStream.Read(buff, 0, 4096)) > 0)
+                    while ((read = file.TempStream.Read(buff, 0, App.BufferSize)) > 0)
                         zipStream.Write(buff, 0, read);
                 }
 

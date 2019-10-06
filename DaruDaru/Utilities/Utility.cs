@@ -47,7 +47,10 @@ namespace DaruDaru.Utilities
         private const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
         private const int HR_ERROR_DISK_FULL        = unchecked((int)0x80070070);
 
-        public static bool Retry(Func<bool> action, int retries = 3)
+        public static bool Retry(Func<bool> action)
+            => Retry(action, App.RetryCount);
+
+        public static bool Retry(Func<bool> action, int retries = App.RetryCount)
         {
             do
             {
@@ -64,6 +67,9 @@ namespace DaruDaru.Utilities
                         {
                             switch ((int)hres.StatusCode)
                             {
+                            case 404:
+                                return false;
+
                             case 429:
                             case 502: // CloudFlare : Bad gateway
                             case 520:

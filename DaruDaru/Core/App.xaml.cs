@@ -9,6 +9,8 @@ namespace DaruDaru.Core
     internal partial class App : Application
     {
         public const int WarningItems = 5;
+        public const int RetryCount = 3;
+        public const int BufferSize = 16 * 1024;
 
         public static readonly string AppPath;
         public static readonly string AppDir;
