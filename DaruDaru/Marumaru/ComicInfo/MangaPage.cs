@@ -52,24 +52,22 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             public List<ImageInfomation> Images { get; } = new List<ImageInfomation>();
             public Uri                   NewUri;
-            public bool                  OccurredError;
         }
 
         protected override bool GetInfomationPriv(ref int count)
         {
             MangaInfomation mangaInfo = null;
-            bool retrySuccess;
+
             using (var wc = WebClientEx.GetOrCreate())
-                retrySuccess = Utility.Retry(() => (mangaInfo = this.GetInfomationWorker(wc)) != null);
-
-            if (!retrySuccess)
             {
-                this.State = MaruComicState.Error_1_Error;
-                return false;
-            }
+                var retrySuccess = Utility.Retry(() => (mangaInfo = this.GetInfomationWorker(wc)) != null);
 
-            if (mangaInfo.OccurredError)
-                return false;
+                if (!retrySuccess)
+                {
+                    this.SetStateFromWebClientEx(wc);
+                    return false;
+                }
+            }
 
             this.Uri = mangaInfo.NewUri;
 
@@ -90,16 +88,9 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             var mangaInfo = new MangaInfomation();
 
-            wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
             var html = this.GetHtml(wc, this.Uri);
-
             if (html == null)
-            {
-                return new MangaInfomation
-                {
-                    OccurredError = true,
-                };
-            }
+                return null;
 
             mangaInfo.NewUri = wc.ResponseUri ?? this.Uri;
 
@@ -134,8 +125,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     var detailUri = DaruUriParser.Detail.GetUri(detailCode);
                     string htmlDetail = null;
-
-                    var docDetail = new HtmlDocument();
+                    
                     DetailPage.DetailInfomation detailInfo = null;
 
                     var detailResult = Utility.Retry(() =>
@@ -143,10 +133,8 @@ namespace DaruDaru.Marumaru.ComicInfo
                         htmlDetail = this.GetHtml(wc, detailUri);
                         if (htmlDetail == null)
                             return false;
-
-                        docDetail.LoadHtml(htmlDetail);
-
-                        detailInfo = DetailPage.GetDetailInfomation(detailUri, docDetail.DocumentNode);
+                        
+                        detailInfo = DetailPage.GetDetailInfomation(detailUri, htmlDetail);
                         return detailInfo != null;
                     });
 

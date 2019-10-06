@@ -33,7 +33,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         /// <summary>
         /// TODO
         /// </summary>
-        Error_6_520             = Error    + 6,
+        Error_6_ServerError          = Error    + 6,
     }
 
     internal abstract class Comic : INotifyPropertyChanged
@@ -189,7 +189,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Error_1_Error:           return "오류";
                     case MaruComicState.Error_3_NotSupport:      return "지원하지 않음";
                     case MaruComicState.Error_5_NotFound:        return "Not Found";
-                    case MaruComicState.Error_6_520:             return "서비스 점검중";
+                    case MaruComicState.Error_6_ServerError:     return "서버 오류";
                 }
 
                 return null;
@@ -248,16 +248,26 @@ namespace DaruDaru.Marumaru.ComicInfo
         protected string GetHtml(WebClientEx wc, Uri uri)
         {
             wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-            var body = wc.DownloadString(uri);
+            return wc.DownloadString(uri);
+        }
 
-            switch ((int)wc.LastStatusCode)
+        protected void SetStateFromWebClientEx(WebClientEx wcEx)
+        {
+            switch ((int)wcEx.LastStatusCode)
             {
             case 404:
                 this.State = MaruComicState.Error_5_NotFound;
-                return null;
-            }
+                break;
 
-            return body;
+            case 429:
+            case int n when 500 <= n && n < 600:
+                this.State = MaruComicState.Error_6_ServerError;
+                break;
+
+            default:
+                this.State = MaruComicState.Error_1_Error;
+                break;
+            }
         }
     }
 }

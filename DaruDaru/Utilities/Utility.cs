@@ -64,10 +64,13 @@ namespace DaruDaru.Utilities
                         {
                             switch ((int)hres.StatusCode)
                             {
-                                case 429:
-                                case 520:
+                            case 429:
+                            case 502: // CloudFlare : Bad gateway
+                            case 520:
+                            case 521: // CloudFlare : A timeout occurred
+                                if (retries > 1)
                                     Thread.Sleep(30 * 1000);
-                                    break;
+                                break;
                             }
                         }
 

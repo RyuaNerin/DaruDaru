@@ -41,24 +41,21 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string       MaruCode;
             public string       Title;
             public bool         IsFinished;
-            public bool         OccurredError;
         }
         protected override bool GetInfomationPriv(ref int count)
         {
             DetailInfomation detailInfo = null;
 
-            bool retrySuccess;
             using (var wc = WebClientEx.GetOrCreate())
-                retrySuccess = Utility.Retry(() => (detailInfo = this.GetInfomationWorker(wc)) != null);
-
-            if (!retrySuccess || detailInfo.MangaList.Count == 0)
             {
-                this.State = MaruComicState.Error_1_Error;
-                return false;
-            }
+                var retrySuccess = Utility.Retry(() => (detailInfo = this.GetInfomationWorker(wc)) != null);
 
-            if (detailInfo.OccurredError)
-                return false;
+                if (!retrySuccess)
+                {
+                    this.SetStateFromWebClientEx(wc);
+                    return false;
+                }
+            }
 
             this.Title = detailInfo.Title;
             this.Uri   = detailInfo.NewUri;
@@ -112,22 +109,18 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             var html = this.GetHtml(wc, this.Uri);
             if (html == null)
-            {
-                return new DetailInfomation
-                {
-                    OccurredError = true,
-                };
-            }
+                return null;
 
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            return GetDetailInfomation(wc.ResponseUri ?? this.Uri, doc.DocumentNode);
+            return GetDetailInfomation(wc.ResponseUri ?? this.Uri, html);
         }
 
-        public static DetailInfomation GetDetailInfomation(Uri uri, HtmlNode node)
+        public static DetailInfomation GetDetailInfomation(Uri uri, string body)
         {
+            var doc = new HtmlDocument();
+            doc.LoadHtml(body);
+
+            var node = doc.DocumentNode;
+
             var detailInfo = new DetailInfomation
             {
                 NewUri = uri,
