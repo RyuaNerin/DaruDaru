@@ -3,7 +3,9 @@ using System.ComponentModel;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Windows;
 using DaruDaru.Config;
+using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using DaruDaru.Utilities;
 
@@ -248,7 +250,30 @@ namespace DaruDaru.Marumaru.ComicInfo
         protected string GetHtml(WebClientEx wc, Uri uri)
         {
             wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-            return wc.DownloadString(uri);
+            var body = wc.DownloadString(uri);
+
+            if (body.Contains("recaptcha"))
+            {
+                using (var frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(uri)))
+                {
+                    Application.Current.Dispatcher.Invoke(frm.Show);
+
+                    var succ = frm.Wait.Wait(Recaptcha.TimeOut);
+
+                    Application.Current.Dispatcher.Invoke(frm.Close);
+
+                    if (!succ)
+                        return null;
+
+                    wc.Cookie.Add(frm.Cookies.GetCookies(uri));
+
+
+                    wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
+                    body = wc.DownloadString(uri);
+                }
+            }
+
+            return body;
         }
 
         protected void SetStateFromWebClientEx(WebClientEx wcEx)

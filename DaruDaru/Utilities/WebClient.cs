@@ -67,13 +67,10 @@ namespace DaruDaru.Utilities
             }
         }
 
-
-        private readonly string m_userAgent;
-        private readonly CookieContainer m_cookie = new CookieContainer();
         private WebClientEx() : base()
         {
             this.Encoding = System.Text.Encoding.UTF8;
-            this.m_userAgent = UserAgents[Random.Next(0, UserAgents.Length)];
+            this.UserAgent = UserAgents[Random.Next(0, UserAgents.Length)];
         }
 
         protected override void Dispose(bool disposing)
@@ -85,6 +82,10 @@ namespace DaruDaru.Utilities
                     Pool.Push(this);
             }
         }
+        
+        private string UserAgent { get; set; }
+        
+        public CookieContainer Cookie { get; } = new CookieContainer();
 
         public Uri ResponseUri { get; private set; }
         public HttpStatusCode LastStatusCode { get; private set; }
@@ -116,8 +117,8 @@ namespace DaruDaru.Utilities
                 }
                 else
                 {
-                    hreq.CookieContainer = wcEx.m_cookie;
-                    hreq.UserAgent       = wcEx.m_userAgent;
+                    hreq.CookieContainer = wcEx.Cookie;
+                    hreq.UserAgent       = wcEx.UserAgent;
                 }
             }
 
