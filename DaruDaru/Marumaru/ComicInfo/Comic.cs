@@ -247,6 +247,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
         }
 
+        private static readonly AutoResetEvent GetHtmlLock = new AutoResetEvent(true);
         protected string GetHtml(WebClientEx wc, Uri uri)
         {
             wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
@@ -254,26 +255,41 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             if (body.Contains("recaptcha"))
             {
-                Recaptcha frm = null;
-                try
+                if (GetHtmlLock.WaitOne(0))
                 {
-                    frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(uri));
+                    try
+                    {
+                        Recaptcha frm = null;
+                        try
+                        {
+                            frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(uri));
 
-                    Application.Current.Dispatcher.Invoke(frm.Show);
+                            Application.Current.Dispatcher.Invoke(frm.Show);
 
-                    var succ = frm.Wait.Wait(Recaptcha.TimeOut);
+                            var succ = frm.Wait.Wait(Recaptcha.TimeOut);
 
-                    Application.Current.Dispatcher.Invoke(frm.Close);
+                            Application.Current.Dispatcher.Invoke(frm.Close);
 
-                    if (!succ)
-                        return null;
+                            if (!succ)
+                                return null;
 
-                    wc.Cookie.Add(frm.Cookies.GetCookies(uri));
+                            WebClientEx.Cookie.Add(frm.Cookies.GetCookies(uri));
+                        }
+                        finally
+                        {
+                            if (frm != null)
+                                Application.Current.Dispatcher.Invoke(frm.Dispose);
+                        }
+                    }
+                    finally
+                    {
+                        GetHtmlLock.Set();
+                    }
                 }
-                finally
+                else
                 {
-                    if (frm != null)
-                        Application.Current.Dispatcher.Invoke(frm.Dispose);
+                    GetHtmlLock.WaitOne();
+                    GetHtmlLock.Set();
                 }
 
                 wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);

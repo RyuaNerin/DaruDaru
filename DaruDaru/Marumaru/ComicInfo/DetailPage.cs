@@ -20,7 +20,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         /// <param name="comicName"></param>
         /// <param name="skip">Status 를 Skip 으로 표시할 것인지</param>
         public DetailPage(bool addNewOnly, Uri uri, string comicName, bool skip)
-            : base(addNewOnly, uri, comicName)
+            : base(addNewOnly, DaruUriParser.Detail.GetUri(DaruUriParser.Detail.GetCode(uri)), comicName)
         {
             if (skip)
                 this.State = MaruComicState.Complete_4_Skip;
@@ -46,7 +46,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             DetailInfomation detailInfo = null;
 
-            using (var wc = WebClientEx.GetOrCreate())
+            using (var wc = new WebClientEx())
             {
                 var retrySuccess = Utility.Retry(() => (detailInfo = this.GetInfomationWorker(wc)) != null);
 

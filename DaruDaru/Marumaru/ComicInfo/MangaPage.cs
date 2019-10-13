@@ -58,7 +58,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             MangaInfomation mangaInfo = null;
 
-            using (var wc = WebClientEx.GetOrCreate())
+            using (var wc = new WebClientEx())
             {
                 var retrySuccess = Utility.Retry(() => (mangaInfo = this.GetInfomationWorker(wc)) != null);
 
