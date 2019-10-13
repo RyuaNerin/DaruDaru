@@ -24,6 +24,9 @@
 
 - 다운로드 : [Github Latest Release](https://github.com/RyuaNerin/DaruDaru/releases/latest)
 
+- **주소가 변경 될 경우 [설정] 에서 [우회용 호스트 설정] 값을 변경해주세요**
+  - 기본값은 `manamoa15.net` 입니다
+
 - **전편 보기 링크**를 주면 해당 만화 전체 다운로드
 
 - **만화 링크**를 주면 해당 만화만 다운로드
