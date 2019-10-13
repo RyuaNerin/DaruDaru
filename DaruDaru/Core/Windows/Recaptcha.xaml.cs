@@ -92,6 +92,9 @@ namespace DaruDaru.Core.Windows
             this.m_iWebBrowser.RegisterAsBrowser = false;
             this.m_iWebBrowser.RegisterAsDropTarget = false;
             this.m_iWebBrowser.AddressBar = false;
+
+            this.m_iWebBrowser.NewWindow2 += this.CtlBrowser_NewWindow2;
+            this.m_iWebBrowser.NewWindow3 += this.CtlBrowser_NewWindow3;
         }
 
         private void MetroWindow_Closed(object sender, EventArgs e)
@@ -118,6 +121,16 @@ namespace DaruDaru.Core.Windows
             catch
             {
             }
+        }
+
+        private void CtlBrowser_NewWindow2(ref object ppDisp, ref bool Cancel)
+        {
+            Cancel = true;
+        }
+
+        private void CtlBrowser_NewWindow3(ref object ppDisp, ref bool Cancel, uint dwFlags, string bstrUrlContext, string bstrUrl)
+        {
+            Cancel = true;
         }
 
         private void ctlBrowser_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
