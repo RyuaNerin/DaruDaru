@@ -11,6 +11,8 @@
                    Left="-100"
                    Top="-100"
                    Opacity="0"
+                   Focusable="False"
+                   IsEnabled="False"
                    Background="Transparent"
                    AllowsTransparency="True"
                    Visibility="Collapsed"
@@ -20,5 +22,8 @@
     <WebBrowser x:Name="ctlBrowser"
                 Visibility="Collapsed"
                 OverridesDefaultStyle="False"
+                Focusable="False"
+                IsEnabled="False"
+                PreviewKeyDown="ctlBrowser_PreviewKeyDown"
                 LoadCompleted="CtlBrowser_LoadCompleted"/>
 </metro:MetroWindow>

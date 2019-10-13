@@ -120,6 +120,11 @@ namespace DaruDaru.Core.Windows
             }
         }
 
+        private void ctlBrowser_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            e.Handled = true;
+        }
+
         private static class NativeMethods
         {
             [DllImport("wininet.dll", CharSet = CharSet.Unicode)]
