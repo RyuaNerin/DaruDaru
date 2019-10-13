@@ -27,7 +27,7 @@ namespace DaruDaru.Core.Windows
         {
             Instance = this;
 
-            InitializeComponent();
+            this.InitializeComponent();
 
             CrashReport.Init();
             this.DataContext = ConfigManager.Instance;
@@ -35,10 +35,7 @@ namespace DaruDaru.Core.Windows
 
             this.m_dragDropAdorner = new DragDropAdorner(this.ctlTab, (Brush)this.FindResource("AccentColorBrush3"));
 
-            var p = ConfigManager.Instance.WorkerCount;
-
-            this.m_workerInfo = new Thread[p];
-            this.m_workerDown = new Thread[p];
+            this.m_workerCount = ConfigManager.Instance.WorkerCount;
         }
 
         private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
@@ -130,48 +127,43 @@ namespace DaruDaru.Core.Windows
             this.ctlTab.SelectedIndex = 2;
         }
 
-        private readonly Thread[] m_workerInfo;
-        private readonly Thread[] m_workerDown;
+        private readonly long m_workerCount;
+        private object m_workerLock = new object();
+        private long m_workerInfo;
+        private long m_workerDown;
 
         public void WakeQueue(int count)
         {
-            lock (this.m_workerInfo)
+            lock (this.m_workerLock)
             {
-                for (int i = 0; i < this.m_workerInfo.Length; ++i)
+                while (this.m_workerInfo < this.m_workerCount)
                 {
-                    if (this.m_workerInfo[i] == null || !this.m_workerInfo[i].IsAlive)
+                    var thread = new Thread(this.Worker_Infomation)
                     {
-                        this.m_workerInfo[i] = new Thread(this.Worker_Infomation)
-                        {
-                            IsBackground = true,
-                            Priority = ThreadPriority.Lowest,
-                        };
-                        this.m_workerInfo[i].Start();
+                        IsBackground = true,
+                        Priority = ThreadPriority.Lowest,
+                    };
+                    thread.Start();
 
-
-                        if (--count <= 0) return;
-                    }
+                    this.m_workerInfo++;
                 }
             }
         }
 
         public void WakeDownloader(int count)
         {
-            lock (this.m_workerDown)
+            lock (this.m_workerLock)
             {
-                for (int i = 0; i < this.m_workerDown.Length; ++i)
+                while (this.m_workerDown < this.m_workerCount)
                 {
-                    if (this.m_workerDown[i] == null || !this.m_workerDown[i].IsAlive)
+                    var thread = new Thread(this.Worker_Download)
                     {
-                        this.m_workerDown[i] = new Thread(this.Worker_Download)
-                        {
-                            IsBackground = true,
-                            Priority = ThreadPriority.Lowest,
-                        };
-                        this.m_workerDown[i].Start();
+                        IsBackground = true,
+                        Priority = ThreadPriority.Lowest,
+                    };
+                    thread.Start();
 
-                        if (--count <= 0) return;
-                    }
+                    this.m_workerDown++;
                 }
             }
         }
@@ -184,6 +176,9 @@ namespace DaruDaru.Core.Windows
             {
                 comic.GetInfomation();
             }
+
+            lock (this.m_workerLock)
+                this.m_workerInfo--;
         }
         private void Worker_Download()
         {
@@ -193,6 +188,9 @@ namespace DaruDaru.Core.Windows
             {
                 comic.StartDownload();
             }
+
+            lock (this.m_workerLock)
+                this.m_workerDown--;
         }
 
         private bool m_dragDropAdornerEnabled = false;
@@ -246,21 +244,54 @@ namespace DaruDaru.Core.Windows
                 var data = e.Data.GetData(DataFormats.FileDrop) as string[];
                 if (data != null)
                 {
-                    var uris = data.Where(le => le.EndsWith(".url"))
-                                   .SelectMany(le => File.ReadAllLines(le).Where(lee => lee.StartsWith("URL=", StringComparison.CurrentCultureIgnoreCase)))
-                                   .Select(le => Utility.CreateUri(le.Substring(4)))
-                                   .ToArray();
+                    Task.Factory.StartNew(() =>
+                    {
+                        var uriList = new List<Uri>(data.Length);
 
-                    this.DownloadUri(false, uris, le => le, null, null);
+                        Parallel.ForEach(data, lnkPath =>
+                        {
+                            if (!lnkPath.EndsWith(".url"))
+                                return;
+
+                            try
+                            {
+                                using (var fs = File.Open(lnkPath, FileMode.Open))
+                                {
+                                    var reader = new StreamReader(fs);
+
+                                    string line = null;
+                                    while ((line = reader.ReadLine()) != null)
+                                    {
+                                        if (line.StartsWith("URL=", StringComparison.CurrentCultureIgnoreCase))
+                                        {
+                                            if (Utility.TryCreateUri(line.Substring(4), out var uri))
+                                            {
+                                                uriList.Add(uri);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                            }
+                        });
+
+                        Application.Current.Dispatcher.Invoke(() => this.DownloadUri(false, uriList, le => le, null, null));
+                    });
                 }
             }
             else
             {
                 Uri uri;
 
-                if (GetUriFromStream(out uri, e.Data, "text/x-moz-url") ||
+                Task.Factory.StartNew(() =>
+                {
+                    if (GetUriFromStream(out uri, e.Data, "text/x-moz-url") ||
                     GetUriFromStream(out uri, e.Data, "UniformResourceLocatorW"))
-                    this.DownloadUri(false, uri, null, false);
+                        this.DownloadUri(false, uri, null, false);
+                });
             }
 
             SetDragDropAdnorner(false);
