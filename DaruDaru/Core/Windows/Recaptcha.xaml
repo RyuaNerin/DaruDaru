@@ -8,11 +8,17 @@
                    ShowInTaskbar="False"
                    Width="300"
                    Height="300"
+                   Left="-100"
+                   Top="-100"
                    Opacity="0"
+                   Background="Transparent"
+                   AllowsTransparency="True"
+                   Visibility="Collapsed"
                    WindowTransitionsEnabled="False"
                    Loaded="MetroWindow_Loaded"
                    Closed="MetroWindow_Closed">
     <WebBrowser x:Name="ctlBrowser"
+                Visibility="Collapsed"
                 OverridesDefaultStyle="False"
                 LoadCompleted="CtlBrowser_LoadCompleted"/>
 </metro:MetroWindow>
