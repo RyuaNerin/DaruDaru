@@ -66,7 +66,9 @@ namespace DaruDaru.Utilities
         public static string GetExtension(Stream stream)
         {
             var buff = new byte[MaxLength];
-            stream.Read(buff, 0, buff.Length);
+            var read = stream.Read(buff, 0, buff.Length);
+            if (read < MaxLength)
+                return null;
 
             foreach (var ext in Signature)
             {

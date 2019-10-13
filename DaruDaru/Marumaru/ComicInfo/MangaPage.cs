@@ -410,8 +410,9 @@ namespace DaruDaru.Marumaru.ComicInfo
             }
 
             this.SpeedOrFileSize = null;
-            // 최소한 하나 이상의 이미지가 포함되어 있어야 함
-            return this.m_images.Any(e => e.Extension != null);
+
+            // 모든 이미지가 다운로드가 완료되어야 함
+            return this.m_images.All(e => e.Extension != null);
         }
 
         private bool DownloadWorker(ImageInfomation e, int uriIndex)
@@ -442,8 +443,6 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 e.TempStream.Position = 0;
                 e.Extension = Signatures.GetExtension(e.TempStream);
-
-                e.TempStream.Position = 0;
             }
 
             // 이미지 암호화 푸는 작업
@@ -479,6 +478,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     file.TempStream.Seek(0, SeekOrigin.Begin);
                     while ((read = file.TempStream.Read(buff, 0, App.BufferSize)) > 0)
                         zipStream.Write(buff, 0, read);
+                    zipStream.Flush();
                 }
 
                 zipFile.Flush();
