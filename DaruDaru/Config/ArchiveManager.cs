@@ -209,7 +209,15 @@ namespace DaruDaru.Config
                     if (Array.IndexOf(mangaCodes, archiveCode) >= 0)
                     {
                         if (removeFile)
-                            File.Delete(Manga[i].ZipPath);
+                        {
+                            try
+                            {
+                                File.Delete(Manga[i].ZipPath);
+                            }
+                            catch
+                            {
+                            }
+                        }
 
                         Manga.RemoveAt(i);
 
