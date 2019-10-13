@@ -254,8 +254,11 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             if (body.Contains("recaptcha"))
             {
-                using (var frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(uri)))
+                Recaptcha frm = null;
+                try
                 {
+                    frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(uri));
+
                     Application.Current.Dispatcher.Invoke(frm.Show);
 
                     var succ = frm.Wait.Wait(Recaptcha.TimeOut);
@@ -266,11 +269,15 @@ namespace DaruDaru.Marumaru.ComicInfo
                         return null;
 
                     wc.Cookie.Add(frm.Cookies.GetCookies(uri));
-
-
-                    wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-                    body = wc.DownloadString(uri);
                 }
+                finally
+                {
+                    if (frm != null)
+                        Application.Current.Dispatcher.Invoke(frm.Dispose);
+                }
+
+                wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
+                body = wc.DownloadString(uri);
             }
 
             return body;
