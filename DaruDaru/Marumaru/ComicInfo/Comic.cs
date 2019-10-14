@@ -214,7 +214,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.ProgressValue = 0;
                 this.State = MaruComicState.Wait;
 
-                MainWindow.Instance.WakeQueue(1);
+                MainWindow.Instance.WakeThread();
                 return true;
             }
 
@@ -230,7 +230,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 res = this.GetInfomationPriv(ref count);
 
             if (res)
-                MainWindow.Instance.WakeDownloader(count);
+                MainWindow.Instance.WakeThread();
         }
 
         protected abstract bool GetInfomationPriv(ref int count);
@@ -240,7 +240,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             lock (this.WorkingLock)
                 this.StartDownloadPriv();
 
-            MainWindow.Instance.WakeDownloader(1);
+            MainWindow.Instance.WakeThread();
             MainWindow.Instance.UpdateTaskbarProgress();
         }
         protected virtual void StartDownloadPriv()

@@ -17,8 +17,7 @@ namespace DaruDaru.Core.Windows
 
         void UpdateTaskbarProgress();
 
-        void WakeDownloader(int count);
-        void WakeQueue(int count);
+        void WakeThread();
 
         void SearchArchiveByCodes(string[] codes, string text);
 

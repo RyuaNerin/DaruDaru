@@ -30,7 +30,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.ZipPath     = entry.ZipPath;
                 this.State       = MaruComicState.Complete_2_Archived;
 
-                MainWindow.Instance.WakeDownloader(1);
+                MainWindow.Instance.WakeThread();
             }
         }
 

@@ -4,9 +4,11 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using DaruDaru.Config;
 using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Marumaru.ComicInfo;
 using DaruDaru.Utilities;
@@ -30,6 +32,21 @@ namespace DaruDaru.Core.Windows.MainTabs
                     le.Action == NotifyCollectionChangedAction.Remove)
                     MainWindow.Instance.UpdateTaskbarProgress();
             };
+
+            for (var i = 0; i < ConfigManager.Instance.WorkerCount; ++i)
+            {
+                new Thread(this.Worker_Infomation)
+                {
+                    IsBackground = true,
+                    Priority = ThreadPriority.Lowest,
+                }.Start();
+
+                new Thread(this.Worker_Download)
+                {
+                    IsBackground = true,
+                    Priority = ThreadPriority.Lowest,
+                }.Start();
+            }
         }
 
         public double QueueProgress
@@ -225,18 +242,31 @@ namespace DaruDaru.Core.Windows.MainTabs
             this.FocusTextBox();
         }
 
+        public void WakeThread()
+        {
+            lock (this.Queue)
+            {
+                Monitor.PulseAll(this.Queue);
+            }
+        }
+
         public void DownloadUri(bool addNewOnly, Uri uri, string comicName, bool skipMarumaru)
         {
             lock (this.Queue)
+            {
                 if (this.CheckExisted(uri))
-                    this.Queue.Add(Comic.CreateForSearch(addNewOnly, uri, comicName, skipMarumaru));
+                {
+                    var comicItem = Comic.CreateForSearch(addNewOnly, uri, comicName, skipMarumaru);
+                    comicItem.PropertyChanged += this.Item_PropertyChanged;
+                    this.Queue.Add(comicItem);
+                }
 
-            MainWindow.Instance.WakeQueue(1);
+                Monitor.PulseAll(this.Queue);
+            }
         }
+
         public void DownloadUri<T>(bool addNewOnly, IEnumerable<T> src, Func<T, Uri> toUri, Func<T, string> toComicName, Func<T, bool> skipMarumaru)
         {
-            int count = 0;
-
             lock (this.Queue)
             {
                 foreach (var item in src)
@@ -245,13 +275,20 @@ namespace DaruDaru.Core.Windows.MainTabs
 
                     if (this.CheckExisted(uri))
                     {
-                        this.Queue.Add(Comic.CreateForSearch(addNewOnly, uri, toComicName?.Invoke(item), skipMarumaru?.Invoke(item) ?? false));
-                        ++count;
+                        var comicItem = Comic.CreateForSearch(addNewOnly, uri, toComicName?.Invoke(item), skipMarumaru?.Invoke(item) ?? false);
+                        comicItem.PropertyChanged += this.Item_PropertyChanged;
+                        this.Queue.Add(comicItem);
                     }
                 }
-            }
 
-            MainWindow.Instance.WakeQueue(count);
+                Monitor.PulseAll(this.Queue);
+            }
+        }
+
+        private void Item_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "State")
+                this.WakeThread();
         }
 
         public void InsertNewComic(Comic sender, IEnumerable<Comic> newItems, bool removeSender)
@@ -260,8 +297,6 @@ namespace DaruDaru.Core.Windows.MainTabs
         }
         private void InsertNewComicPriv(Comic sender, IEnumerable<Comic> newItems, bool removeSender)
         {
-            int count = 0;
-
             lock (this.Queue)
             {
                 var index = this.Queue.IndexOf(sender);
@@ -278,12 +313,11 @@ namespace DaruDaru.Core.Windows.MainTabs
                     if (this.CheckExisted(newItem.Uri))
                     {
                         this.Queue.Insert(index++, newItem);
-                        ++count;
                     }
                 }
-            }
 
-            MainWindow.Instance.WakeQueue(count);
+                Monitor.PulseAll(this.Queue);
+            }
         }
 
         private bool CheckExisted(Uri uri)
@@ -309,9 +343,32 @@ namespace DaruDaru.Core.Windows.MainTabs
                         return true;
                     }
                 }
+
+                Monitor.Wait(this.Queue);
             }
 
             return false;
+        }
+
+        private void Worker_Infomation()
+        {
+            Comic comic = null;
+
+            while (true)
+            {
+                if (this.GetComicFromQueue(ref comic, MaruComicState.Wait, MaruComicState.Working_1_GetInfomation))
+                    comic.GetInfomation();
+            }
+        }
+        private void Worker_Download()
+        {
+            Comic comic = null;
+
+            while (true)
+            {
+                if (this.GetComicFromQueue(ref comic, MaruComicState.Working_2_WaitDownload, MaruComicState.Working_3_Downloading))
+                    comic.StartDownload();
+            }
         }
     }
 }
