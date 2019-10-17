@@ -294,7 +294,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 }
                 if (fileMode)
                 {
-                    MoveFile(tempPath, this.ZipPath);
+                    this.ZipPath = MoveFile(tempPath, this.ZipPath);
                     this.SpeedOrFileSize = Utility.ToEICFormat(new FileInfo(this.ZipPath).Length);
                     this.State = MaruComicState.Complete_1_Downloaded;
                 }
