@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -42,6 +43,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         public string ArchiveCode => DaruUriParser.Manga.GetCode(this.Uri);
         
+        [DebuggerDisplay("{Index} - Count: {ImageUri?.Length} - Ext : {Extension}")]
         private class ImageInfomation
         {
             public int          Index;
