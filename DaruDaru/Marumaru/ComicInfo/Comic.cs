@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using DaruDaru.Config;
+using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using DaruDaru.Utilities;
 
@@ -22,7 +23,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         Working_2_WaitDownload  = Working  + 2,
         Working_3_Downloading   = Working  + 3,
         Working_4_Compressing   = Working  + 4,
-        Working_4_Wait          = Working  + 5,
+        Working_4_Wait          = Working  + 0x00100000,
 
         Complete_1_Downloaded   = Complete + 1,
         Complete_2_Archived     = Complete + 2,
@@ -110,6 +111,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 {
                     Interlocked.Exchange(ref this.m_progressValue, this.m_progressMaximum);
                     this.InvokePropertyChanged("ProgressValue");
+                    this.SpeedOrFileSize = null;
                 }
 
                 this.InvokePropertyChanged("StateText");
@@ -175,7 +177,9 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
             get
             {
-                switch (this.State)
+                var state = this.State;
+
+                switch (state)
                 {
                     case MaruComicState.Wait:                    return "";
 
@@ -183,7 +187,6 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Working_2_WaitDownload:  return $"0 / {this.ProgressMaximum}";
                     case MaruComicState.Working_3_Downloading:   return $"{this.ProgressValue} / {this.ProgressMaximum}";
                     case MaruComicState.Working_4_Compressing:   return "압축중";
-                    case MaruComicState.Working_4_Wait:          return "---";
 
                     case MaruComicState.Complete_1_Downloaded:   return "완료";
                     case MaruComicState.Complete_2_Archived:     return "저장됨";
@@ -195,6 +198,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Error_5_NotFound:        return "Not Found";
                     case MaruComicState.Error_6_ServerError:     return "서버 오류";
                 }
+
+                if (state > MaruComicState.Working_4_Wait)
+                    return $"대기중 {(int)state - MaruComicState.Working_4_Wait}s";
 
                 return null;
             }
@@ -316,8 +322,12 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (retries > 1)
                 {
                     var state = this.State;
-                    this.State = MaruComicState.Working_4_Wait;
-                    Thread.Sleep(30 * 1000);
+
+                    for (int i = App.SleepSecondWhenServerError; i > 0; --i)
+                    {
+                        this.State = MaruComicState.Working_4_Wait + i;
+                        Thread.Sleep(1000);
+                    }
                     this.State = state;
                 }
                 break;
