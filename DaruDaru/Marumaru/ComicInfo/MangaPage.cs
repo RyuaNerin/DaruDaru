@@ -398,6 +398,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         befSpeed = (befSpeed + Interlocked.Exchange(ref this.m_downloaded, 0) / (DateTime.Now - startTime).TotalSeconds) / 2;
 
+                        if (double.IsNaN(befSpeed))
+                            befSpeed = 0;
+
                         this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
 
                         Thread.Sleep(500);
