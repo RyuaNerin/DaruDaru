@@ -499,17 +499,5 @@ namespace DaruDaru.Marumaru.ComicInfo
                 zipFile.Flush();
             }
         }
-
-        private class Assets
-        {
-            [JsonProperty("message")]
-            public string Message { get; set; }
-
-            [JsonProperty("sources")]
-            public string[] Sources { get; set; }
-
-            [JsonProperty("status")]
-            public string Status { get; set; }
-        }
     }
 }
