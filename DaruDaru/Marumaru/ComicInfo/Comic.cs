@@ -22,6 +22,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         Working_2_WaitDownload  = Working  + 2,
         Working_3_Downloading   = Working  + 3,
         Working_4_Compressing   = Working  + 4,
+        Working_4_Wait          = Working  + 5,
 
         Complete_1_Downloaded   = Complete + 1,
         Complete_2_Archived     = Complete + 2,
@@ -182,6 +183,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Working_2_WaitDownload:  return $"0 / {this.ProgressMaximum}";
                     case MaruComicState.Working_3_Downloading:   return $"{this.ProgressValue} / {this.ProgressMaximum}";
                     case MaruComicState.Working_4_Compressing:   return "압축중";
+                    case MaruComicState.Working_4_Wait:          return "---";
 
                     case MaruComicState.Complete_1_Downloaded:   return "완료";
                     case MaruComicState.Complete_2_Archived:     return "저장됨";
@@ -312,7 +314,12 @@ namespace DaruDaru.Marumaru.ComicInfo
             case 429:
             case int n when 500 <= n && n < 600:
                 if (retries > 1)
+                {
+                    var state = this.State;
+                    this.State = MaruComicState.Working_4_Wait;
                     Thread.Sleep(30 * 1000);
+                    this.State = state;
+                }
                 break;
             }
             return true;
