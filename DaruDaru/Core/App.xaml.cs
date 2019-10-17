@@ -26,7 +26,7 @@ namespace DaruDaru.Core
 
             HttpWebRequest.DefaultCachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
-            ServicePointManager.DefaultConnectionLimit = 64;
+            ServicePointManager.DefaultConnectionLimit = 256;
             ServicePointManager.MaxServicePoints = 0;
             ServicePointManager.Expect100Continue = false;
         }

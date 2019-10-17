@@ -354,20 +354,26 @@ namespace DaruDaru.Core.Windows.MainTabs
         {
             Comic comic = null;
 
-            while (true)
+            using (var hc = new HttpClientEx())
             {
-                if (this.GetComicFromQueue(ref comic, MaruComicState.Wait, MaruComicState.Working_1_GetInfomation))
-                    comic.GetInfomation();
+                while (true)
+                {
+                    if (this.GetComicFromQueue(ref comic, MaruComicState.Wait, MaruComicState.Working_1_GetInfomation))
+                        comic.GetInfomation(hc);
+                }
             }
         }
         private void Worker_Download()
         {
             Comic comic = null;
 
-            while (true)
+            using (var hc = new HttpClientEx())
             {
-                if (this.GetComicFromQueue(ref comic, MaruComicState.Working_2_WaitDownload, MaruComicState.Working_3_Downloading))
-                    comic.StartDownload();
+                while (true)
+                {
+                    if (this.GetComicFromQueue(ref comic, MaruComicState.Working_2_WaitDownload, MaruComicState.Working_3_Downloading))
+                        comic.StartDownload(hc);
+                }
             }
         }
     }

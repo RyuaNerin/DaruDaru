@@ -1,11 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using DaruDaru.Config;
-using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using DaruDaru.Utilities;
 
@@ -221,40 +221,42 @@ namespace DaruDaru.Marumaru.ComicInfo
             return false;
         }
 
-        public void GetInfomation()
+        public void GetInfomation(HttpClientEx hc)
         {
             int count = -1;
             bool res;
 
             lock (this.WorkingLock)
-                res = this.GetInfomationPriv(ref count);
+                res = this.GetInfomationPriv(hc, ref count);
 
             if (res)
                 MainWindow.Instance.WakeThread();
         }
 
-        protected abstract bool GetInfomationPriv(ref int count);
+        protected abstract bool GetInfomationPriv(HttpClientEx hc, ref int count);
 
-        public void StartDownload()
+        public void StartDownload(HttpClientEx hc)
         {
             lock (this.WorkingLock)
-                this.StartDownloadPriv();
+                this.StartDownloadPriv(hc);
 
             MainWindow.Instance.WakeThread();
             MainWindow.Instance.UpdateTaskbarProgress();
         }
-        protected virtual void StartDownloadPriv()
+        protected virtual void StartDownloadPriv(HttpClientEx hc)
         {
         }
 
         private static readonly AutoResetEvent GetHtmlLock = new AutoResetEvent(true);
-        protected string GetHtml(WebClientEx wc, Uri uri)
+        protected HttpResponseMessage CallRequest(HttpClientEx hc, HttpRequestMessage req)
         {
-            wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-            var body = wc.DownloadString(uri);
+            var res = hc.SendAsync(req).Exec();
+            var body = res.Content.ReadAsStringAsync().Exec();
 
             if (body.Contains("recaptcha"))
             {
+                res.Dispose();
+
                 if (GetHtmlLock.WaitOne(0))
                 {
                     try
@@ -262,7 +264,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         Recaptcha frm = null;
                         try
                         {
-                            frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(uri));
+                            frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(req.RequestUri));
 
                             Application.Current.Dispatcher.Invoke(frm.Show);
 
@@ -273,7 +275,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                             if (!succ)
                                 return null;
 
-                            WebClientEx.Cookie.Add(frm.Cookies.GetCookies(uri));
+                            HttpClientEx.Cookie.Add(frm.Cookies.GetCookies(req.RequestUri));
                         }
                         finally
                         {
@@ -292,16 +294,33 @@ namespace DaruDaru.Marumaru.ComicInfo
                     GetHtmlLock.Set();
                 }
 
-                wc.Headers.Set(HttpRequestHeader.Referer, this.Uri.AbsoluteUri);
-                body = wc.DownloadString(uri);
+                res = hc.SendAsync(req).Exec();
             }
-
-            return body;
+            
+            return res;
         }
 
-        protected void SetStateFromWebClientEx(WebClientEx wcEx)
+        protected bool WaitFromHttpStatusCode(int retries, HttpStatusCode statusCode)
         {
-            switch ((int)wcEx.LastStatusCode)
+            var v = (int)statusCode;
+
+            if (v / 100 == 2)
+                return false;
+
+            switch ((int)statusCode)
+            {
+            case 429:
+            case int n when 500 <= n && n < 600:
+                if (retries > 1)
+                    Thread.Sleep(30 * 1000);
+                break;
+            }
+            return true;
+        }
+
+        protected void SetStatusFromHttpStatusCode(HttpStatusCode statusCode)
+        {
+            switch ((int)statusCode)
             {
             case 404:
                 this.State = MaruComicState.Error_5_NotFound;

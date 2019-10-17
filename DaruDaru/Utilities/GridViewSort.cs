@@ -190,7 +190,7 @@ namespace DaruDaru.Utilities
             
             public static int CompareTo(string x, string y)
             {
-                // ´ë¼Ò¹®ÀÚ ±¸ºĞ ¾ÈÇÔ
+                // ëŒ€ì†Œë¬¸ì êµ¬ë¶„ ì•ˆí•¨
                 x = x.ToUpper();
                 y = y.ToUpper();
 
@@ -227,8 +227,8 @@ namespace DaruDaru.Utilities
                     else
                     {
                         // ex)
-                        // ¸¸È­ 1È­
-                        // ¸¸È­ 1-1È­
+                        // ë§Œí™” 1í™”
+                        // ë§Œí™” 1-1í™”
                         if (!xIsNum  && !yIsNum &&
                              xIsNumb &&  yIsNumb)
                         {
@@ -240,8 +240,8 @@ namespace DaruDaru.Utilities
                         }
 
                         // ex)
-                        // [´ÜÆí] ¸¸È­
-                        // ¸¸È­
+                        // [ë‹¨í¸] ë§Œí™”
+                        // ë§Œí™”
                         if (x[xindex] < 128 && y[yindex] < 128)
                         {
                             xl = char.IsLetterOrDigit(x[xindex]);

@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -47,41 +47,17 @@ namespace DaruDaru.Utilities
         private const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
         private const int HR_ERROR_DISK_FULL        = unchecked((int)0x80070070);
 
-        public static bool Retry(Func<bool> action)
+        public static bool Retry(Func<int, bool> action)
             => Retry(action, App.RetryCount);
 
-        public static bool Retry(Func<bool> action, int retries = App.RetryCount)
+        public static bool Retry(Func<int, bool> action, int retries = App.RetryCount)
         {
             do
             {
                 try
                 {
-                    if (action())
+                    if (action(retries))
                         return true;
-                }
-                catch (WebException ex)
-                {
-                    if (ex.Response != null)
-                    {
-                        if (ex.Response is HttpWebResponse hres)
-                        {
-                            switch ((int)hres.StatusCode)
-                            {
-                            case 404:
-                                return false;
-
-                            case 429:
-                            case 502: // CloudFlare : Bad gateway
-                            case 520:
-                            case 521: // CloudFlare : A timeout occurred
-                                if (retries > 1)
-                                    Thread.Sleep(30 * 1000);
-                                break;
-                            }
-                        }
-
-                        ex.Response.Dispose();
-                    }
                 }
                 // 디스크 공간 부족
                 catch (IOException ex) when (ex.HResult == HR_ERROR_DISK_FULL || ex.HResult == HR_ERROR_HANDLE_DISK_FULL)
@@ -102,20 +78,19 @@ namespace DaruDaru.Utilities
             return false;
         }
 
-        public static bool ResolvUri(Uri uri, out Uri newUri)
+        public static bool ResolvUri(HttpClientEx hc, Uri uri, out Uri newUri)
         {
             newUri = null;
 
             try
             {
-                var req = WebRequest.Create(uri) as HttpWebRequest;
-                req.Method = "GET";
-                WebClientEx.AddHeader(req);
-
-                using (var res = req.GetResponse())
+                using (var req = new HttpRequestMessage(HttpMethod.Head, uri))
                 {
-                    newUri = res.ResponseUri;
-                    return true;
+                    using (var res = hc.SendAsync(req).Exec())
+                    {
+                        newUri = res.RequestMessage.RequestUri;
+                        return true;
+                    }
                 }
             }
             catch

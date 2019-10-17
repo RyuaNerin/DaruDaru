@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,19 +55,17 @@ namespace DaruDaru.Marumaru.ComicInfo
             public Uri                   NewUri;
         }
 
-        protected override bool GetInfomationPriv(ref int count)
+        protected override bool GetInfomationPriv(HttpClientEx hc, ref int count)
         {
             MangaInfomation mangaInfo = null;
+            HttpStatusCode statusCode = 0;
 
-            using (var wc = new WebClientEx())
+            var retrySuccess = Utility.Retry((retries) => (mangaInfo = this.GetInfomationWorker(hc, retries, out statusCode)) != null);
+
+            if (!retrySuccess)
             {
-                var retrySuccess = Utility.Retry(() => (mangaInfo = this.GetInfomationWorker(wc)) != null);
-
-                if (!retrySuccess)
-                {
-                    this.SetStateFromWebClientEx(wc);
-                    return false;
-                }
+                this.SetStatusFromHttpStatusCode(statusCode);
+                return false;
             }
 
             this.Uri = mangaInfo.NewUri;
@@ -84,17 +83,27 @@ namespace DaruDaru.Marumaru.ComicInfo
             return true;
         }
 
-        private MangaInfomation GetInfomationWorker(WebClientEx wc)
+        private MangaInfomation GetInfomationWorker(HttpClientEx hc, int retries, out HttpStatusCode statusCode)
         {
             var mangaInfo = new MangaInfomation();
 
-            var html = this.GetHtml(wc, this.Uri);
-            if (html == null)
-                return null;
-
-            mangaInfo.NewUri = wc.ResponseUri ?? this.Uri;
-
             var doc = new HtmlDocument();
+            string html;
+
+            using (var req = new HttpRequestMessage(HttpMethod.Get, this.Uri))
+            using (var res = this.CallRequest(hc, req))
+            {
+                statusCode = res.StatusCode;
+                if (this.WaitFromHttpStatusCode(retries, statusCode))
+                    return null;
+
+                html = res.Content.ReadAsStringAsync().Exec();
+                if (string.IsNullOrWhiteSpace(html))
+                    return null;
+
+                mangaInfo.NewUri = res.RequestMessage.RequestUri ?? this.Uri;
+            }
+
             doc.LoadHtml(html);
 
             #region 폴더 이름은 Detail 에서 설정
@@ -124,18 +133,24 @@ namespace DaruDaru.Marumaru.ComicInfo
                 if (detailEntry == null)
                 {
                     var detailUri = DaruUriParser.Detail.GetUri(detailCode);
-                    string htmlDetail = null;
                     
                     DetailPage.DetailInfomation detailInfo = null;
 
-                    var detailResult = Utility.Retry(() =>
+                    var detailResult = Utility.Retry((retries2) =>
                     {
-                        htmlDetail = this.GetHtml(wc, detailUri);
-                        if (htmlDetail == null)
-                            return false;
-                        
-                        detailInfo = DetailPage.GetDetailInfomation(detailUri, htmlDetail);
-                        return detailInfo != null;
+                        using (var req = new HttpRequestMessage(HttpMethod.Get, detailUri))
+                        using (var res = this.CallRequest(hc, req))
+                        {
+                            if (this.WaitFromHttpStatusCode(retries2, res.StatusCode))
+                                return false;
+
+                            var htmlDetail = res.Content.ReadAsStringAsync().Exec();
+                            if (string.IsNullOrWhiteSpace(html))
+                                return false;
+
+                            detailInfo = DetailPage.GetDetailInfomation(hc, detailUri, htmlDetail);
+                            return detailInfo != null;
+                        }
                     });
 
                     if (!detailResult)
@@ -223,7 +238,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             return mangaInfo;
         }
 
-        protected override void StartDownloadPriv()
+        protected override void StartDownloadPriv(HttpClientEx hc)
         {
             this.ZipPath = Path.Combine(new DirectoryInfo(Path.Combine(this.ConfigCur.SavePath, Utility.ReplaceInvalid(this.Title))).FullName, Utility.ReplaceInvalid(this.TitleWithNo) + ".zip");
 
@@ -234,7 +249,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 foreach (var e in this.m_images)
                     e.TempStream = new FileStream(Path.GetTempFileName(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, App.BufferSize, FileOptions.DeleteOnClose);
 
-                if (!this.Download())
+                if (!this.Download(hc))
                 {
                     this.State = MaruComicState.Error_1_Error;
                     return;
@@ -367,7 +382,7 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
 
         private long m_downloaded;
-        private bool Download()
+        private bool Download(HttpClientEx hc)
         {
             using (var stopSlim = new ManualResetEventSlim(false))
             {
@@ -381,7 +396,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         Thread.Sleep(500);
 
-                        befSpeed = (befSpeed + Interlocked.Read(ref this.m_downloaded) / (DateTime.Now - startTime).TotalSeconds) / 2;
+                        befSpeed = (befSpeed + Interlocked.Exchange(ref this.m_downloaded, 0) / (DateTime.Now - startTime).TotalSeconds) / 2;
 
                         this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
                     }
@@ -393,7 +408,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         for (var index = 0; index < e.ImageUri.Length; ++index)
                         {
-                            var succ = Utility.Retry(() => this.DownloadWorker(e, index));
+                            var succ = Utility.Retry((retries) => this.DownloadWorker(hc, e, index));
 
                             if (succ)
                                 return;
@@ -415,38 +430,35 @@ namespace DaruDaru.Marumaru.ComicInfo
             return this.m_images.All(e => e.Extension != null);
         }
 
-        private bool DownloadWorker(ImageInfomation e, int uriIndex)
+        private bool DownloadWorker(HttpClientEx hc, ImageInfomation e, int uriIndex)
         {
-            var req = WebClientEx.AddHeader(WebRequest.Create(e.ImageUri[uriIndex]));
-            if (req is HttpWebRequest hreq)
+            using (var req = new HttpRequestMessage(HttpMethod.Get, e.ImageUri[uriIndex]))
             {
-                hreq.Referer = this.Uri.AbsoluteUri;
-                hreq.AllowWriteStreamBuffering = false;
-                hreq.AllowReadStreamBuffering = false;
-            }
+                req.Headers.Referrer = this.Uri;
 
-            using (var res = req.GetResponse() as HttpWebResponse)
-            using (var resBody = res.GetResponseStream())
-            {
-                e.TempStream.SetLength(0);
-
-                var buff = new byte[App.BufferSize];
-                int read;
-
-                while ((read = resBody.Read(buff, 0, App.BufferSize)) > 0)
+                using (var res = hc.SendAsync(req).Exec())
+                using (var resBody = res.Content.ReadAsStreamAsync().Exec())
                 {
-                    Interlocked.Add(ref this.m_downloaded, read);
-                    e.TempStream.Write(buff, 0, read);
+                    e.TempStream.SetLength(0);
+
+                    var buff = new byte[App.BufferSize];
+                    int read;
+
+                    while ((read = resBody.Read(buff, 0, App.BufferSize)) > 0)
+                    {
+                        Interlocked.Add(ref this.m_downloaded, read);
+                        e.TempStream.Write(buff, 0, read);
+                    }
+
+                    e.TempStream.Flush();
+
+                    e.TempStream.Position = 0;
+                    e.Extension = Signatures.GetExtension(e.TempStream);
+
+                    // 이미지 암호화 푸는 작업
+                    this.m_decryptor.Decrypt(e.TempStream);
                 }
-
-                e.TempStream.Flush();
-
-                e.TempStream.Position = 0;
-                e.Extension = Signatures.GetExtension(e.TempStream);
             }
-
-            // 이미지 암호화 푸는 작업
-            this.m_decryptor.Decrypt(e.TempStream);
 
             this.IncrementProgress();
             return true;

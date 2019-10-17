@@ -11,12 +11,12 @@ namespace DaruDaru.Marumaru.ComicInfo
         {
         }
 
-        protected override bool GetInfomationPriv(ref int count)
+        protected override bool GetInfomationPriv(HttpClientEx hc, ref int count)
         {
             // Short uri 검증용 페이지
             Uri newUri = null;
 
-            var succ = Utility.Retry(() => Utility.ResolvUri(this.Uri, out newUri));
+            var succ = Utility.Retry((retries) => Utility.ResolvUri(hc, this.Uri, out newUri));
 
             if (succ && newUri != null)
             {

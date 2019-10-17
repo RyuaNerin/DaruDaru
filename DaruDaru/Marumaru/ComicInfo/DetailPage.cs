@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
@@ -42,19 +44,17 @@ namespace DaruDaru.Marumaru.ComicInfo
             public string       Title;
             public bool         IsFinished;
         }
-        protected override bool GetInfomationPriv(ref int count)
+        protected override bool GetInfomationPriv(HttpClientEx hc, ref int count)
         {
             DetailInfomation detailInfo = null;
+            HttpStatusCode lastStatusCode = 0;
 
-            using (var wc = new WebClientEx())
+            var retrySuccess = Utility.Retry((retries) => (detailInfo = this.GetInfomationWorker(hc, retries, out lastStatusCode)) != null);
+
+            if (!retrySuccess)
             {
-                var retrySuccess = Utility.Retry(() => (detailInfo = this.GetInfomationWorker(wc)) != null);
-
-                if (!retrySuccess)
-                {
-                    this.SetStateFromWebClientEx(wc);
-                    return false;
-                }
+                this.SetStatusFromHttpStatusCode(lastStatusCode);
+                return false;
             }
 
             this.Title = detailInfo.Title;
@@ -105,16 +105,24 @@ namespace DaruDaru.Marumaru.ComicInfo
             return false;
         }
 
-        private DetailInfomation GetInfomationWorker(WebClientEx wc)
+        private DetailInfomation GetInfomationWorker(HttpClientEx hc, int retries, out HttpStatusCode statusCode)
         {
-            var html = this.GetHtml(wc, this.Uri);
-            if (html == null)
-                return null;
+            using (var req = new HttpRequestMessage(HttpMethod.Get, this.Uri))
+            using (var res = this.CallRequest(hc, req))
+            {
+                statusCode = res.StatusCode;
+                if (this.WaitFromHttpStatusCode(retries, statusCode))
+                    return null;
 
-            return GetDetailInfomation(wc.ResponseUri ?? this.Uri, html);
+                var html = res.Content.ReadAsStringAsync().Exec();
+                if (string.IsNullOrWhiteSpace(html))
+                    return null;
+
+                return GetDetailInfomation(hc, res.RequestMessage.RequestUri ?? this.Uri, html);
+            }
         }
 
-        public static DetailInfomation GetDetailInfomation(Uri uri, string body)
+        public static DetailInfomation GetDetailInfomation(HttpClientEx hc, Uri uri, string body)
         {
             var doc = new HtmlDocument();
             doc.LoadHtml(body);
@@ -158,7 +166,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                             if (DaruUriParser.Manga.CheckUri(mangaUri))
                                 break;
 
-                            if (Utility.ResolvUri(mangaUri, out mangaUri) && DaruUriParser.Manga.CheckUri(mangaUri))
+                            if (Utility.ResolvUri(hc, mangaUri, out mangaUri) && DaruUriParser.Manga.CheckUri(mangaUri))
                                 break;
                         }
                     }
