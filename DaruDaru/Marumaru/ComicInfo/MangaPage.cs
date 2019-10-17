@@ -457,6 +457,9 @@ namespace DaruDaru.Marumaru.ComicInfo
                     e.TempStream.Position = 0;
                     e.Extension = Signatures.GetExtension(e.TempStream);
 
+                    if (e.Extension == null)
+                        return false;
+
                     // 이미지 암호화 푸는 작업
                     this.m_decryptor.Decrypt(e.TempStream);
                 }
