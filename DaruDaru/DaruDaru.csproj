@@ -255,6 +255,7 @@
     <Compile Include="Marumaru\DaruUriParser.cs" />
     <Compile Include="Utilities\Explorer.cs" />
     <Compile Include="Utilities\HoneyViwer.cs" />
+    <Compile Include="Utilities\NotifyStream.cs" />
     <Compile Include="Utilities\TaskExtension.cs" />
     <Compile Include="Utilities\Utility.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />

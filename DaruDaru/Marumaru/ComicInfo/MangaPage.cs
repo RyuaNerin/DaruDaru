@@ -396,11 +396,11 @@ namespace DaruDaru.Marumaru.ComicInfo
                     double befSpeed = 0;
                     while (!stopSlim.IsSet)
                     {
-                        Thread.Sleep(500);
-
                         befSpeed = (befSpeed + Interlocked.Exchange(ref this.m_downloaded, 0) / (DateTime.Now - startTime).TotalSeconds) / 2;
 
                         this.SpeedOrFileSize = Utility.ToEICFormat(befSpeed, "/s");
+
+                        Thread.Sleep(500);
                     }
                 });
 
@@ -439,30 +439,25 @@ namespace DaruDaru.Marumaru.ComicInfo
                 req.Headers.Referrer = this.Uri;
 
                 using (var res = hc.SendAsync(req).Exec())
-                using (var resBody = res.Content.ReadAsStreamAsync().Exec())
                 {
-                    e.TempStream.SetLength(0);
-
-                    var buff = new byte[App.BufferSize];
-                    int read;
-
-                    while ((read = resBody.Read(buff, 0, App.BufferSize)) > 0)
-                    {
-                        Interlocked.Add(ref this.m_downloaded, read);
-                        e.TempStream.Write(buff, 0, read);
-                    }
-
-                    e.TempStream.Flush();
-
-                    e.TempStream.Position = 0;
-                    e.Extension = Signatures.GetExtension(e.TempStream);
-
-                    if (e.Extension == null)
+                    if ((int)res.StatusCode / 100 != 2)
                         return false;
 
-                    // 이미지 암호화 푸는 작업
-                    this.m_decryptor.Decrypt(e.TempStream);
+                    e.TempStream.SetLength(0);
+                    using (var fileWriter = new StreamWithNotify(e.TempStream, count => Interlocked.Add(ref this.m_downloaded, count)))
+                        res.Content.CopyToAsync(fileWriter).Wait();
                 }
+
+                e.TempStream.Flush();
+
+                e.TempStream.Position = 0;
+                e.Extension = Signatures.GetExtension(e.TempStream);
+
+                if (e.Extension == null)
+                    return false;
+
+                // 이미지 암호화 푸는 작업
+                this.m_decryptor.Decrypt(e.TempStream);
             }
 
             this.IncrementProgress();
