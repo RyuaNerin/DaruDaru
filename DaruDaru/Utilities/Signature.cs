@@ -44,9 +44,7 @@ namespace DaruDaru.Utilities
         private static readonly SigInfo[] Signature = new SigInfo[]
         {
             new SigInfo(".bmp",  "42 4D"),
-            new SigInfo(".jpg",  "FF D8 FF E0 ?? ?? 4A 46 49 46 00 01",
-                                 "FF D8 FF E1 ?? ?? 45 78 69 66 00 00",
-                                 "FF D8 FF DB"),
+            new SigInfo(".jpg",  "FF D8 FF"),
             new SigInfo(".png",  "89 50 4E 47 0D 0A 1A 0A"),
             new SigInfo(".gif",  "47 49 46 38 37 61",
                                  "47 49 46 38 39 61"),
