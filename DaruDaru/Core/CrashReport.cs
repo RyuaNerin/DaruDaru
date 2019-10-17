@@ -8,7 +8,7 @@ namespace DaruDaru.Core
 {
     internal static class CrashReport
     {
-        private static readonly RavenClient ravenClient = new RavenClient("https://72fd2b5995f44d4e9316acfc44c3434e@sentry.io/1227662")
+        private static readonly RavenClient ravenClient = new RavenClient("https://bd9196b2a6cd499594f4d48ee6d8de6e@sentry.ryuar.in/3")
         {
             Environment = "DaruDaru",
             Release = Assembly.GetExecutingAssembly().GetName().Version.ToString()
