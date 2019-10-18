@@ -407,8 +407,14 @@ namespace DaruDaru.Marumaru.ComicInfo
                     }
                 });
 
+                var parallelOption = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = 4,
+                };
+
                 var parallelSucc = Parallel.ForEach(
                     this.m_images,
+                    parallelOption,
                     (e, state) =>
                     {
                         for (var index = 0; index < e.ImageUri.Length; ++index)
