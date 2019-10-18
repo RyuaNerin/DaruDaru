@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -40,6 +41,7 @@ namespace DaruDaru.Utilities
         public HttpClientEx()
             : base(new CustomHttpMessageHandler(), true)
         {
+            this.Timeout = TimeSpan.FromSeconds(30);
         }
     }
 }
