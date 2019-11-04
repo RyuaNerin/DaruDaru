@@ -287,7 +287,7 @@ namespace DaruDaru.Core.Windows.MainTabs.Controls
             switch (this.m_filterMode)
             {
                 case FileterModes.ByCode:  return entry.Code == this.m_filterString;
-                case FileterModes.String:  return entry.Text.Contains(this.m_filterString);
+                case FileterModes.String:  return entry.Text?.Contains(this.m_filterString) ?? false;
                 case FileterModes.ByCodes: return Array.IndexOf(this.m_FilterCodes, entry.Code) >= 0;
             }
 
