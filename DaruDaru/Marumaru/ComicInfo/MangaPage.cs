@@ -217,6 +217,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         imageInfo.ImageUri = new Uri[]
                         {
                             new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
+                            new Uri(imgList[i].ToString().Replace("//cdnwowmax.", "//s3.cdnwowmax.")),
                             imgList[i],
                             imgList1[i],
                         }.Distinct().ToArray();
@@ -226,6 +227,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                         imageInfo.ImageUri = new Uri[]
                         {
                             new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
+                            new Uri(imgList[i].ToString().Replace("//cdnwowmax.", "//s3.cdnwowmax.")),
                             imgList[i],
                         }.Distinct().ToArray();
                     }
