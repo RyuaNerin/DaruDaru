@@ -237,6 +237,14 @@ namespace DaruDaru.Marumaru.ComicInfo
                         lst.Add(imgList[i]);
                         lst.Add(new UriBuilder(uri) { Host = "s3." + host}.Uri);
                         lst.Add(new UriBuilder(uri) { Host = host.Replace("img.", "s3.") }.Uri);
+
+                        if (cdnList?.Length > 0)
+                        {
+                            foreach (var cdn in cdnList)
+                            {
+                                lst.Add(new UriBuilder(uri) { Host = cdn }.Uri);
+                            }
+                        }
                     });
 
                     if (i < imgList1.Length)
