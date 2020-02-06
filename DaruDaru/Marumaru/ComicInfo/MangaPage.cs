@@ -194,43 +194,61 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             #region 이미지 정보 가져오는 부분
             {
-                var imgList = Regex.Matches(Regex.Match(doc.DocumentNode.InnerHtml, "var img_list = [^;]+").Groups[0].Value, "\"([^\"]+)\"")
-                          .Cast<Match>()
-                          .Select(e => e.Groups[1].Value.Replace("\\", ""))
-                          .Select(e => new Uri(this.Uri, e))
-                          .ToArray();
-                var imgList1 = Regex.Matches(Regex.Match(html, "var img_list1 = [^;]+").Groups[0].Value, "\"([^\"]+)\"")
-                          .Cast<Match>()
-                          .Select(e => e.Groups[1].Value.Replace("\\", ""))
-                          .Select(e => new Uri(this.Uri, e))
-                          .ToArray();
+                // /js/viewer.b.js?v=90
+                var chapter = int.Parse(Regex.Match(doc.DocumentNode.InnerHtml, "var *chapter *= *(\\d+)")?.Groups[1].Value ?? "0");
 
+                var catchArr = new Func<string, IEnumerable<string>>(e =>
+                {
+                    var m = Regex.Match(doc.DocumentNode.InnerHtml, $"var {e} *= *((?:[^;\\\\]|\\\\.)*)");
+                    if (!m.Success)
+                        return new string[0];
+
+                    return Regex.Matches(m.Groups[1].Value, @"""((?:[^""\\]|\\.)*)""")
+                          .Cast<Match>()
+                          .Select(le => Regex.Replace(le.Groups[1].Value, @"\\(.)", lm => lm.Groups[1].Value));
+                });
+
+                var cdnList = catchArr("cdn_domains")
+                    .ToArray();
+
+                var imgList = catchArr("img_list")
+                    .Select(e => new Uri(this.Uri, e + "?quick"))
+                    .ToArray();
+
+                var imgList1 = catchArr("img_list1")
+                    .Select(e => new Uri(this.Uri, e))
+                    .ToArray();
+
+                var lst = new List<Uri>();
                 for (var i = 0; i < imgList.Length; i++)
                 {
-                    var imageInfo = new ImageInfomation()
+                    lst.Clear();
+
+                    var addList = new Action<Uri>(uri =>
                     {
-                        Index = i + 1,
-                    };
+                        var host = uri.Host;
+
+                        if (cdnList?.Length > 0)
+                        {
+                            var cdn = cdnList[(chapter + 4 * i) % cdnList.Length];
+                            lst.Add(new UriBuilder(uri) { Host = cdn }.Uri);
+                        }
+
+                        lst.Add(imgList[i]);
+                        lst.Add(new UriBuilder(uri) { Host = "s3." + host}.Uri);
+                        lst.Add(new UriBuilder(uri) { Host = host.Replace("img.", "s3.") }.Uri);
+                    });
 
                     if (i < imgList1.Length)
+                        addList(imgList1[i]); 
+
+                    addList(imgList[i]);
+
+                    var imageInfo = new ImageInfomation()
                     {
-                        imageInfo.ImageUri = new Uri[]
-                        {
-                            new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
-                            new Uri(imgList[i].ToString().Replace("//", "//s3.")),
-                            imgList[i],
-                            imgList1[i],
-                        }.Distinct().ToArray();
-                    }
-                    else
-                    {
-                        imageInfo.ImageUri = new Uri[]
-                        {
-                            new Uri(imgList[i].ToString().Replace("//img.", "//s3.")),
-                            new Uri(imgList[i].ToString().Replace("//", "//s3.")),
-                            imgList[i],
-                        }.Distinct().ToArray();
-                    }
+                        Index    = i + 1,
+                        ImageUri = lst.Distinct().ToArray(),
+                    };
 
                     mangaInfo.Images.Add(imageInfo);
                 }
