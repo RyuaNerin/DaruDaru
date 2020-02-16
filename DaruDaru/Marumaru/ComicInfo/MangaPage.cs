@@ -20,6 +20,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class MangaPage : Comic
     {
+        private const int CDNPeekCount = 3;
+
         public MangaPage(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
             : base(addNewOnly, DaruUriParser.Manga.FixUri(uri), title)
         {
@@ -85,6 +87,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             return true;
         }
 
+        private static readonly Random Random = new Random(DateTime.Now.Millisecond);
         private MangaInfomation GetInfomationWorker(HttpClientEx hc, int retries, out HttpStatusCode statusCode)
         {
             var mangaInfo = new MangaInfomation();
@@ -219,7 +222,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     .Select(e => new Uri(this.Uri, e))
                     .ToArray();
 
-                var lst = new List<Uri>();
+                var lst = new HashSet<Uri>();
                 for (var i = 0; i < imgList.Length; i++)
                 {
                     lst.Clear();
@@ -240,10 +243,9 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         if (cdnList?.Length > 0)
                         {
-                            foreach (var cdn in cdnList)
-                            {
-                                lst.Add(new UriBuilder(uri) { Host = cdn }.Uri);
-                            }
+                            lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                            lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                            lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
                         }
                     });
 
