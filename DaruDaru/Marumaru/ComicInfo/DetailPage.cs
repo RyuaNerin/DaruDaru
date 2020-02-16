@@ -5,10 +5,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using DaruDaru.Config;
-using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using DaruDaru.Utilities;
 using HtmlAgilityPack;
+using Sentry;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
@@ -99,7 +99,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 this.State = MaruComicState.Error_1_Error;
 
-                CrashReport.Error(ex);
+                SentrySdk.CaptureException(ex);
             }
 
             return false;

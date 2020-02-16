@@ -14,7 +14,7 @@ using DaruDaru.Core.Windows;
 using DaruDaru.Utilities;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
-using Newtonsoft.Json;
+using Sentry;
 
 namespace DaruDaru.Marumaru.ComicInfo
 {
@@ -341,7 +341,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                 this.SpeedOrFileSize = null;
                 this.State = MaruComicState.Error_1_Error;
 
-                CrashReport.Error(ex);
+                SentrySdk.CaptureException(ex);
             }
             finally
             {

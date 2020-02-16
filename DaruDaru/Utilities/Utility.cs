@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
+using Sentry;
 
 namespace DaruDaru.Utilities
 {
@@ -69,7 +70,7 @@ namespace DaruDaru.Utilities
                 }
                 catch (Exception ex)
                 {
-                    CrashReport.Error(ex);
+                    SentrySdk.CaptureException(ex);
                 }
 
                 Thread.Sleep(1000);
