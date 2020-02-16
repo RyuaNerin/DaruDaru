@@ -1,11 +1,13 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
 using Sentry;
@@ -67,6 +69,21 @@ namespace DaruDaru.Utilities
                 }
                 catch (SocketException)
                 {
+                }
+                // 작업 취소
+                catch (TaskCanceledException)
+                {
+                }
+                catch (WebException ex)
+                {
+                    switch (ex.Status)
+                    {
+                        case WebExceptionStatus.NameResolutionFailure:
+                            break;
+                        default:
+                            SentrySdk.CaptureException(ex);
+                            throw;
+                    }
                 }
                 catch (Exception ex)
                 {
