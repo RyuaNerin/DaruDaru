@@ -1,0 +1,36 @@
+version: 1.1.0.{build}
+
+assembly_info:
+  patch: true
+  file: DaruDaru\Properties\AssemblyInfo.cs
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+
+branches:
+  only:
+    - master
+build:
+  project: DaruDaru.sln
+
+image: Previous Visual Studio 2019
+configuration: Release
+platform: Any CPU
+
+before_build:
+- cmd: nuget restore
+
+artifacts:
+-  path: bin\Release\DaruDaru.exe
+   name: executable
+
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: hTayr5LL8X8BFAdogH7iHegb3vRl9VSTnFEN/F5tWH5Y2hzNMEC6d+R+Pja3T8CL
+  draft: true
+  prerelease: false
+  force_update: false
+  artifact: executable
+
+test: off
