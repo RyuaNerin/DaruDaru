@@ -21,7 +21,7 @@ before_build:
 - cmd: nuget restore
 
 artifacts:
--  path: bin\Release\DaruDaru.exe
+-  path: DaruDaru\bin\Release\DaruDaru.exe
    name: executable
 
 deploy:
