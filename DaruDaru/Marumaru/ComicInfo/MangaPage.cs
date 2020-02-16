@@ -449,7 +449,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     {
                         for (var index = 0; index < e.ImageUri.Length; ++index)
                         {
-                            var succ = Utility.Retry((retries) => this.DownloadWorker(hc, e, index));
+                            var succ = Utility.Retry((retries) => this.DownloadWorker(hc, e, index), 1);
 
                             if (succ)
                                 return;
