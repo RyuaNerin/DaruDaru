@@ -222,7 +222,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     .Select(e => new Uri(this.Uri, e))
                     .ToArray();
 
-                var lst = new HashSet<Uri>();
+                var lst = new HashSet<Uri>(new UriIEqualityComparer());
                 for (var i = 0; i < imgList.Length; i++)
                 {
                     lst.Clear();
@@ -439,7 +439,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 var parallelOption = new ParallelOptions
                 {
-                    MaxDegreeOfParallelism = 4,
+                    MaxDegreeOfParallelism = 8,
                 };
 
                 var parallelSucc = Parallel.ForEach(

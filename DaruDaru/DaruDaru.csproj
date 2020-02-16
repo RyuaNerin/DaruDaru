@@ -268,6 +268,7 @@
     <Compile Include="Utilities\HoneyViwer.cs" />
     <Compile Include="Utilities\NotifyStream.cs" />
     <Compile Include="Utilities\TaskExtension.cs" />
+    <Compile Include="Utilities\UriIEqualityComparer.cs" />
     <Compile Include="Utilities\Utility.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
     <Compile Include="Utilities\GridViewSort.cs" />
