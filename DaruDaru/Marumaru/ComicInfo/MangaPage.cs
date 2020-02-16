@@ -233,20 +233,22 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         if (cdnList?.Length > 0)
                         {
-                            var cdn = cdnList[(chapter + 4 * i) % cdnList.Length];
-                            lst.Add(new UriBuilder(uri) { Host = cdn }.Uri);
+                            switch (host)
+                            {
+                                case "cdntigermask.xyz":
+                                case "cdnmadmax.xyz":
+                                case "filecdn.xyz":
+                                    lst.Add(new UriBuilder(uri) { Host = cdnList[(chapter + 4 * i) % cdnList.Length] }.Uri);
+                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                    break;
+                            }
                         }
 
                         lst.Add(imgList[i]);
                         lst.Add(new UriBuilder(uri) { Host = "s3." + host}.Uri);
                         lst.Add(new UriBuilder(uri) { Host = host.Replace("img.", "s3.") }.Uri);
-
-                        if (cdnList?.Length > 0)
-                        {
-                            lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                            lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                            lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                        }
                     });
 
                     if (i < imgList1.Length)
