@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,13 +39,16 @@ namespace DaruDaru.Core.Windows
 
         private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var obj = await Task.Factory.StartNew(LastRelease.CheckNewVersion);
-            if (obj != null)
+            if (Assembly.GetExecutingAssembly().GetName().Version.ToString() != "0.0.0.0")
             {
-                Explorer.OpenUri(obj.HtmlUrl);
-                Application.Current.Shutdown();
-                this.Close();
-                return;
+                var obj = await Task.Factory.StartNew(LastRelease.CheckNewVersion);
+                if (obj != null)
+                {
+                    Explorer.OpenUri(obj.HtmlUrl);
+                    Application.Current.Shutdown();
+                    this.Close();
+                    return;
+                }
             }
         }
 
