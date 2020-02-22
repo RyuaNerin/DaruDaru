@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using CloudFlareUtilities;
+using CloudflareSolverRe;
 
 namespace DaruDaru.Utilities
 {
