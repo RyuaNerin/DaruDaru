@@ -233,22 +233,22 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         if (cdnList?.Length > 0)
                         {
-                            switch (host)
+                            if (host.Contains("cdntigermask.xyz") || host.Contains("cdnmadmax.xyz") || host.Contains("filecdn.xyz"))
                             {
-                                case "cdntigermask.xyz":
-                                case "cdnmadmax.xyz":
-                                case "filecdn.xyz":
-                                    lst.Add(new UriBuilder(uri) { Host = cdnList[(chapter + 4 * i) % cdnList.Length] }.Uri);
-                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                                    break;
+                                lst.Add(new UriBuilder(uri) { Host = cdnList[(chapter + 4 * i) % cdnList.Length] }.Uri);
+                                lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
                             }
                         }
 
                         lst.Add(imgList[i]);
-                        lst.Add(new UriBuilder(uri) { Host = "s3." + host}.Uri);
-                        lst.Add(new UriBuilder(uri) { Host = host.Replace("img.", "s3.") }.Uri);
+
+                        if (!host.Contains("google."))
+                        {
+                            lst.Add(new UriBuilder(uri) { Host = "s3." + host }.Uri);
+                            lst.Add(new UriBuilder(uri) { Host = host.Replace("img.", "s3.") }.Uri);
+                        }
                     });
 
                     if (i < imgList1.Length)
