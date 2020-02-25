@@ -81,13 +81,13 @@ namespace DaruDaru.Utilities
                         case WebExceptionStatus.NameResolutionFailure:
                             break;
                         default:
-                            SentrySdk.CaptureException(ex);
+                            //SentrySdk.CaptureException(ex);
                             throw;
                     }
                 }
                 catch (Exception ex)
                 {
-                    SentrySdk.CaptureException(ex);
+                    //SentrySdk.CaptureException(ex);
                 }
 
                 Thread.Sleep(1000);
