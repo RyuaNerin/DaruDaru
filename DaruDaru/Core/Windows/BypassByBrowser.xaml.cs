@@ -6,23 +6,22 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Navigation;
+using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
-using mshtml;
 
 namespace DaruDaru.Core.Windows
 {
-    internal partial class Recaptcha : MetroWindow, IDisposable
+    internal partial class BypassByBrowser : MetroWindow, IDisposable
     {
-        public static readonly TimeSpan TimeOut = TimeSpan.FromSeconds(30);
-
-        static Recaptcha()
+        static BypassByBrowser()
         {
             NativeMethods.SetCookieSupressBehavior();
+            NativeMethods.ChangeUserAgent(HttpClientEx.UserAgent);
         }
 
         private readonly Uri m_uri;
 
-        public Recaptcha(Uri uri)
+        public BypassByBrowser(Uri uri)
         {
             this.InitializeComponent();
 
@@ -33,7 +32,7 @@ namespace DaruDaru.Core.Windows
         public ManualResetEventSlim Wait { get; } = new ManualResetEventSlim(false);
         public CookieContainer Cookies { get; private set; }
 
-        ~Recaptcha()
+        ~BypassByBrowser()
         {
             this.Dispose(false);
         }
@@ -60,6 +59,8 @@ namespace DaruDaru.Core.Windows
                 {
                 }
 
+                this.ctlBrowser.Dispose();
+
                 try
                 {
                     Marshal.ReleaseComObject(this.m_iWebBrowser);
@@ -68,7 +69,6 @@ namespace DaruDaru.Core.Windows
                 {
                 }
 
-                this.ctlBrowser.Dispose();
                 this.Wait.Dispose();
             }
         }
@@ -95,32 +95,36 @@ namespace DaruDaru.Core.Windows
 
             this.m_iWebBrowser.NewWindow2 += this.CtlBrowser_NewWindow2;
             this.m_iWebBrowser.NewWindow3 += this.CtlBrowser_NewWindow3;
+            this.m_iWebBrowser.NewProcess += this.CtlBrowser_NewProcess;
         }
 
         private void MetroWindow_Closed(object sender, EventArgs e)
         {
             this.m_iWebBrowser?.Stop();
+
+            this.Wait.Set();
         }
 
         private void CtlBrowser_LoadCompleted(object sender, NavigationEventArgs e)
         {
-            try
-            {
-                var doc = (HTMLDocument)this.ctlBrowser.Document;
+            var cc = NativeMethods.Getcookies(this.m_uri);
 
-                if (e.Uri == this.m_uri)
+            foreach (Cookie ck in cc.GetCookies(this.m_uri))
+            {
+                if (ck.Name == "cf_clearance")
                 {
-                    if (!doc.documentElement.innerHTML.Contains("recaptcha"))
-                    {
-                        this.Cookies = NativeMethods.GetCookies(this.m_uri);
-                        this.Wait.Set();
-                        this.Close();
-                    }
+                    this.Cookies = cc;
+
+                    this.DialogResult = true;
+                    this.Close();
+                    return;
                 }
             }
-            catch
-            {
-            }
+        }
+
+        private void CtlBrowser_NewProcess(int lCauseFlag, object pWB2, ref bool Cancel)
+        {
+            Cancel = true;
         }
 
         private void CtlBrowser_NewWindow2(ref object ppDisp, ref bool Cancel)
@@ -140,6 +144,18 @@ namespace DaruDaru.Core.Windows
 
         private static class NativeMethods
         {
+            [DllImport("urlmon.dll", CharSet = CharSet.Ansi)]
+            private static extern int UrlMkSetSessionOption(int dwOption, string pBuffer, int dwBufferLength, int dwReserved);
+
+            private const int URLMON_OPTION_USERAGENT = 0x10000001;
+            private const int URLMON_OPTION_USERAGENT_REFRESH = 0x10000002;
+
+            public static void ChangeUserAgent(string userAgent)
+            {
+                UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, null, 0, 0);
+                UrlMkSetSessionOption(URLMON_OPTION_USERAGENT, userAgent, userAgent.Length, 0);
+            }
+
             [DllImport("wininet.dll", CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
             private static extern bool InternetSetOption(
@@ -178,7 +194,7 @@ namespace DaruDaru.Core.Windows
                 }
             }
 
-            public static CookieContainer GetCookies(Uri uri)
+            public static CookieContainer Getcookies(Uri uri)
             {
                 var cc = new CookieContainer();
 

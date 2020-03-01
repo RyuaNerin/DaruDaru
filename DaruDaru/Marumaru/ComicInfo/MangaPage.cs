@@ -95,8 +95,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             var doc = new HtmlDocument();
             string html;
 
-            using (var req = new HttpRequestMessage(HttpMethod.Get, this.Uri))
-            using (var res = this.CallRequest(hc, req))
+            using (var res = hc.GetAsync(this.Uri).Exec())
             {
                 statusCode = res.StatusCode;
                 if (this.WaitFromHttpStatusCode(retries, statusCode))
@@ -143,8 +142,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     var detailResult = Utility.Retry((retries2) =>
                     {
-                        using (var req = new HttpRequestMessage(HttpMethod.Get, detailUri))
-                        using (var res = this.CallRequest(hc, req))
+                        using (var res = hc.GetAsync(detailUri).Exec())
                         {
                             if (this.WaitFromHttpStatusCode(retries2, res.StatusCode))
                                 return false;
@@ -236,9 +234,13 @@ namespace DaruDaru.Marumaru.ComicInfo
                             if (host.Contains("cdntigermask.xyz") || host.Contains("cdnmadmax.xyz") || host.Contains("filecdn.xyz"))
                             {
                                 lst.Add(new UriBuilder(uri) { Host = cdnList[(chapter + 4 * i) % cdnList.Length] }.Uri);
-                                lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                                lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
-                                lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+
+                                for (var cdnPeek = 0; cdnPeek < CDNPeekCount; cdnPeek++)
+                                {
+                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                    lst.Add(new UriBuilder(uri) { Host = cdnList[Random.Next(cdnList.Length)] }.Uri);
+                                }
                             }
                         }
 

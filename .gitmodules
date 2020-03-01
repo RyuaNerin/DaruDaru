@@ -1,0 +1,3 @@
+[submodule "AsyncReaderWriterLockSlim"]
+	path = AsyncReaderWriterLockSlim
+	url = https://github.com/kpreisser/AsyncReaderWriterLockSlim.git

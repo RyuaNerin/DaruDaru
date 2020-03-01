@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
-using Sentry;
 
 namespace DaruDaru.Utilities
 {
@@ -25,9 +24,9 @@ namespace DaruDaru.Utilities
         }
 
         private static readonly Regex InvalidRegex = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))}]", RegexOptions.Compiled);
-        public static string ReplaceInvalid(string s) => InvalidRegex.Replace(s, "_");
+        public static string ReplaceInvalid(string s) => s == null ? null : InvalidRegex.Replace(s, "_");
 
-        public static string ReplcaeHtmlTag(string s) => s.Replace("&nbsp;", " ")
+        public static string ReplcaeHtmlTag(string s) => s?.Replace("&nbsp;", " ")
                                                           .Replace("&lt;", "<")
                                                           .Replace("&gt;", ">")
                                                           .Replace("&amp;", "&")
@@ -62,6 +61,10 @@ namespace DaruDaru.Utilities
                     if (action(retries))
                         return true;
                 }
+                catch (HttpClientEx.BypassFailed)
+                {
+                    return false;
+                }
                 // 디스크 공간 부족
                 catch (IOException ex) when (ex.HResult == HR_ERROR_DISK_FULL || ex.HResult == HR_ERROR_HANDLE_DISK_FULL)
                 {
@@ -74,20 +77,11 @@ namespace DaruDaru.Utilities
                 catch (TaskCanceledException)
                 {
                 }
-                catch (WebException ex)
+                catch (WebException)
                 {
-                    switch (ex.Status)
-                    {
-                        case WebExceptionStatus.NameResolutionFailure:
-                            break;
-                        default:
-                            //SentrySdk.CaptureException(ex);
-                            throw;
-                    }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    //SentrySdk.CaptureException(ex);
                 }
 
                 Thread.Sleep(1000);

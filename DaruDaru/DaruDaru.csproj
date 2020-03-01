@@ -242,8 +242,8 @@
     <Compile Include="Core\Converters\InvertVisibility.cs" />
     <Compile Include="Core\Converters\SelectedTextConverter.cs" />
     <Compile Include="Core\Windows\Commands\RoutedUICommandExt.cs" />
-    <Compile Include="Core\Windows\Recaptcha.xaml.cs">
-      <DependentUpon>Recaptcha.xaml</DependentUpon>
+    <Compile Include="Core\Windows\BypassByBrowser.xaml.cs">
+      <DependentUpon>BypassByBrowser.xaml</DependentUpon>
     </Compile>
     <Compile Include="Marumaru\ImageDecryptor.cs" />
     <Compile Include="Utilities\CollectionHelper.cs" />
@@ -314,7 +314,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Core\Windows\Recaptcha.xaml">
+    <Page Include="Core\Windows\BypassByBrowser.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -342,6 +342,12 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AsyncReaderWriterLockSlim\AsyncReaderWriterLockSlim\AsyncReaderWriterLockSlim.csproj">
+      <Project>{15e7385c-446f-4bb2-b13b-3c35a7e5b27f}</Project>
+      <Name>AsyncReaderWriterLockSlim</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -351,4 +357,8 @@
     <Error Condition="!Exists('..\packages\Costura.Fody.4.1.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.4.1.0\build\Costura.Fody.props'))" />
   </Target>
   <Import Project="..\packages\Fody.6.1.0\build\Fody.targets" Condition="Exists('..\packages\Fody.6.1.0\build\Fody.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -107,8 +107,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         private DetailInfomation GetInfomationWorker(HttpClientEx hc, int retries, out HttpStatusCode statusCode)
         {
-            using (var req = new HttpRequestMessage(HttpMethod.Get, this.Uri))
-            using (var res = this.CallRequest(hc, req))
+            using (var res = hc.GetAsync(this.Uri).Exec())
             {
                 statusCode = res.StatusCode;
                 if (this.WaitFromHttpStatusCode(retries, statusCode))

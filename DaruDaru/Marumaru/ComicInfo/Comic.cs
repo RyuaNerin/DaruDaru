@@ -1,10 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Net;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Windows;
 using DaruDaru.Config;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
@@ -253,59 +251,6 @@ namespace DaruDaru.Marumaru.ComicInfo
         }
         protected virtual void StartDownloadPriv(HttpClientEx hc)
         {
-        }
-
-        private static readonly AutoResetEvent GetHtmlLock = new AutoResetEvent(true);
-        protected HttpResponseMessage CallRequest(HttpClientEx hc, HttpRequestMessage req)
-        {
-            var res = hc.SendAsync(req).Exec();
-            var body = res.Content.ReadAsStringAsync().Exec();
-
-            if (body.Contains("recaptcha"))
-            {
-                res.Dispose();
-
-                if (GetHtmlLock.WaitOne(0))
-                {
-                    try
-                    {
-                        Recaptcha frm = null;
-                        try
-                        {
-                            frm = Application.Current.Dispatcher.Invoke(() => new Recaptcha(req.RequestUri));
-
-                            Application.Current.Dispatcher.Invoke(frm.Show);
-
-                            var succ = frm.Wait.Wait(Recaptcha.TimeOut);
-
-                            Application.Current.Dispatcher.Invoke(frm.Close);
-
-                            if (!succ)
-                                return null;
-
-                            HttpClientEx.Cookie.Add(frm.Cookies.GetCookies(req.RequestUri));
-                        }
-                        finally
-                        {
-                            if (frm != null)
-                                Application.Current.Dispatcher.Invoke(frm.Dispose);
-                        }
-                    }
-                    finally
-                    {
-                        GetHtmlLock.Set();
-                    }
-                }
-                else
-                {
-                    GetHtmlLock.WaitOne();
-                    GetHtmlLock.Set();
-                }
-
-                res = hc.SendAsync(req).Exec();
-            }
-            
-            return res;
         }
 
         protected bool WaitFromHttpStatusCode(int retries, HttpStatusCode statusCode)
