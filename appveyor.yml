@@ -18,6 +18,7 @@ configuration: Release
 platform: Any CPU
 
 before_build:
+- git submodule update --init --recursive
 - cmd: nuget restore
 
 artifacts:
