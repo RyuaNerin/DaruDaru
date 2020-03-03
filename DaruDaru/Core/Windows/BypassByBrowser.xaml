@@ -14,6 +14,6 @@
     <WebBrowser x:Name="ctlBrowser"
                 Focusable="False"
                 IsEnabled="False"
-                PreviewKeyDown="ctlBrowser_PreviewKeyDown"
-                LoadCompleted="CtlBrowser_LoadCompleted"/>
+                Navigating="ctlBrowser_Navigating"
+                PreviewKeyDown="ctlBrowser_PreviewKeyDown" />
 </metro:MetroWindow>

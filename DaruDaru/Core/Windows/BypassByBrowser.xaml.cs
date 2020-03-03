@@ -93,9 +93,14 @@ namespace DaruDaru.Core.Windows
             this.m_iWebBrowser.RegisterAsDropTarget = false;
             this.m_iWebBrowser.AddressBar = false;
 
-            this.m_iWebBrowser.NewWindow2 += this.CtlBrowser_NewWindow2;
-            this.m_iWebBrowser.NewWindow3 += this.CtlBrowser_NewWindow3;
-            this.m_iWebBrowser.NewProcess += this.CtlBrowser_NewProcess;
+            this.m_iWebBrowser.NewWindow2 += (ref object ppDisp, ref bool Cancel) => Cancel = true;
+            this.m_iWebBrowser.NewWindow3 += (ref object ppDisp, ref bool Cancel, uint dwFlags, string bstrUrlContext, string bstrUrl) => Cancel = true;
+            this.m_iWebBrowser.NewProcess += (int lCauseFlag, object pWB2, ref bool Cancel) => Cancel = true;
+            this.m_iWebBrowser.FileDownload += (bool ActiveDocument, ref bool Cancel) => Cancel = true;
+            this.m_iWebBrowser.WindowClosing += (bool IsChildWindow, ref bool Cancel) => Cancel = true;
+
+            this.m_iWebBrowser.NavigateError += this.vwWebBrowser_NavigateError;
+            this.m_iWebBrowser.NavigateComplete2 += this.vwWebBrowser_NavigateComplete2;
         }
 
         private void MetroWindow_Closed(object sender, EventArgs e)
@@ -105,36 +110,33 @@ namespace DaruDaru.Core.Windows
             this.Wait.Set();
         }
 
-        private void CtlBrowser_LoadCompleted(object sender, NavigationEventArgs e)
+        private HttpStatusCode m_lastResponse;
+        private Uri m_lastUri;
+
+        private void ctlBrowser_Navigating(object sender, NavigatingCancelEventArgs e)
         {
-            var cc = NativeMethods.Getcookies(this.m_uri);
+            this.m_lastResponse = HttpStatusCode.OK;
+            this.m_lastUri = e.Uri;
+        }
 
-            foreach (Cookie ck in cc.GetCookies(this.m_uri))
+        private void vwWebBrowser_NavigateError(object pDisp, ref object URL, ref object Frame, ref object StatusCode, ref bool Cancel)
+        {
+            if (Uri.TryCreate(URL as string, UriKind.RelativeOrAbsolute, out var uri) && uri == this.m_lastUri)
             {
-                if (ck.Name == "cf_clearance")
-                {
-                    this.Cookies = cc;
-
-                    this.DialogResult = true;
-                    this.Close();
-                    return;
-                }
+                this.m_lastResponse = (HttpStatusCode)(int)StatusCode;
             }
         }
 
-        private void CtlBrowser_NewProcess(int lCauseFlag, object pWB2, ref bool Cancel)
+        private void vwWebBrowser_NavigateComplete2(object pDisp, ref object URL)
         {
-            Cancel = true;
-        }
+            if (Uri.TryCreate(URL as string, UriKind.RelativeOrAbsolute, out var uri) && uri == this.m_lastUri && this.m_lastResponse == HttpStatusCode.OK)
+            {
+                this.Cookies = NativeMethods.Getcookies(this.m_uri);
 
-        private void CtlBrowser_NewWindow2(ref object ppDisp, ref bool Cancel)
-        {
-            Cancel = true;
-        }
-
-        private void CtlBrowser_NewWindow3(ref object ppDisp, ref bool Cancel, uint dwFlags, string bstrUrlContext, string bstrUrl)
-        {
-            Cancel = true;
+                this.DialogResult = true;
+                this.Close();
+                return;
+            }
         }
 
         private void ctlBrowser_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
