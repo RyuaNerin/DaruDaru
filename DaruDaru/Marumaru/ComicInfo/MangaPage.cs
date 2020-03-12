@@ -287,7 +287,18 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 if (!this.Download(hc))
                 {
-                    this.State = MaruComicState.Error_1_Error;
+                    if (this.m_images.Any(e => e.Extension != null))
+                    {
+                        this.ToolTip = string.Format(
+                            "{0} / {1}\n누락된 페이지 : {2}",
+                            this.m_images.Count(e => e.Extension != null),
+                            this.m_images.Length,
+                            string.Join(", ", this.m_images.Where(e => e.Extension == null).Select(e => e.Index))
+                        );
+                        this.State = MaruComicState.Error_7_MissingPage;
+                    }
+                    else
+                        this.State = MaruComicState.Error_1_Error;
                     return;
                 }
 
@@ -459,20 +470,21 @@ namespace DaruDaru.Marumaru.ComicInfo
                                 return;
                         }
 
-                        state.Stop();
+                        if (!this.IgnoreErrorMissingPage)
+                            state.Stop();
                     }).IsCompleted;
 
                 stopSlim.Set();
                 updateTask.Wait();
 
-                if (!parallelSucc)
+                if (!this.IgnoreErrorMissingPage && !parallelSucc)
                     return false;
             }
 
             this.SpeedOrFileSize = null;
 
             // 모든 이미지가 다운로드가 완료되어야 함
-            return this.m_images.All(e => e.Extension != null);
+            return this.IgnoreErrorMissingPage || this.m_images.All(e => e.Extension != null);
         }
 
         private bool DownloadWorker(HttpClientEx hc, ImageInfomation e, int uriIndex)

@@ -123,6 +123,15 @@ namespace DaruDaru.Core.Windows.MainTabs
                 item.Restart();
         }
 
+        private void ctlMenuRetryIgnoreDownloadError_Click(object sender, RoutedEventArgs e)
+        {
+            var items = this.Get<Comic>();
+            if (items.Length == 0) return;
+
+            foreach (var item in items)
+                item.Restart(true);
+        }
+
         private void ctlMenuRemoveItem_Click(object sender, RoutedEventArgs e)
         {
             var items = this.Get<Comic>();

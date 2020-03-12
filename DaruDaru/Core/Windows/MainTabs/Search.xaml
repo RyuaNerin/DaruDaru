@@ -24,7 +24,9 @@
                                     BrushDownloaded="#FFB3D5D5"
                                     BrushSkip      ="#FFD4DAB3"
                                     BrushNoNew     ="#FFD4DAB3"
-                                    BrushError     ="#FFE1B7B3" />
+                                    BrushError     ="#FFE1B7B3"
+                                    BrushErrorMissingPage="#FFE7C4C1"
+                                    />
 
         <cmd:RoutedUICommand2 x:Key="cmdEnterCommand" Text="Enter">
             <cmd:KeyGesture2 Key="Return" />
@@ -50,6 +52,10 @@
             <cmd:KeyGesture2 Key="R" Modifier="Ctrl" />
         </cmd:RoutedUICommand2>
 
+        <cmd:RoutedUICommand2 x:Key="cmdRetryIgnore" Text="다시 시도 (누락된 페이지 무시)">
+            <cmd:KeyGesture2 Key="R" Modifier="Ctrl+Shift" />
+        </cmd:RoutedUICommand2>
+
         <cmd:RoutedUICommand2 x:Key="cmdRemoveSelected" Text="선택 항목 목록에서 제거" />
         <cmd:RoutedUICommand2 x:Key="cmdRemoveCompleted" Text="완료된 항목 제거" />
         <cmd:RoutedUICommand2 x:Key="cmdRemoveAll" Text="모두 제거" />
@@ -62,6 +68,7 @@
         <CommandBinding Command="{StaticResource cmdOpenWeb}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuOpenWeb_Click" />
         <CommandBinding Command="{StaticResource cmdCopyUri}"           CanExecute="CommandBinding_CanExecute" Executed="ctlMenuCopyUri_Click" />
         <CommandBinding Command="{StaticResource cmdRetry}"             CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRetry_Click" />
+        <CommandBinding Command="{StaticResource cmdRetryIgnore}"       CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRetryIgnoreDownloadError_Click" />
         <CommandBinding Command="{StaticResource cmdRemoveSelected}"    CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveItem_Click" />
         <CommandBinding Command="{StaticResource cmdRemoveCompleted}"   CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveCompleted_Click" />
         <CommandBinding Command="{StaticResource cmdRemoveAll}"         CanExecute="CommandBinding_CanExecute" Executed="ctlMenuRemoveAll_Click" />
@@ -76,6 +83,7 @@
             <MenuItem Command="{StaticResource cmdCopyUri}" />
             <Separator />
             <MenuItem Command="{StaticResource cmdRetry}" />
+            <MenuItem Command="{StaticResource cmdRetryIgnore}" />
             <Separator />
             <MenuItem Command="{StaticResource cmdRemoveSelected}" />
             <MenuItem Command="{StaticResource cmdRemoveCompleted}" />
@@ -118,7 +126,8 @@
                                        TextAlignment="Center"
                                        TextWrapping="NoWrap"
                                        LineStackingStrategy="BlockLineHeight"
-                                       Text="{Binding StateText, Mode=OneWay}" />
+                                       Text="{Binding StateText, Mode=OneWay}"
+                                       ToolTip="{Binding ToolTip, Mode=OneWay}" />
                         </Grid>
                     </DataTemplate>
                 </GridViewColumn.CellTemplate>

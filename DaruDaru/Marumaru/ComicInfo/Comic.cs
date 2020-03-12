@@ -31,11 +31,8 @@ namespace DaruDaru.Marumaru.ComicInfo
         Error_1_Error           = Error    + 1,
         Error_3_NotSupport      = Error    + 3,
         Error_5_NotFound        = Error    + 5,
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        Error_6_ServerError          = Error    + 6,
+        Error_6_ServerError     = Error    + 6,
+        Error_7_MissingPage     = Error    + 7,
     }
 
     internal abstract class Comic : INotifyPropertyChanged
@@ -68,6 +65,11 @@ namespace DaruDaru.Marumaru.ComicInfo
         /// <summary>새 작품 검색하기로 추가된 경우</summary>
         protected internal bool AddNewonly { get; private set; }
 
+        /// <summary>
+        /// Error_7_MissingPage 발생 시 오류를 무시하고 다운로드합니다.
+        /// </summary>
+        public bool IgnoreErrorMissingPage { get; set; }
+
         // Redirect 의 경우에 주소가 바뀌는 경우가 있다.
         public Uri Uri { get; protected set; }
 
@@ -90,6 +92,17 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 this.m_titleWithNo = value;
                 this.InvokePropertyChanged("DisplayName");
+            }
+        }
+
+        private string m_tooltip;
+        public string ToolTip
+        {
+            get => this.m_tooltip;
+            protected set
+            {
+                this.m_tooltip = value;
+                this.InvokePropertyChanged();
             }
         }
 
@@ -195,6 +208,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     case MaruComicState.Error_3_NotSupport:      return "지원하지 않음";
                     case MaruComicState.Error_5_NotFound:        return "Not Found";
                     case MaruComicState.Error_6_ServerError:     return "서버 오류";
+                    case MaruComicState.Error_7_MissingPage:     return "일부 누락";
                 }
 
                 if (state > MaruComicState.Working_4_Wait)
@@ -211,7 +225,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             this.InvokePropertyChanged("StateText");
         }
 
-        public bool Restart()
+        public bool Restart(bool ignoreErrorMissingPage = false)
         {            
             if (!this.IsRunning)
             {
@@ -219,6 +233,8 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                 this.ProgressValue = 0;
                 this.State = MaruComicState.Wait;
+
+                this.IgnoreErrorMissingPage = ignoreErrorMissingPage;
 
                 MainWindow.Instance.WakeThread();
                 return true;
