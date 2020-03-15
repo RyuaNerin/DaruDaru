@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +38,7 @@ namespace DaruDaru.Core.Windows
 
         private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (Assembly.GetExecutingAssembly().GetName().Version.ToString() != "0.0.0.0")
+            if (App.Version != "0.0.0.0")
             {
                 var obj = await Task.Factory.StartNew(LastRelease.CheckNewVersion);
                 if (obj != null)

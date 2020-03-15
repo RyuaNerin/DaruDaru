@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Cache;
+using System.Reflection;
 using System.Windows;
 using DaruDaru.Config;
 
@@ -13,12 +15,14 @@ namespace DaruDaru.Core
         public const int BufferSize = 16 * 1024;
         public const int SleepSecondWhenServerError = 30;
 
+        public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().ManifestModule.FullyQualifiedName).ProductVersion;
+
         public static readonly string AppPath;
         public static readonly string AppDir;
 
         static App()
         {
-            AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            AppPath = Assembly.GetExecutingAssembly().Location;
             AppDir  = Path.GetDirectoryName(AppPath);
 
 #if !DEBUG

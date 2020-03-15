@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using Sentry;
@@ -18,7 +17,7 @@ namespace DaruDaru.Core
                 opt.Release = "Debug";
                 opt.Debug = true;
 #else
-                opt.Release = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                opt.Release = App.Version;
 #endif
             });
 

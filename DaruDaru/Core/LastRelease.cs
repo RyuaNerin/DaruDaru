@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using Newtonsoft.Json;
 
 namespace DaruDaru.Core
@@ -48,7 +47,7 @@ namespace DaruDaru.Core
                     }
                 }
 
-                return new Version(last.TagName) > Assembly.GetExecutingAssembly().GetName().Version ? last : null;
+                return new Version(last.TagName) > new Version(App.Version) ? last : null;
             }
             catch
             {
