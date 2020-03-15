@@ -20,6 +20,10 @@ namespace DaruDaru.Marumaru.ComicInfo
 {
     internal class MangaPage : Comic
     {
+        /// <summary>정상적으로 작동한 Cdn 우선으로 다운로드 시도하게 하기 위해서</summary>
+        private static readonly SortedDictionary<string, int> CdnScore = new SortedDictionary<string, int>();
+        private const int CdnScoreDefault = 5;
+
         private const int CDNPeekCount = 3;
 
         public MangaPage(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
@@ -246,7 +250,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         lst.Add(imgList[i]);
 
-                        if (!host.Contains("google."))
+                        if (!host.Contains("google.") | !host.Contains("blogspot."))
                         {
                             lst.Add(new UriBuilder(uri) { Host = "s3." + host }.Uri);
                             lst.Add(new UriBuilder(uri) { Host = host.Replace("img.", "s3.") }.Uri);
@@ -462,9 +466,27 @@ namespace DaruDaru.Marumaru.ComicInfo
                     parallelOption,
                     (e, state) =>
                     {
+                        lock (CdnScore)
+                        {
+                            Array.Sort(
+                                e.ImageUri,
+                                (a, b) =>
+                                {
+                                    var ac = CdnScore.ContainsKey(a.Host) ? CdnScore[a.Host] : CdnScoreDefault;
+                                    var ab = CdnScore.ContainsKey(b.Host) ? CdnScore[b.Host] : CdnScoreDefault;
+
+                                    return ac.CompareTo(ab) * - 1;
+                                }
+                            );
+                        }
+
                         for (var index = 0; index < e.ImageUri.Length; ++index)
                         {
                             var succ = Utility.Retry((retries) => this.DownloadWorker(hc, e, index), 1);
+
+                            var h = e.ImageUri[index].Host;
+                            lock (CdnScore)
+                                CdnScore[h] = (CdnScore.TryGetValue(h, out var c) ? c : CdnScoreDefault) + (succ ? 1 : -1);
 
                             if (succ)
                                 return;
