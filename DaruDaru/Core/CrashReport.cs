@@ -12,6 +12,7 @@ namespace DaruDaru.Core
             SentrySdk.Init(opt =>
             {
                 opt.Dsn = new Dsn("https://bd9196b2a6cd499594f4d48ee6d8de6e@sentry.ryuar.in/3");
+                opt.IsEnvironmentUser = true;
 
 #if DEBUG
                 opt.Release = "Debug";

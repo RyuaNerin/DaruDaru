@@ -47,7 +47,7 @@ namespace DaruDaru.Core
                     }
                 }
 
-                return new Version(last.TagName) > new Version(App.Version) ? last : null;
+                return last.TagName != App.Version ? last : null;
             }
             catch
             {
