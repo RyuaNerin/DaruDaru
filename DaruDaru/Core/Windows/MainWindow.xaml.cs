@@ -40,11 +40,17 @@ namespace DaruDaru.Core.Windows
 
         private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!await this.CheckUpdate())
+            try
             {
-                Application.Current.Shutdown();
-                this.Close();
-                return;
+                if (!await this.CheckUpdate())
+                {
+                    Application.Current.Shutdown();
+                    this.Close();
+                    return;
+                }
+            }
+            catch
+            {
             }
 
             this.ctlTab.IsEnabled = true;

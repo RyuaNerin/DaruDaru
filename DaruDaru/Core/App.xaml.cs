@@ -19,7 +19,7 @@ namespace DaruDaru.Core
         public const int WarningItems = 5;
         public const int RetryCount = 3;
         public const int BufferSize = 16 * 1024;
-        public const int SleepSecondWhenServerError = 10;
+        public const int SleepSecondWhenServerError = 30;
 
         public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().ManifestModule.FullyQualifiedName).ProductVersion;
 

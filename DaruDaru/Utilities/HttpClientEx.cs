@@ -64,17 +64,14 @@ namespace DaruDaru.Utilities
                 using (CookieHeaderLock.GetReadLock())
                     cookie = Cookies;
 
-                if (cookie != null)
-                {
-                    request.Headers.Add("Cookie", cookie);
-                    res = await base.SendAsync(request, cancellationToken);
+                request.Headers.Add("Cookie", cookie);
+                res = await base.SendAsync(request, cancellationToken);
 
-                    if (!CloudflareDetector.IsClearanceRequired(res))
-                        return res;
+                if (!CloudflareDetector.IsClearanceRequired(res))
+                    return res;
 
-                    res.Dispose();
-                    res = null;
-                }
+                res.Dispose();
+                res = null;
 
                 if (!await semaphoreSlim.WaitAsync(0))
                 {
