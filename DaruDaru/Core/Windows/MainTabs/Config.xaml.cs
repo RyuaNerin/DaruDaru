@@ -12,6 +12,8 @@ namespace DaruDaru.Core.Windows.MainTabs
         public Config()
         {
             InitializeComponent();
+
+            this.ctlVersion.Text = $"v{App.Version}";
         }
 
         private static string ShowDirectory(string curPath)
@@ -58,7 +60,7 @@ namespace DaruDaru.Core.Windows.MainTabs
 
         private void ctlConfigLinkPathDefault_Click(object sender, RoutedEventArgs e)
         {
-            ConfigManager.Instance.SavePath = ConfigManager.DefaultSavePath;
+            ConfigManager.Instance.UrlLinkPath = ConfigManager.DefaultSavePath;
         }
 
         private void ctlWorkerCountDefault_Click(object sender, RoutedEventArgs e)

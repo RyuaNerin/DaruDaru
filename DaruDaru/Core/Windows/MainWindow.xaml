@@ -18,6 +18,7 @@
                    Loaded="MetroWindow_Loaded"
                    Closing="MetroWindow_Closing">
     <TabControl x:Name="ctlTab"
+                IsEnabled="False"
                 TabStripPlacement="Left">
         <TabControl.Resources>
             <Style TargetType="Viewbox">

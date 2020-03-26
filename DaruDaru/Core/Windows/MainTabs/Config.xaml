@@ -152,6 +152,11 @@
                         Click="ctlConfigClearDownload_Click" />
             </GroupBox>
 
+            <TextBlock x:Name="ctlVersion"
+                       Text="v0.0.0.0"
+                       HorizontalAlignment="Stretch"
+                       TextAlignment="Center" />
+
             <TextBlock Text="CopyRight (C) By RyuaNerin"
                        Margin="0 0 0 30"
                        HorizontalAlignment="Stretch"

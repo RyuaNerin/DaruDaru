@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ using DaruDaru.Marumaru.ComicInfo;
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using Onova;
+using Onova.Services;
 
 namespace DaruDaru.Core.Windows
 {
@@ -29,7 +32,6 @@ namespace DaruDaru.Core.Windows
 
             this.InitializeComponent();
 
-            CrashReport.Init();
             this.DataContext = ConfigManager.Instance;
             this.TaskbarItemInfo = new TaskbarItemInfo();
 
@@ -38,22 +40,81 @@ namespace DaruDaru.Core.Windows
 
         private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (App.Version != "0.0.0.0")
+            if (!await this.CheckUpdate())
             {
-                var obj = await Task.Factory.StartNew(LastRelease.CheckNewVersion);
-                if (obj != null)
+                Application.Current.Shutdown();
+                this.Close();
+                return;
+            }
+
+            this.ctlTab.IsEnabled = true;
+        }
+
+        public async Task<bool> CheckUpdate()
+        {
+            if (Assembly.GetExecutingAssembly().GetName().Version.ToString() != "0.0.0.0")
+            {
+                using (var manager = new UpdateManager(new GithubPackageResolver("RyuaNerin", "DaruDaru", "*.exe"), new ExecutablePackageExtractor()))
                 {
-                    Explorer.OpenUri(obj.HtmlUrl);
-                    Application.Current.Shutdown();
-                    this.Close();
-                    return;
+                    var r = await manager.CheckForUpdatesAsync();
+
+                    if (r.CanUpdate)
+                    {
+                        var settings = new MetroDialogSettings
+                        {
+                            NegativeButtonText = "종료",
+                        };
+
+                        var controller = await this.ShowProgressAsync("업데이트중입니다.", "진행 : 0.0 %", true, settings);
+
+                        controller.Minimum = 0;
+                        controller.Maximum = 1;
+
+                        controller.Canceled += (s, e) => this.Dispatcher.Invoke(Application.Current.Shutdown);
+
+                        await manager.PrepareUpdateAsync(r.LastVersion, new Progress(this, controller));
+                        controller.SetProgress(1);
+
+                        manager.LaunchUpdater(r.LastVersion, true);
+
+                        return false;
+                    }
                 }
             }
+
+            return true;
+        }
+
+        private class Progress : IProgress<double>
+        {
+            private readonly MainWindow m_mainWindow;
+            private readonly ProgressDialogController m_controller;
+
+            public Progress(MainWindow mainWindow, ProgressDialogController controller)
+            {
+                this.m_mainWindow = mainWindow;
+                this.m_controller = controller;
+            }
+
+            public void Report(double value)
+            {
+                this.m_mainWindow.Dispatcher.Invoke(() =>
+                {
+                    this.m_controller.SetProgress(value);
+                    this.m_controller.SetMessage(string.Format("진행 : {0:##0.0} %", value * 100));
+                });
+            }
+        }
+
+        private class ExecutablePackageExtractor : IPackageExtractor
+        {
+            public Task ExtractPackageAsync(string sourceFilePath, string destDirPath, IProgress<double> progress = null, CancellationToken cancellationToken = default)
+                => Task.Run(() => File.Copy(sourceFilePath, Path.Combine(destDirPath, Path.GetFileName(App.AppPath))));
         }
 
         private void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            App.Current.Shutdown();
+            Application.Current.Shutdown();
         }
 
         public Window Window => this;
@@ -151,17 +212,15 @@ namespace DaruDaru.Core.Windows
 
             else
             {
-                Uri uri;
-
-                succ = GetUriFromStream(out uri, e.Data, "text/x-moz-url") ||
-                       GetUriFromStream(out uri, e.Data, "UniformResourceLocatorW");
+                succ = GetUriFromStream(out _, e.Data, "text/x-moz-url") ||
+                       GetUriFromStream(out _, e.Data, "UniformResourceLocatorW");
             }
 
             if (succ)
             {
                 e.Effects = DragDropEffects.All & e.AllowedEffects;
                 if (e.Effects != DragDropEffects.None)
-                    SetDragDropAdnorner(true);
+                    this.SetDragDropAdnorner(true);
             }
         }
 
@@ -172,7 +231,7 @@ namespace DaruDaru.Core.Windows
 
         private void MetroWindow_DragLeave(object sender, DragEventArgs e)
         {
-            SetDragDropAdnorner(false);
+            this.SetDragDropAdnorner(false);
         }
 
         private void MetroWindow_Drop(object sender, DragEventArgs e)
@@ -222,11 +281,9 @@ namespace DaruDaru.Core.Windows
             }
             else
             {
-                Uri uri;
-
                 Task.Factory.StartNew(() =>
                 {
-                    if (GetUriFromStream(out uri, e.Data, "text/x-moz-url") || GetUriFromStream(out uri, e.Data, "UniformResourceLocatorW"))
+                    if (GetUriFromStream(out var uri, e.Data, "text/x-moz-url") || GetUriFromStream(out uri, e.Data, "UniformResourceLocatorW"))
                         Application.Current.Dispatcher.Invoke(() => this.DownloadUri(false, uri, null, false));
                 });
             }

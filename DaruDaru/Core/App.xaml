@@ -6,6 +6,7 @@
              xmlns:s="clr-namespace:System;assembly=mscorlib"
              StartupUri="Windows/MainWindow.xaml"
              ShutdownMode="OnMainWindowClose"
+             Startup="Application_Startup"
              Exit="Application_Exit">
     <Application.Resources>
         <ResourceDictionary>
