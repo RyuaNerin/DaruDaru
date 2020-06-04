@@ -77,7 +77,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
-                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                !await MainWindow.Instance.ShowMessageBoxTooMany())
                 return;
 
             if (HoneyViwer.TryCreate(out var hv))
@@ -92,7 +92,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (detailPages.Length == 0 && mangaPages.Length == 0) return;
 
             if ((Explorer.GetDirectoryCount(mangaPages) + detailPages.Length) > App.WarningItems &&
-                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                !await MainWindow.Instance.ShowMessageBoxTooMany())
                 return;
 
             foreach (var fe in detailPages)
@@ -107,7 +107,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
-                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                !await MainWindow.Instance.ShowMessageBoxTooMany())
                 return;
 
             foreach (var uri in items)

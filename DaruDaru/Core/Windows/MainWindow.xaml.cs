@@ -180,7 +180,7 @@ namespace DaruDaru.Core.Windows
             }
         }
 
-        public Task<bool> ShowMassageBoxTooMany()
+        public Task<bool> ShowMessageBoxTooMany()
         {
             var settings = new MetroDialogSettings
             {
