@@ -33,7 +33,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (items.Length == 0) return;
 
             if (items.Count() > App.WarningItems &&
-                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                !await MainWindow.Instance.ShowMessageBoxTooMany())
                 return;
 
             if (HoneyViwer.TryCreate(out HoneyViwer hv))
@@ -47,7 +47,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (items.Length == 0) return;
 
             if (Explorer.GetDirectoryCount(items) > App.WarningItems &&
-                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                !await MainWindow.Instance.ShowMessageBoxTooMany())
                 return;
 
             Explorer.OpenAndSelect(items);
@@ -59,7 +59,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (items.Length == 0) return;
 
             if (items.Count() > App.WarningItems &&
-                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                !await MainWindow.Instance.ShowMessageBoxTooMany())
                 return;
 
             foreach (var item in items)

@@ -54,7 +54,7 @@ namespace DaruDaru.Core.Windows.MainTabs
             if (items.Length == 0) return;
 
             if (items.Length > App.WarningItems &&
-                !await MainWindow.Instance.ShowMassageBoxTooMany())
+                !await MainWindow.Instance.ShowMessageBoxTooMany())
                 return;
 
             foreach (var item in items)
