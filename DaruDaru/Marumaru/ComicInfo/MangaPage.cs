@@ -387,47 +387,27 @@ namespace DaruDaru.Marumaru.ComicInfo
         private static string MoveFile(string orig, string dest)
         {
             var dir = Directory.CreateDirectory(Path.GetDirectoryName(dest)).FullName;
+            var baseName = Path.GetFileNameWithoutExtension(dest);
+            var ext = Path.GetExtension(dest);
+
             dest = Path.Combine(dir, Path.GetFileName(dest));
 
-            try
-            {
-                File.Move(orig, dest);
-            }
-            catch (IOException ioex) when (ioex.HResult == HR_ERROR_FILE_EXISTS)
-            {
-                var i = 2;
-                string newZipPath;
+            var i = 2;
 
-                do
-                {
-                    newZipPath = Path.Combine(
-                        dir,
-                        string.Format(
-                            "{0} ({1}){2}",
-                            Path.GetFileNameWithoutExtension(dest),
-                            i++,
-                            Path.GetExtension(dest))
-                        );
-
-                    try
-                    {
-                        File.Move(orig, newZipPath);
-                        dest = newZipPath;
-                        break;
-                    }
-                    catch (IOException ioex2) when (ioex2.HResult == HR_ERROR_FILE_EXISTS)
-                    {
-                    }
-                    catch (Exception e)
-                    {
-                        throw e;
-                    }
-                } while (true);
-            }
-            catch (Exception e)
+            while (File.Exists(dest))
             {
-                throw e;
+                dest = Path.Combine(
+                    dir,
+                    string.Format(
+                        "{0} ({1}){2}",
+                        baseName,
+                        i++,
+                        ext
+                    )
+                );
             }
+            
+            File.Move(orig, dest);
 
             return dest;
         }
