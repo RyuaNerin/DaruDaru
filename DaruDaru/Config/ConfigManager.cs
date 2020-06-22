@@ -96,6 +96,20 @@ namespace DaruDaru.Config
         private void InvokePropertyChanged([CallerMemberName] string propertyName = null)
             => this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+        private bool? m_addComment;
+        public bool AddComment
+        {
+            get => this.m_addComment ?? true;
+            set
+            {
+                this.m_addComment = value;
+
+                this.InvokePropertyChanged();
+
+                Save();
+            }
+        }
+
         public static readonly string DefaultSavePath = Path.Combine(App.AppDir, "DaruDaru");
         private string m_savePath = DefaultSavePath;
         public string SavePath

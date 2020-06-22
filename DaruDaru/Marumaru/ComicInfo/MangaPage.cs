@@ -550,8 +550,11 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 zipFile.SetLength(0);
 
-                zipStream.SetComment(this.Uri.AbsoluteUri + "\nby DaruDaru");
-                zipStream.SetLevel(0);
+                if (ConfigManager.Instance.AddComment)
+                {
+                    zipStream.SetComment(this.Uri.AbsoluteUri + "\nby DaruDaru");
+                    zipStream.SetLevel(0);
+                }
 
                 var buff = new byte[App.BufferSize];
                 int read;

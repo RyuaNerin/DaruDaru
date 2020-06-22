@@ -30,6 +30,24 @@
                 </ResourceDictionary>
             </StackPanel.Resources>
 
+            <GroupBox Header="압축 파일에 코멘트 추가">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+
+                    <CheckBox Content="압축 파일에 코멘트 추가 사용"
+                              IsChecked="{Binding Path=AddComment}"
+                              Margin="0 0 0 5"/>
+
+                    <TextBlock Grid.Row="1"
+                               FontWeight="Bold"
+                               Text="모바일에서 파일이 열리지 않을 때 체크를 풀어주세요." />
+                </Grid>
+            </GroupBox>
+
+
             <GroupBox Header="다운로드 폴더">
                 <Grid>
                     <Grid.ColumnDefinitions>
