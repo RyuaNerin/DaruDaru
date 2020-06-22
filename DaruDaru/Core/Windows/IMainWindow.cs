@@ -25,7 +25,7 @@ namespace DaruDaru.Core.Windows
         Task<MessageDialogResult> ShowMessageBox(string message, MessageDialogStyle style = MessageDialogStyle.Affirmative, MetroDialogSettings settings = null);
         void ShowMessageBox(string message, int timeOut);
 
-        Task<bool> ShowMassageBoxTooMany();
+        Task<bool> ShowMessageBoxTooMany();
 
         void ShowNotEnoughDiskSpace();
     }
