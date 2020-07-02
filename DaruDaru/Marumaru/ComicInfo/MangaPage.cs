@@ -21,7 +21,12 @@ namespace DaruDaru.Marumaru.ComicInfo
     internal class MangaPage : Comic
     {
         /// <summary>정상적으로 작동한 Cdn 우선으로 다운로드 시도하게 하기 위해서</summary>
-        private static readonly SortedDictionary<string, int> CdnScore = new SortedDictionary<string, int>();
+        private static readonly SortedDictionary<string, int> CdnScore = new SortedDictionary<string, int>
+        {
+            { "blogspot.com",  0 },
+            { "google.com",    0 },
+            { "filecdn.xyz",  -5 },
+        };
         private const int CdnScoreDefault = 5;
 
         private const int CDNPeekCount = 3;
@@ -57,6 +62,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             public FileStream   TempStream;
             public string       Extension;
         }
+        [DebuggerDisplay("{Uri}")]
         private struct ImageUri
         {
             public Uri Uri;
@@ -104,13 +110,13 @@ namespace DaruDaru.Marumaru.ComicInfo
             var doc = new HtmlDocument();
             string html;
 
-            using (var res = hc.GetAsync(this.Uri).Exec())
+            using (var res = hc.GetAsync(this.Uri).GetAwaiter().GetResult())
             {
                 statusCode = res.StatusCode;
                 if (this.WaitFromHttpStatusCode(retries, statusCode))
                     return null;
 
-                html = res.Content.ReadAsStringAsync().Exec();
+                html = res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 if (string.IsNullOrWhiteSpace(html))
                     return null;
 
@@ -151,12 +157,12 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     var detailResult = Utility.Retry((retries2) =>
                     {
-                        using (var res = hc.GetAsync(detailUri).Exec())
+                        using (var res = hc.GetAsync(detailUri).GetAwaiter().GetResult())
                         {
                             if (this.WaitFromHttpStatusCode(retries2, res.StatusCode))
                                 return false;
 
-                            var htmlDetail = res.Content.ReadAsStringAsync().Exec();
+                            var htmlDetail = res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                             if (string.IsNullOrWhiteSpace(html))
                                 return false;
 
@@ -456,13 +462,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                             {
                                 Array.Sort(
                                     e.ImageUri,
-                                    (a, b) =>
-                                    {
-                                        var ac = CdnScore.ContainsKey(a.Uri.Host) ? CdnScore[a.Uri.Host] : CdnScoreDefault;
-                                        var ab = CdnScore.ContainsKey(b.Uri.Host) ? CdnScore[b.Uri.Host] : CdnScoreDefault;
-
-                                        return ac.CompareTo(ab) * -1;
-                                    }
+                                    (a, b) => GetScore(a.Uri.Host).CompareTo(GetScore(b.Uri.Host)) * -1
                                 );
                             }
 
@@ -485,6 +485,30 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                         if (!this.IgnoreErrorMissingPage)
                             state.Stop();
+
+                        int GetScore(string host)
+                        {
+                            if (CdnScore.TryGetValue(host, out var v))
+                                return v;
+
+                            while (true)
+                            {
+                                var dot = host.IndexOf('.');
+                                if (dot == -1)
+                                    break;
+
+                                var dotNext = host.IndexOf('.', dot + 1);
+                                if (dotNext == -1)
+                                    break;
+
+                                host = host.Substring(dot + 1);
+
+                                if (CdnScore.TryGetValue(host, out v))
+                                    return v;
+                            }
+
+                            return CdnScoreDefault;
+                        }
                     }).IsCompleted;
 
                 stopSlim.Set();
@@ -506,7 +530,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 req.Headers.Referrer = this.Uri;
 
-                using (var res = hc.SendAsync(req).Exec())
+                using (var res = hc.SendAsync(req).GetAwaiter().GetResult())
                 {
                     if ((int)res.StatusCode / 100 != 2)
                         return false;
@@ -516,7 +540,7 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     e.TempStream.SetLength(0);
                     using (var fileWriter = new StreamWithNotify(e.TempStream, count => Interlocked.Add(ref this.m_downloaded, count)))
-                        res.Content.CopyToAsync(fileWriter).Wait();
+                        res.Content.CopyToAsync(fileWriter).GetAwaiter().GetResult();
                 }
 
                 e.TempStream.Flush();

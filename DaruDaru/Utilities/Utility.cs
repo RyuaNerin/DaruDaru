@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
+using Sentry;
 
 namespace DaruDaru.Utilities
 {
@@ -77,11 +78,13 @@ namespace DaruDaru.Utilities
                 catch (TaskCanceledException)
                 {
                 }
-                catch (WebException)
+                catch (WebException ex)
                 {
+                    SentrySdk.CaptureException(ex);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    SentrySdk.CaptureException(ex);
                 }
 
                 Thread.Sleep(1000);
@@ -98,7 +101,7 @@ namespace DaruDaru.Utilities
             {
                 using (var req = new HttpRequestMessage(HttpMethod.Head, uri))
                 {
-                    using (var res = hc.SendAsync(req).Exec())
+                    using (var res = hc.SendAsync(req).GetAwaiter().GetResult())
                     {
                         newUri = res.RequestMessage.RequestUri;
                         return true;

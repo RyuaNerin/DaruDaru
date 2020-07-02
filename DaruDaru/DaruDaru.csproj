@@ -270,7 +270,6 @@
     <Compile Include="Utilities\Explorer.cs" />
     <Compile Include="Utilities\HoneyViwer.cs" />
     <Compile Include="Utilities\NotifyStream.cs" />
-    <Compile Include="Utilities\TaskExtension.cs" />
     <Compile Include="Utilities\UriIEqualityComparer.cs" />
     <Compile Include="Utilities\Utility.cs" />
     <Compile Include="Utilities\DragDropAdorner.cs" />
@@ -349,6 +348,9 @@
       <Project>{15e7385c-446f-4bb2-b13b-3c35a7e5b27f}</Project>
       <Name>AsyncReaderWriterLockSlim</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Marumaru\ComicInfo\viewer.b.v=181.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

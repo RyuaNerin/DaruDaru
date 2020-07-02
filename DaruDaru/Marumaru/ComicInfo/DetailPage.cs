@@ -107,13 +107,13 @@ namespace DaruDaru.Marumaru.ComicInfo
 
         private DetailInfomation GetInfomationWorker(HttpClientEx hc, int retries, out HttpStatusCode statusCode)
         {
-            using (var res = hc.GetAsync(this.Uri).Exec())
+            using (var res = hc.GetAsync(this.Uri).GetAwaiter().GetResult())
             {
                 statusCode = res.StatusCode;
                 if (this.WaitFromHttpStatusCode(retries, statusCode))
                     return null;
 
-                var html = res.Content.ReadAsStringAsync().Exec();
+                var html = res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 if (string.IsNullOrWhiteSpace(html))
                     return null;
 
