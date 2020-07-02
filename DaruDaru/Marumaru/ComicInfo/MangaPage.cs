@@ -53,9 +53,14 @@ namespace DaruDaru.Marumaru.ComicInfo
         private class ImageInfomation
         {
             public int          Index;
-            public Uri[]        ImageUri;
+            public ImageUri[]   ImageUri;
             public FileStream   TempStream;
             public string       Extension;
+        }
+        private struct ImageUri
+        {
+            public Uri Uri;
+            public bool Downloaded;
         }
         private class MangaInfomation
         {
@@ -199,7 +204,6 @@ namespace DaruDaru.Marumaru.ComicInfo
 
             #region 이미지 정보 가져오는 부분
             {
-                // /js/viewer.b.js?v=90
                 var chapter = int.Parse(Regex.Match(doc.DocumentNode.InnerHtml, "var *chapter *= *(\\d+)")?.Groups[1].Value ?? "0");
 
                 var catchArr = new Func<string, IEnumerable<string>>(e =>
@@ -265,7 +269,7 @@ namespace DaruDaru.Marumaru.ComicInfo
                     var imageInfo = new ImageInfomation()
                     {
                         Index    = i + 1,
-                        ImageUri = lst.Distinct().ToArray(),
+                        ImageUri = lst.Distinct().Select(e => new ImageUri { Uri = e }).ToArray(),
                     };
 
                     mangaInfo.Images.Add(imageInfo);
@@ -446,30 +450,37 @@ namespace DaruDaru.Marumaru.ComicInfo
                     parallelOption,
                     (e, state) =>
                     {
-                        lock (CdnScore)
-                        {
-                            Array.Sort(
-                                e.ImageUri,
-                                (a, b) =>
-                                {
-                                    var ac = CdnScore.ContainsKey(a.Host) ? CdnScore[a.Host] : CdnScoreDefault;
-                                    var ab = CdnScore.ContainsKey(b.Host) ? CdnScore[b.Host] : CdnScoreDefault;
-
-                                    return ac.CompareTo(ab) * - 1;
-                                }
-                            );
-                        }
-
                         for (var index = 0; index < e.ImageUri.Length; ++index)
                         {
-                            var succ = Utility.Retry((retries) => this.DownloadWorker(hc, e, index), 1);
-
-                            var h = e.ImageUri[index].Host;
                             lock (CdnScore)
-                                CdnScore[h] = (CdnScore.TryGetValue(h, out var c) ? c : CdnScoreDefault) + (succ ? 1 : -1);
+                            {
+                                Array.Sort(
+                                    e.ImageUri,
+                                    (a, b) =>
+                                    {
+                                        var ac = CdnScore.ContainsKey(a.Uri.Host) ? CdnScore[a.Uri.Host] : CdnScoreDefault;
+                                        var ab = CdnScore.ContainsKey(b.Uri.Host) ? CdnScore[b.Uri.Host] : CdnScoreDefault;
 
-                            if (succ)
-                                return;
+                                        return ac.CompareTo(ab) * -1;
+                                    }
+                                );
+                            }
+
+                            for (var i = 0; i < e.ImageUri.Length; ++i)
+                            {
+                                if (e.ImageUri[i].Downloaded)
+                                    continue;
+
+                                var succ = Utility.Retry((retries) => this.DownloadWorker(hc, e, e.ImageUri[i].Uri), 1);
+                                e.ImageUri[i].Downloaded = true;
+
+                                var h = e.ImageUri[i].Uri.Host;
+                                lock (CdnScore)
+                                    CdnScore[h] = (CdnScore.TryGetValue(h, out var c) ? c : CdnScoreDefault) + (succ ? 1 : -2);
+
+                                if (succ)
+                                    return;
+                            }
                         }
 
                         if (!this.IgnoreErrorMissingPage)
@@ -489,15 +500,18 @@ namespace DaruDaru.Marumaru.ComicInfo
             return this.IgnoreErrorMissingPage || this.m_images.All(e => e.Extension != null);
         }
 
-        private bool DownloadWorker(HttpClientEx hc, ImageInfomation e, int uriIndex)
+        private bool DownloadWorker(HttpClientEx hc, ImageInfomation e, Uri uri)
         {
-            using (var req = new HttpRequestMessage(HttpMethod.Get, e.ImageUri[uriIndex]))
+            using (var req = new HttpRequestMessage(HttpMethod.Get, uri))
             {
                 req.Headers.Referrer = this.Uri;
 
                 using (var res = hc.SendAsync(req).Exec())
                 {
                     if ((int)res.StatusCode / 100 != 2)
+                        return false;
+
+                    if (res.Headers.Server.FirstOrDefault()?.ToString()?.Contains("ddos-guard") ?? false)
                         return false;
 
                     e.TempStream.SetLength(0);
