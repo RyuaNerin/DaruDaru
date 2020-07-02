@@ -82,7 +82,7 @@
     <ctrs:BaseControl.ListView>
         <GridView>
             <GridViewColumn Header="제목"
-                            Width="220"
+                            Width="200"
                             util:GridViewSort.PropertyName="Title">
                 <GridViewColumn.CellTemplate>                    
                     <DataTemplate>
@@ -126,6 +126,33 @@
                         <TextBlock Text="{Binding LastUpdated, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
                                     TextAlignment="Center"
                                     HorizontalAlignment="Stretch" />
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+
+            <GridViewColumn Header="완결"
+                            Width="40"
+                            util:GridViewSort.PropertyName="LastUpdated">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock TextAlignment="Center"
+                                   HorizontalAlignment="Stretch">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock"
+                                       BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=Finished}"
+                                                     Value="False">
+                                            <Setter Property="Text" Value="" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=Finished}"
+                                                     Value="True">
+                                            <Setter Property="Text" Value="O" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </DataTemplate>
                 </GridViewColumn.CellTemplate>
             </GridViewColumn>
