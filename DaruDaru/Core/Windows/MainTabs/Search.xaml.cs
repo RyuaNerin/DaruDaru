@@ -13,6 +13,7 @@ using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Marumaru.ComicInfo;
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls.Dialogs;
+using Sentry;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
@@ -192,7 +193,14 @@ namespace DaruDaru.Core.Windows.MainTabs
             var items = this.Get<Comic>().GetUri();
             if (items.Length == 0) return;
 
-            Clipboard.SetText(string.Join(Environment.NewLine, items));
+            try
+            {
+                Clipboard.SetText(string.Join(Environment.NewLine, items));
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
         }
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)

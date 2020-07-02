@@ -10,6 +10,7 @@ using DaruDaru.Config.Entries;
 using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls.Dialogs;
+using Sentry;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
@@ -74,7 +75,14 @@ namespace DaruDaru.Core.Windows.MainTabs
             var files = new StringCollection();
             files.AddRange(items);
 
-            Clipboard.SetFileDropList(files);
+            try
+            {
+                Clipboard.SetFileDropList(files);
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
         }
 
         private void ctlMenuCopyUri_Click(object sender, RoutedEventArgs e)
@@ -82,7 +90,14 @@ namespace DaruDaru.Core.Windows.MainTabs
             var items = this.Get<MangaEntry>().GetUri();
             if (items.Length == 0) return;
 
-            Clipboard.SetText(string.Join(Environment.NewLine, items));
+            try
+            {
+                Clipboard.SetText(string.Join(Environment.NewLine, items));
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
         }
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)

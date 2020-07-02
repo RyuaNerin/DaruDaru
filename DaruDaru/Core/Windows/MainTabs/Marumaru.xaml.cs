@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,6 +8,7 @@ using DaruDaru.Config.Entries;
 using DaruDaru.Core.Windows.MainTabs.Controls;
 using DaruDaru.Utilities;
 using MahApps.Metro.Controls.Dialogs;
+using Sentry;
 
 namespace DaruDaru.Core.Windows.MainTabs
 {
@@ -66,7 +68,15 @@ namespace DaruDaru.Core.Windows.MainTabs
             var items = this.Get<DetailEntry>().GetUri();
             if (items.Length == 0) return;
 
-            Clipboard.SetText(string.Join("\n", items));
+
+            try
+            {
+                Clipboard.SetText(string.Join("\n", items));
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
         }
 
         private void Viewer_ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
