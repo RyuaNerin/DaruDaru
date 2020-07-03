@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -451,71 +452,19 @@ namespace DaruDaru.Marumaru.ComicInfo
                     MaxDegreeOfParallelism = 8,
                 };
 
-                var parallelSucc = Parallel.ForEach(
-                    this.m_images,
-                    parallelOption,
-                    (e, state) =>
-                    {
-                        for (var index = 0; index < e.ImageUri.Length; ++index)
-                        {
-                            lock (CdnScore)
-                            {
-                                Array.Sort(
-                                    e.ImageUri,
-                                    (a, b) => GetScore(a.Uri.Host).CompareTo(GetScore(b.Uri.Host)) * -1
-                                );
-                            }
+                using (var cts = new CancellationTokenSource())
+                {
+                    ParallelAsync.ForEachAsync(
+                        this.m_images,
+                        async e => await this.DownloadImage(e, hc, cts.Token, cts.Cancel),
+                        8).GetAwaiter().GetResult();
 
-                            for (var i = 0; i < e.ImageUri.Length; ++i)
-                            {
-                                if (e.ImageUri[i].Downloaded)
-                                    continue;
+                    stopSlim.Set();
+                    updateTask.Wait();
 
-                                var succ = Utility.Retry((retries) => this.DownloadWorker(hc, e, e.ImageUri[i].Uri), 1);
-                                e.ImageUri[i].Downloaded = true;
-
-                                var h = e.ImageUri[i].Uri.Host;
-                                lock (CdnScore)
-                                    CdnScore[h] = (CdnScore.TryGetValue(h, out var c) ? c : CdnScoreDefault) + (succ ? 1 : -2);
-
-                                if (succ)
-                                    return;
-                            }
-                        }
-
-                        if (!this.IgnoreErrorMissingPage)
-                            state.Stop();
-
-                        int GetScore(string host)
-                        {
-                            if (CdnScore.TryGetValue(host, out var v))
-                                return v;
-
-                            while (true)
-                            {
-                                var dot = host.IndexOf('.');
-                                if (dot == -1)
-                                    break;
-
-                                var dotNext = host.IndexOf('.', dot + 1);
-                                if (dotNext == -1)
-                                    break;
-
-                                host = host.Substring(dot + 1);
-
-                                if (CdnScore.TryGetValue(host, out v))
-                                    return v;
-                            }
-
-                            return CdnScoreDefault;
-                        }
-                    }).IsCompleted;
-
-                stopSlim.Set();
-                updateTask.Wait();
-
-                if (!this.IgnoreErrorMissingPage && !parallelSucc)
-                    return false;
+                    if (!this.IgnoreErrorMissingPage && cts.IsCancellationRequested)
+                        return false;
+                }
             }
 
             this.SpeedOrFileSize = null;
@@ -524,13 +473,70 @@ namespace DaruDaru.Marumaru.ComicInfo
             return this.IgnoreErrorMissingPage || this.m_images.All(e => e.Extension != null);
         }
 
-        private bool DownloadWorker(HttpClientEx hc, ImageInfomation e, Uri uri)
+        private async Task DownloadImage(ImageInfomation e, HttpClientEx hc, CancellationToken cancellationToken, Action cancel)
+        {
+            for (var index = 0; index < e.ImageUri.Length && !cancellationToken.IsCancellationRequested; ++index)
+            {
+                lock (CdnScore)
+                {
+                    Array.Sort(
+                        e.ImageUri,
+                        (a, b) => GetScore(a.Uri.Host).CompareTo(GetScore(b.Uri.Host)) * -1
+                    );
+                }
+
+                for (var i = 0; i < e.ImageUri.Length && !cancellationToken.IsCancellationRequested; ++i)
+                {
+                    if (e.ImageUri[i].Downloaded)
+                        continue;
+
+                    var succ = await Utility.RetryAsync(async (retries) => await this.DownloadWorker(hc, e, e.ImageUri[i].Uri, cancellationToken), 1);
+                    e.ImageUri[i].Downloaded = true;
+
+                    var h = e.ImageUri[i].Uri.Host;
+                    lock (CdnScore)
+                        CdnScore[h] = (CdnScore.TryGetValue(h, out var c) ? c : CdnScoreDefault) + (succ ? 1 : -2);
+
+                    if (succ)
+                        return;
+                }
+            }
+
+            if (!this.IgnoreErrorMissingPage)
+                cancel();
+
+            int GetScore(string host)
+            {
+                if (CdnScore.TryGetValue(host, out var v))
+                    return v;
+
+                while (true)
+                {
+                    var dot = host.IndexOf('.');
+                    if (dot == -1)
+                        break;
+
+                    var dotNext = host.IndexOf('.', dot + 1);
+                    if (dotNext == -1)
+                        break;
+
+                    host = host.Substring(dot + 1);
+
+                    if (CdnScore.TryGetValue(host, out v))
+                        return v;
+                }
+
+                return CdnScoreDefault;
+            }
+        }
+
+        private async Task<bool> DownloadWorker(HttpClientEx hc, ImageInfomation e, Uri uri, CancellationToken cancellationToken)
         {
             using (var req = new HttpRequestMessage(HttpMethod.Get, uri))
             {
                 req.Headers.Referrer = this.Uri;
 
-                using (var res = hc.SendAsync(req).GetAwaiter().GetResult())
+                using (var res = await hc.SendAsync(req, cancellationToken))
                 {
                     if ((int)res.StatusCode / 100 != 2)
                         return false;
@@ -538,9 +544,14 @@ namespace DaruDaru.Marumaru.ComicInfo
                     if (res.Headers.Server.FirstOrDefault()?.ToString()?.Contains("ddos-guard") ?? false)
                         return false;
 
-                    e.TempStream.SetLength(0);
-                    using (var fileWriter = new StreamWithNotify(e.TempStream, count => Interlocked.Add(ref this.m_downloaded, count)))
-                        res.Content.CopyToAsync(fileWriter).GetAwaiter().GetResult();
+                    using (var stream = await res.Content.ReadAsStreamAsync())
+                    {
+                        e.TempStream.SetLength(0);
+                        using (var fileWriter = new StreamWithNotify(e.TempStream, count => Interlocked.Add(ref this.m_downloaded, count)))
+                        {
+                            await stream.CopyToAsync(fileWriter, 4096, cancellationToken);
+                        }
+                    }
                 }
 
                 e.TempStream.Flush();

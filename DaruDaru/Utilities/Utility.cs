@@ -93,6 +93,49 @@ namespace DaruDaru.Utilities
             return false;
         }
 
+        public static Task<bool> RetryAsync(Func<int, Task<bool>> action)
+            => RetryAsync(action, App.RetryCount);
+
+        public static async Task<bool> RetryAsync(Func<int, Task<bool>> action, int retries = App.RetryCount)
+        {
+            do
+            {
+                try
+                {
+                    if (await action(retries))
+                        return true;
+                }
+                catch (HttpClientEx.BypassFailed)
+                {
+                    return false;
+                }
+                // 디스크 공간 부족
+                catch (IOException ex) when (ex.HResult == HR_ERROR_DISK_FULL || ex.HResult == HR_ERROR_HANDLE_DISK_FULL)
+                {
+                    MainWindow.Instance.ShowNotEnoughDiskSpace();
+                }
+                catch (SocketException)
+                {
+                }
+                // 작업 취소
+                catch (TaskCanceledException)
+                {
+                }
+                catch (WebException ex)
+                {
+                    SentrySdk.CaptureException(ex);
+                }
+                catch (Exception ex)
+                {
+                    SentrySdk.CaptureException(ex);
+                }
+
+                Thread.Sleep(1000);
+            } while (--retries > 0);
+
+            return false;
+        }
+
         public static bool ResolvUri(HttpClientEx hc, Uri uri, out Uri newUri)
         {
             newUri = null;
