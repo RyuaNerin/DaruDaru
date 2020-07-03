@@ -221,10 +221,6 @@ namespace DaruDaru.Utilities
             
             public static int CompareTo(string x, string y)
             {
-                // 대소문자 구분 안함
-                x = x.ToUpper();
-                y = y.ToUpper();
-
                 int xindex, yindex;
                 int xlen, ylen;
                 float xint, yint;
@@ -285,7 +281,7 @@ namespace DaruDaru.Utilities
                         k = Math.Min(xlen, ylen);
                         for (i = 0; i < k; ++i)
                             if (x[xindex + i] != y[yindex + i])
-                                return x[xindex + i].CompareTo(y[yindex + i]);
+                                return char.ToUpper(x[xindex + i]).CompareTo(char.ToUpper(y[yindex + i])); // 대소문자 구분 안함
 
                         c = xlen.CompareTo(ylen);
                     }
