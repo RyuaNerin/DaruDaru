@@ -538,7 +538,7 @@ namespace DaruDaru.Marumaru.ComicInfo
             {
                 req.Headers.Referrer = this.Uri;
 
-                using (var res = await hc.SendAsync(req, cancellationToken))
+                using (var res = await hc.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                 {
                     if ((int)res.StatusCode / 100 != 2)
                         return false;
