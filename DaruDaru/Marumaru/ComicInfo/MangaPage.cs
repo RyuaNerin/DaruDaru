@@ -24,13 +24,13 @@ namespace DaruDaru.Marumaru.ComicInfo
         /// <summary>정상적으로 작동한 Cdn 우선으로 다운로드 시도하게 하기 위해서</summary>
         private static readonly SortedDictionary<string, int> CdnScore = new SortedDictionary<string, int>
         {
-            { "blogspot.com",  0 },
-            { "google.com",    0 },
-            { "filecdn.xyz",  -5 },
+            { "blogspot.com",  -50 },
+            { "google.com",    -50 },
+            { "filecdn.xyz",  -100 },
         };
         private const int CdnScoreDefault = 5;
 
-        private const int CDNPeekCount = 3;
+        private const int CDNPeekCount = 8;
 
         public MangaPage(bool addNewOnly, Uri uri, string title, string tempTitleWithNo = null)
             : base(addNewOnly, DaruUriParser.Manga.FixUri(uri), title)
@@ -495,7 +495,9 @@ namespace DaruDaru.Marumaru.ComicInfo
 
                     var h = e.ImageUri[i].Uri.Host;
                     lock (CdnScore)
+                    {
                         CdnScore[h] = (CdnScore.TryGetValue(h, out var c) ? c : CdnScoreDefault) + (succ ? 1 : -2);
+                    }
 
                     if (succ)
                         return;

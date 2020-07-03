@@ -1,13 +1,13 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using CloudflareSolverRe;
-using DaruDaru.Core.Windows;
+using CloudflareSolverRe.Types;
 using KPreisser;
+using Sentry;
 
 namespace DaruDaru.Utilities
 {
@@ -37,10 +37,14 @@ namespace DaruDaru.Utilities
         }
         private class BypassHandler : DelegatingHandler
         {
-            private static string Cookies;
+            private class CookieInfomation
+            {
+                public AsyncReaderWriterLockSlim Lock { get; } = new AsyncReaderWriterLockSlim();
+                public SemaphoreSlim SemaphoreSlim { get; } = new SemaphoreSlim(1);
+                public string Cookie { get; set; }
+            }
+            private static Dictionary<string, CookieInfomation> Cookies = new Dictionary<string, CookieInfomation>();
 
-            private static readonly AsyncReaderWriterLockSlim CookieHeaderLock = new AsyncReaderWriterLockSlim();
-            private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
 
             public BypassHandler()
                 : base(new HttpClientHandler
@@ -60,12 +64,22 @@ namespace DaruDaru.Utilities
 
                 HttpResponseMessage res = null;
 
+                CookieInfomation ci;
+                lock (Cookies)
+                    if (!Cookies.TryGetValue(request.RequestUri.Host, out ci))
+                        Cookies[request.RequestUri.Host] = (ci = new CookieInfomation());
+
                 string cookie;
-                using (CookieHeaderLock.GetReadLock())
-                    cookie = Cookies;
+                using (ci.Lock.GetReadLock())
+                    cookie = ci.Cookie;
 
                 request.Headers.Add("Cookie", cookie);
                 res = await base.SendAsync(request, cancellationToken);
+
+                if (res == null)
+                {
+                    throw new NullReferenceException();
+                }
 
                 if (!CloudflareDetector.IsClearanceRequired(res))
                     return res;
@@ -73,85 +87,56 @@ namespace DaruDaru.Utilities
                 res.Dispose();
                 res = null;
 
-                if (!await semaphoreSlim.WaitAsync(0))
+                if (!await ci.SemaphoreSlim.WaitAsync(0))
                 {
-                    await semaphoreSlim.WaitAsync();
-                    semaphoreSlim.Release();
+                    await ci.SemaphoreSlim.WaitAsync();
+                    ci.SemaphoreSlim.Release();
 
-                    if (Cookies == null)
+                    if (ci.Cookie == null)
                         throw new BypassFailed();
 
-                    using (CookieHeaderLock.GetReadLock())
-                        cookie = Cookies;
+                    using (ci.Lock.GetReadLock())
+                        cookie = ci.Cookie;
 
                 }
                 else
                 {
-                    using (await CookieHeaderLock.GetWriteLockAsync())
+                    try
                     {
-                        var cf = new CloudflareSolver(UserAgent)
+                        using (await ci.Lock.GetWriteLockAsync())
                         {
-                            MaxTries = 3,
-                            ClearanceDelay = 5000,
-                        };
-
-                        try
-                        {
-                            var cfs = await cf.Solve(request.RequestUri).ConfigureAwait(false);
-                            if (cfs.Success)
+                            var cf = new CloudflareSolver(UserAgent)
                             {
-                                Cookies = cfs.Cookies.AsHeaderString();
+                                MaxTries = 3,
+                                ClearanceDelay = 5000,
+                            };
 
-                                return await base.SendAsync(request, cancellationToken);
-                            }
-                        }
-                        catch
-                        {
-                            // 2020-02-29
-                            // New CF Challenge : __cf_chl_jschl_tk__
-                            // https://github.com/RyuzakiH/CloudflareSolverRe/issues/14
-                        }
-
-                        try
-                        {
-                            BypassByBrowser frm = null;
                             try
                             {
-                                frm = Application.Current.Dispatcher.Invoke(() => new BypassByBrowser(new UriBuilder(request.RequestUri) { Path = null, Query = null }.Uri)
+                                SolveResult cfs;
+                                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
                                 {
-                                    Owner = Application.Current.MainWindow,
-                                });
+                                    cts.CancelAfter(5000);
 
-                                var status = Application.Current.Dispatcher.Invoke(frm.ShowDialog) ?? false;
-
-                                frm.Wait.Wait();
-
-                                if (status)
-                                {
-                                    cookie = Cookies = frm.Cookies.GetCookieHeader(baseUri);
+                                    cfs = await cf.Solve(request.RequestUri, null, cts.Token);
                                 }
-                                else
+
+                                if (cfs.Success)
                                 {
-                                    throw new BypassFailed();
+                                    ci.Cookie = cfs.Cookies.AsHeaderString();
+
+                                    return await base.SendAsync(request, cancellationToken);
                                 }
                             }
-                            catch (BypassFailed)
+                            catch (Exception ex)
                             {
-                                throw;
-                            }
-                            finally
-                            {
-                                if (frm != null)
-                                {
-                                    Application.Current.Dispatcher.Invoke(frm.Close);
-                                    Application.Current.Dispatcher.Invoke(frm.Dispose);
-                                }
+                                SentrySdk.CaptureException(ex);
                             }
                         }
-                        finally
-                        {
-                            semaphoreSlim.Release();
-                        }
+                    }
+                    finally
+                    {
+                        ci.SemaphoreSlim.Release();
                     }
                 }
 

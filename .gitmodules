@@ -1,3 +1,6 @@
 [submodule "AsyncReaderWriterLockSlim"]
 	path = AsyncReaderWriterLockSlim
 	url = https://github.com/kpreisser/AsyncReaderWriterLockSlim.git
+[submodule "CloudflareSolverRe"]
+	path = CloudflareSolverRe
+	url = https://github.com/RyuzakiH/CloudflareSolverRe.git
