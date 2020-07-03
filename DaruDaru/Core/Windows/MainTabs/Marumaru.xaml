@@ -132,7 +132,7 @@
 
             <GridViewColumn Header="완결"
                             Width="40"
-                            util:GridViewSort.PropertyName="LastUpdated">
+                            util:GridViewSort.PropertyName="Finished">
                 <GridViewColumn.CellTemplate>
                     <DataTemplate>
                         <TextBlock TextAlignment="Center"

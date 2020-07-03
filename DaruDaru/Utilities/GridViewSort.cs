@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
-using System.ComponentModel;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,13 +13,6 @@ namespace DaruDaru.Utilities
 {
     internal static class GridViewSort
     {
-        private static ListSortDirection GetSortDirection(DependencyObject obj)
-            => (ListSortDirection)obj.GetValue(SortDirectionProperty);
-        private static void SetSortDirection(DependencyObject obj, ListSortDirection value)
-            => obj.SetValue(SortDirectionProperty, value);
-        private static readonly DependencyProperty SortDirectionProperty =
-            DependencyProperty.RegisterAttached("SortDirection", typeof(ListSortDirection), typeof(GridViewSort), new UIPropertyMetadata(ListSortDirection.Ascending));
-
         public static bool GetAutoSort(DependencyObject obj)
             => (bool)obj.GetValue(AutoSortProperty);
         public static void SetAutoSort(DependencyObject obj, bool value)
@@ -55,6 +49,26 @@ namespace DaruDaru.Utilities
         private static readonly DependencyProperty SortedColumnHeaderProperty =
             DependencyProperty.RegisterAttached("SortedColumnHeader", typeof(GridViewColumnHeader), typeof(GridViewSort), new UIPropertyMetadata(null));
         
+        private static List<OrderInfo> GetOrder(DependencyObject obj)
+            => (List<OrderInfo>)obj.GetValue(OrderProperty);
+        private static void SetOrder(DependencyObject obj, List<OrderInfo> value)
+            => obj.SetValue(OrderProperty, value);
+        private static readonly DependencyProperty OrderProperty =
+            DependencyProperty.RegisterAttached("OrderProperty", typeof(List<OrderInfo>), typeof(GridViewSort), new UIPropertyMetadata(null));
+
+        [DebuggerDisplay("{Property} - {Direction}")]
+        private struct OrderInfo
+        {
+            public string    Property;
+            public Directions Direction;
+        }
+
+        public enum Directions
+        {
+            Ascending  =  1,
+            Descending = -1,
+        }
+
         private static void ColumnHeader_Click(object sender, RoutedEventArgs e)
         {
             var headerClicked = e.OriginalSource as GridViewColumnHeader;
@@ -90,8 +104,6 @@ namespace DaruDaru.Utilities
         {
             var view = (ListCollectionView)CollectionViewSource.GetDefaultView(listView.ItemsSource);
 
-            var direction = GetSortDirection(listView);
-
             var curColumn = GetSortedColumnHeader(listView);
             if (curColumn != null)
             {
@@ -102,26 +114,40 @@ namespace DaruDaru.Utilities
                     layer.Remove(adorner);
             }
 
-            if (curColumn == column)
+            var order = GetOrder(listView);
+            if (order == null)
             {
-                if (direction == ListSortDirection.Ascending)
-                    direction = ListSortDirection.Descending;
-                else
-                    direction = ListSortDirection.Ascending;
+                order = new List<OrderInfo>();
+                SetOrder(listView, order);
+            }
+
+            var index = order.FindIndex(e => e.Property == propertyName);
+            if (index != -1)
+            {
+                var o = order[index];
+                o.Direction = o.Direction == Directions.Ascending ? Directions.Descending : Directions.Ascending;
+
+                order.RemoveAt(index);
+                order.Insert(0, o);
+            }
+            else
+            {
+                order.Insert(0, new OrderInfo { Property = propertyName, Direction = Directions.Ascending });
             }
 
             if (!string.IsNullOrEmpty(propertyName))
             {
                 using (view.DeferRefresh())
                 {
-                    view.CustomSort = new CustomSorter(propertyName, (ListSortDirection)direction);
+                    var cs = view.CustomSort as CustomSorter ?? new CustomSorter();
+                    view.CustomSort = cs;
+
+                    cs.OrderInfo = order.ToArray();
 
                     SetSortedColumnHeader(listView, column);
 
-                    SetSortDirection(listView, direction);
-
                     AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(column);
-                    adornerLayer.Add(new SortGlyphAdorner(column, direction));
+                    adornerLayer.Add(new SortGlyphAdorner(column, order[0].Direction));
                 }
             }
         }
@@ -129,9 +155,9 @@ namespace DaruDaru.Utilities
         private class SortGlyphAdorner : Adorner
         {
             private readonly GridViewColumnHeader m_column;
-            private readonly ListSortDirection m_direction;
+            private readonly Directions m_direction;
 
-            public SortGlyphAdorner(GridViewColumnHeader column, ListSortDirection direction)
+            public SortGlyphAdorner(GridViewColumnHeader column, Directions direction)
                 : base(column)
             {
                 this.m_column = column;
@@ -150,12 +176,12 @@ namespace DaruDaru.Utilities
                 double y1 = 2;
                 double y2 = y1 + 3;
 
-                if (this.m_direction == ListSortDirection.Ascending)
+                if (this.m_direction == Directions.Ascending)
                 {
                     drawingContext.DrawLine(GlpyhPen, new Point(x1, y2), new Point(x2, y1));
                     drawingContext.DrawLine(GlpyhPen,                    new Point(x2, y1), new Point(x3, y2));
                 }
-                else if (this.m_direction == ListSortDirection.Descending)
+                else if (this.m_direction == Directions.Descending)
                 {
                     drawingContext.DrawLine(GlpyhPen, new Point(x1, y1), new Point(x2, y2));
                     drawingContext.DrawLine(GlpyhPen,                    new Point(x2, y2), new Point(x3, y1));
@@ -165,19 +191,24 @@ namespace DaruDaru.Utilities
         
         private class CustomSorter : IComparer
         {
-            public CustomSorter(string propertyName, ListSortDirection direction)
-            {
-                this.m_propertyName = propertyName;
-                this.m_direction = direction == ListSortDirection.Ascending ? 1 : -1;
-            }
-
-            private readonly string m_propertyName;
-            private readonly int m_direction;
+            public OrderInfo[] OrderInfo { get; set; }
 
             public int Compare(object x, object y)
             {
-                var xx = x.GetType().GetProperty(this.m_propertyName).GetValue(x);
-                var yy = y.GetType().GetProperty(this.m_propertyName).GetValue(y);
+                for (var i = 0; i < this.OrderInfo.Length; i++)
+                {
+                    var c = this.CompareInner(x, y, this.OrderInfo[i]);
+                    if (c != 0)
+                        return c;
+                }
+
+                return 0;
+            }
+
+            public int CompareInner(object x, object y, OrderInfo orderInfo)
+            {
+                var xx = x.GetType().GetProperty(orderInfo.Property).GetValue(x);
+                var yy = y.GetType().GetProperty(orderInfo.Property).GetValue(y);
 
                 int r;
                 if (xx is string xxx && yy is string yyy)
@@ -185,7 +216,7 @@ namespace DaruDaru.Utilities
                 else
                     r = Comparer.Default.Compare(xx, yy);
 
-                return r * this.m_direction;
+                return r * (int)orderInfo.Direction;
             }
             
             public static int CompareTo(string x, string y)
