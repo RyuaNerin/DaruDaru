@@ -123,11 +123,9 @@ namespace DaruDaru.Utilities
                 }
                 catch (WebException ex)
                 {
-                    SentrySdk.CaptureException(ex);
                 }
                 catch (Exception ex)
                 {
-                    SentrySdk.CaptureException(ex);
                 }
 
                 Thread.Sleep(1000);
