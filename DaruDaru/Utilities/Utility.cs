@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DaruDaru.Core;
 using DaruDaru.Core.Windows;
-using Sentry;
 
 namespace DaruDaru.Utilities
 {
@@ -71,20 +70,8 @@ namespace DaruDaru.Utilities
                 {
                     MainWindow.Instance.ShowNotEnoughDiskSpace();
                 }
-                catch (SocketException)
+                catch
                 {
-                }
-                // 작업 취소
-                catch (TaskCanceledException)
-                {
-                }
-                catch (WebException ex)
-                {
-                    SentrySdk.CaptureException(ex);
-                }
-                catch (Exception ex)
-                {
-                    SentrySdk.CaptureException(ex);
                 }
 
                 Thread.Sleep(1000);
@@ -114,17 +101,7 @@ namespace DaruDaru.Utilities
                 {
                     MainWindow.Instance.ShowNotEnoughDiskSpace();
                 }
-                catch (SocketException)
-                {
-                }
-                // 작업 취소
-                catch (TaskCanceledException)
-                {
-                }
-                catch (WebException ex)
-                {
-                }
-                catch (Exception ex)
+                catch
                 {
                 }
 
