@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using DaruDaru.Config;
@@ -66,6 +67,14 @@ namespace DaruDaru.Core.Windows.MainTabs
         private void ctlWorkerCountDefault_Click(object sender, RoutedEventArgs e)
         {
             ConfigManager.Instance.WorkerCount = ConfigManager.WorkerCountDefault;
+        }
+
+        private void ctlConfigServerHost_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (Uri.TryCreate(this.ctlConfigServerHost.Text, UriKind.Absolute, out var u))
+            {
+                this.ctlConfigServerHost.Text = u.Host;
+            }
         }
 
         private async void ctlConfigClearDownload_Click(object sender, RoutedEventArgs e)

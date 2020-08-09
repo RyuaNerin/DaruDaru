@@ -167,7 +167,7 @@ namespace DaruDaru.Config
             }
         }
 
-        private string m_serverHost = "manamoa26.net";
+        private string m_serverHost = "manamoa52.net";
         public string ServerHost
         {
             get => this.m_serverHost;
