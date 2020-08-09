@@ -159,7 +159,9 @@
             <GroupBox Header="우회용 호스트 설정">
                 <StackPanel>
                     <TextBox x:Name="ctlConfigServerHost"
-                             Text="{Binding Path=ServerHost, Mode=TwoWay}"/>
+                             Text="{Binding Path=ServerHost, Mode=TwoWay}"
+                             metro:TextBoxHelper.Watermark="manamoa52.net"
+                             LostFocus="ctlConfigServerHost_LostFocus" />
                     <TextBlock Margin="0 3 0 0"
                                Text="* 재시작 후 적용됩니다" />
                 </StackPanel>
