@@ -128,6 +128,9 @@ namespace DaruDaru.Utilities
                                     return await base.SendAsync(request, cancellationToken);
                                 }
                             }
+                            catch (OperationCanceledException)
+                            {
+                            }
                             catch (Exception ex)
                             {
                                 SentrySdk.CaptureException(ex);
